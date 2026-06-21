@@ -24,7 +24,8 @@ class App {
         if (class_exists($controllerClass)) {
             $this->controller = new $controllerClass;
         } else {
-            die("Trang không tồn tại (Controller " . $controllerClass . " không tìm thấy)");
+            $this->show404();
+//            die("Trang không tồn tại (Controller " . $controllerClass . " không tìm thấy)");
         }
 
         // 3. XỬ LÝ ACTION (HÀM TRONG CONTROLLER)
@@ -34,7 +35,8 @@ class App {
                 $this->action = $url[1];
                 unset($url[1]); // Xóa khỏi mảng
             } else {
-                die("Hành động không tồn tại (Method " . $url[1] . " không tìm thấy)");
+                $this->show404();
+//                die("Hành động không tồn tại (Method " . $url[1] . " không tìm thấy)");
             }
         }
 
