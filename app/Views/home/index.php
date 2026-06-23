@@ -1,2 +1,1 @@
-<?php
-echo "Hello World" . "</br>";
+<div class="h-screen"></div>
