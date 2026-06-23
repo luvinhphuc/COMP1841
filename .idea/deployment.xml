@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="sv1" remoteFilesAllowedToDisappearOnAutoupload="false" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="windows" remoteFilesAllowedToDisappearOnAutoupload="false" autoUploadExternalChanges="true">
     <serverData>
-      <paths name="sv1">
+      <paths name="macos">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/COMP1841" local="$PROJECT_DIR$" web="/COMP1841" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="windows">
         <serverdata>
           <mappings>
             <mapping deploy="/COMP1841" local="$PROJECT_DIR$" web="/COMP1841" />

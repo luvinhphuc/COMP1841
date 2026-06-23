@@ -8,7 +8,7 @@
     </head>
 
     <body class="min-h-screen bg-white font-sans text-[#222]">
-        <header class="flex items-center gap-6 border-b border-black bg-white px-10 py-3">
+        <header class="flex items-center gap-32 border-b border-black bg-white px-10 py-3">
             <!-- Left -->
             <div class="flex shrink-0 items-center gap-4">
                 <button type="button"
@@ -22,7 +22,7 @@
                     </svg>
                 </button>
 
-                <a href="<?= BASE_URL ?>" class="block h-[42px]" aria-label="University of Greenwich home">
+                <a href="<?= BASE_URL ?>" class="block w-[190px] shrink-0" aria-label="University of Greenwich home">
                     <img
                             src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
                             alt="University of Greenwich"
