@@ -3,11 +3,21 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\Module;
 
 class HomeController extends Controller
 {
-    public function index()
+    private Module $moduleModel;
+
+    public function __construct()
     {
-        $this->view('home/index');
+        $this->moduleModel = new Module();
+    }
+
+    public function index(): void
+    {
+        $this->view('home/index', [
+            'modules' => $this->moduleModel->getAll(),
+        ]);
     }
 }

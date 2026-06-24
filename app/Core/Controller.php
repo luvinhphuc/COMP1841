@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+Database::connect();
 class Controller
 {
     protected function view(string $viewPath, array $data = [])

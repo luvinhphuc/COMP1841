@@ -1,21 +1,10 @@
 <?php
-class Database
-{
-    private PDO $pdo;
 
-    public function __construct()
-    {
-        $this->pdo = new PDO(
-            "mysql:host=localhost;dbname=uog;charset=utf8mb4",
-            "root",
-            ""
-        );
-
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-
-    public function getConnection(): PDO
-    {
-        return $this->pdo;
-    }
-}
+return [
+    'host' => 'localhost',
+    'port' => 3306,
+    'dbname' => 'uog_discussion_db',
+    'username' => 'root',
+    'password' => '',
+    'charset' => 'utf8mb4',
+];

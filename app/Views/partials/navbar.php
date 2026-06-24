@@ -1,11 +1,4 @@
 <?php
-$currentPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH), '/');
-$basePath = trim(parse_url(BASE_URL, PHP_URL_PATH) ?? '', '/');
-
-if ($basePath !== '' && strpos($currentPath, $basePath) === 0) {
-    $currentPath = trim(substr($currentPath, strlen($basePath)), '/');
-}
-
 $url = static function (string $path = ''): string {
     if ($path === '') {
         return BASE_URL !== '' ? BASE_URL : '/';
@@ -14,341 +7,231 @@ $url = static function (string $path = ''): string {
     return BASE_URL . '/' . ltrim($path, '/');
 };
 
-$primaryLinks = [
-    ['label' => 'Home', 'href' => $url(), 'path' => ''],
-    ['label' => 'About', 'href' => $url('about'), 'path' => 'about'],
-    ['label' => 'Modules', 'href' => $url('modules'), 'path' => 'modules'],
-    ['label' => 'Discussions', 'href' => $url('discussions'), 'path' => 'discussions'],
-    ['label' => 'Resources', 'href' => $url('resources'), 'path' => 'resources'],
+$routePath = trim((string) ($_GET['url'] ?? ''), '/');
+$currentPath = $routePath !== ''
+    ? $routePath
+    : trim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH), '/');
+$basePath = trim(parse_url(BASE_URL, PHP_URL_PATH) ?? '', '/');
+
+if ($basePath !== '' && strpos($currentPath, $basePath) === 0) {
+    $currentPath = trim(substr($currentPath, strlen($basePath)), '/');
+}
+
+$currentSection = explode('/', $currentPath)[0] ?? '';
+$activeMenuKey = in_array($currentSection, ['discussions', 'modules', 'resources', 'support'], true)
+    ? $currentSection
+    : 'home';
+$isHomeActive = $activeMenuKey === 'home';
+
+$menus = [
+    'home' => ['label' => 'Home', 'href' => $url()],
+    'discussions' => [
+        'label' => 'Discussions',
+        'description' => 'Ask questions, compare approaches, and learn with the community.',
+        'children' => [
+            ['label' => 'View all discussions', 'href' => $url('discussions')],
+            ['label' => 'Unsolved questions', 'href' => $url('discussions/unsolved')],
+            ['label' => 'Solved questions', 'href' => $url('discussions/solved')],
+            ['label' => 'Create a question', 'href' => $url('discussions/create')],
+        ],
+    ],
+    'resources' => [
+        'label' => 'Resources',
+        'description' => 'Find the university tools and study materials you use most.',
+        'children' => [
+            ['label' => 'View resources', 'href' => $url('resources')],
+            ['label' => 'Moodle', 'href' => $url('resources/moodle')],
+            ['label' => 'Student Portal', 'href' => $url('resources/student-portal')],
+        ],
+    ],
+    'support' => [
+        'label' => 'Support',
+        'description' => 'Get practical help with the platform and common questions.',
+        'children' => [
+            ['label' => 'Contact administrator', 'href' => $url('support/contact')],
+            ['label' => 'FAQ', 'href' => $url('support/faq')],
+        ],
+    ],
 ];
 
-$moduleLinks = [
-    ['label' => 'COMP1841: Systems Architecture', 'href' => $url('modules/comp1841')],
-    ['label' => 'COMP1551: Software Engineering', 'href' => $url('modules/comp1551')],
-    ['label' => 'COMP1786: Web Development', 'href' => $url('modules/comp1786')],
-    ['label' => 'DESN2200: Digital Media Design', 'href' => $url('modules/desn2200')],
+$moduleChildren = [
+    ['label' => 'View all modules', 'href' => $url('modules')],
+];
+
+foreach ($modules ?? [] as $module) {
+    $moduleCode = trim((string) ($module['code'] ?? ''));
+
+    if ($moduleCode === '') {
+        continue;
+    }
+
+    $moduleChildren[] = [
+        'label' => $moduleCode,
+        'href' => $url('modules/' . rawurlencode(strtolower($moduleCode))),
+    ];
+}
+
+$navigation = [
+    'discussions' => $menus['discussions'],
+    'modules' => [
+        'label' => 'Modules',
+        'description' => 'Browse discussions and learning materials by module.',
+        'children' => $moduleChildren,
+    ],
+    'resources' => $menus['resources'],
+    'support' => $menus['support'],
 ];
 ?>
 
-<header class="sticky top-0 z-40 border-b border-black bg-white">
-    <div class="flex min-h-[78px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10 xl:px-16">
-        <div class="flex items-center gap-3 sm:gap-4">
-            <button type="button"
-                    class="flex h-10 w-10 items-center justify-center rounded-full border border-[#747878] text-[#333] transition hover:border-black hover:text-black lg:hidden"
-                    data-mobile-menu-open
-                    aria-label="Open navigation"
-                    aria-controls="mobile-navigation"
-                    aria-expanded="false">
-                <svg viewBox="0 0 33 25" class="h-6 w-8" fill="none" aria-hidden="true">
-                    <path d="M4.5 5.5h24M4.5 12.5h24M4.5 19.5h24"
-                          stroke="currentColor"
-                          stroke-width="3"
-                          stroke-linecap="square"/>
-                </svg>
-            </button>
-
-            <div class="relative hidden lg:block">
-                <button type="button"
-                        class="flex items-center gap-3 text-[#444748] transition hover:text-black"
-                        data-mega-menu-toggle
-                        aria-label="Open navigation menu"
-                        aria-controls="desktop-mega-menu"
-                        aria-expanded="false">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-full border border-[#747878]">
-                        <svg viewBox="0 0 33 25" class="h-6 w-8" fill="none" aria-hidden="true">
-                            <path d="M4.5 5.5h24M4.5 12.5h24M4.5 19.5h24"
-                                  stroke="currentColor"
-                                  stroke-width="3"
-                                  stroke-linecap="square"/>
-                        </svg>
-                    </span>
-                    <span class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] [font-family:'JetBrains_Mono',ui-monospace,monospace]">Menu</span>
-                </button>
-            </div>
-
-            <a href="<?= $url() ?>" class="block w-[156px] shrink-0 sm:w-[190px]" aria-label="University of Greenwich home">
-                <img
-                    src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
-                    alt="University of Greenwich"
-                    class="h-full object-contain"
-                >
-            </a>
-        </div>
-
-        <form action="<?= $url('search') ?>"
-              method="get"
-              class="relative hidden h-[52px] min-w-0 max-w-[620px] flex-1 items-center rounded-full border border-[#d8dbe2] bg-[#f5f6fa] px-5 md:flex"
-              role="search">
-            <label class="sr-only" for="site-search">Search coursework questions</label>
-
-            <svg viewBox="0 0 18 18"
-                 class="mr-4 h-5 w-5 shrink-0 text-[#6b7280]"
-                 fill="none"
-                 aria-hidden="true">
-                <circle cx="8" cy="8" r="5.75" stroke="currentColor" stroke-width="1.5"/>
-                <path d="m12.25 12.25 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-
-            <input
-                id="site-search"
-                name="q"
-                type="search"
-                placeholder="Search coursework questions..."
-                class="min-w-0 flex-1 bg-transparent text-[16px] text-[#5f6368] outline-none placeholder:text-[#5f6368]"
+<header class="sticky top-0 z-40 border-b border-black/10 bg-white">
+    <div class="flex min-h-20 items-center justify-between px-5 sm:px-8 lg:px-12">
+        <a href="<?= $url() ?>" class="block w-[168px] sm:w-[205px]" aria-label="University of Greenwich home">
+            <img
+                src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
+                alt="University of Greenwich"
+                class="h-auto w-full object-contain"
             >
-        </form>
+        </a>
 
-        <div class="flex items-center justify-end gap-2 sm:gap-4">
-            <button type="button"
-                    class="relative flex h-11 w-11 items-center justify-center rounded-full text-[#3f3f3f] transition hover:bg-[#f5f6fa] hover:text-black"
-                    aria-label="Notifications">
-                <svg viewBox="0 0 29 36" class="h-8 w-7" fill="none" aria-hidden="true">
-                    <path d="M14.5 32.5a4 4 0 0 0 3.8-2.8h-7.6a4 4 0 0 0 3.8 2.8Z" fill="currentColor"/>
-                    <path d="M5.5 25.5h18l-2.4-3.4V14a6.6 6.6 0 0 0-5-6.4V5.4a1.6 1.6 0 1 0-3.2 0v2.2A6.6 6.6 0 0 0 7.9 14v8.1l-2.4 3.4Z"
-                          stroke="currentColor"
-                          stroke-width="2.4"
-                          stroke-linejoin="round"/>
+        <button
+            type="button"
+            class="group flex min-h-12 items-center gap-3 px-1 text-sm font-semibold uppercase tracking-[0.14em] text-[#171717] focus-visible:outline-none"
+            data-menu-open
+            aria-controls="site-menu"
+            aria-expanded="false"
+        >
+            <span>Menu</span>
+            <span class="flex size-11 items-center justify-center rounded-full border border-black/25 transition group-hover:border-black group-focus-visible:border-black">
+                <svg viewBox="0 0 24 24" class="size-5" fill="none" aria-hidden="true">
+                    <path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
-                <span class="absolute right-2 top-1.5 size-2 rounded-full bg-[#ba1a1a]"></span>
-            </button>
-
-            <div class="group relative">
-                <button type="button"
-                        class="flex size-12 items-center justify-center overflow-hidden rounded-full border border-[#c4c7c7] p-px transition hover:border-black"
-                        aria-label="Open account menu">
-                    <img
-                        src="<?= BASE_URL ?>/assets/images/header/user-avatar.jpg"
-                        alt="User avatar"
-                        class="size-full rounded-full object-cover"
-                    >
-                </button>
-
-                <div class="invisible absolute right-0 top-[calc(100%+12px)] w-48 translate-y-1 rounded-[8px] border border-[#e4e7ec] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(15,23,42,0.12)] transition group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                    <a href="<?= $url('profile') ?>" class="block rounded-[6px] px-3 py-2 text-sm font-medium text-[#444748] hover:bg-[#f5f6fa] hover:text-black">Profile</a>
-                    <a href="<?= $url('settings') ?>" class="block rounded-[6px] px-3 py-2 text-sm font-medium text-[#444748] hover:bg-[#f5f6fa] hover:text-black">Settings</a>
-                    <a href="<?= $url('logout') ?>" class="block rounded-[6px] px-3 py-2 text-sm font-medium text-[#444748] hover:bg-[#f5f6fa] hover:text-black">Sign out</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="desktop-mega-menu"
-         class="fixed inset-0 z-50 hidden overflow-y-auto bg-white"
-         data-mega-menu
-         aria-hidden="true">
-        <div class="flex min-h-screen flex-col">
-            <div class="flex min-h-[78px] items-center justify-between px-16 py-5">
-                <button type="button"
-                        class="flex items-center gap-3 text-black"
-                        data-mega-menu-close
-                        aria-label="Close navigation">
-                    <span class="flex size-10 items-center justify-center rounded-full border border-[#747878]">
-                        <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
-                            <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                        </svg>
-                    </span>
-                    <span class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] [font-family:'JetBrains_Mono',ui-monospace,monospace]">Close</span>
-                </button>
-
-                <a href="<?= $url() ?>" class="block w-[190px]" aria-label="University of Greenwich home">
-                    <img src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
-                         alt="University of Greenwich"
-                         class="h-full object-contain">
-                </a>
-            </div>
-
-            <div class="grid flex-1 grid-cols-12 gap-6 px-16">
-                <nav class="col-span-6 flex flex-col justify-center" aria-label="Primary navigation">
-                    <?php foreach ($primaryLinks as $link): ?>
-                        <?php $isActive = $currentPath === $link['path']; ?>
-                        <a href="<?= $link['href'] ?>"
-                           class="<?= $isActive ? 'text-black' : 'text-[#444748]' ?> w-fit border-black text-[clamp(3.25rem,5.8vw,5.25rem)] font-normal leading-[1.12] transition hover:text-black <?= $link['label'] === 'Home' ? 'border-b-2' : '' ?> [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">
-                            <?= htmlspecialchars($link['label'], ENT_QUOTES, 'UTF-8') ?>
-                        </a>
-                    <?php endforeach; ?>
-                </nav>
-
-                <aside class="relative col-span-6 flex flex-col justify-center overflow-hidden border-l border-[rgba(196,199,199,0.3)] py-12 pl-16">
-                    <div class="pointer-events-none absolute right-[-96px] top-1/2 size-[360px] -translate-y-1/2 rounded-full border-[32px] border-[#444748]/5"></div>
-
-                    <div class="relative max-w-[430px] pb-9">
-                        <a href="<?= $url('modules') ?>" class="group flex items-center gap-3 text-black">
-                            <span class="text-[32px] font-semibold leading-10 tracking-[0px] [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">Modules</span>
-                            <svg viewBox="0 0 20 20" class="size-5 transition group-hover:translate-x-1" fill="none" aria-hidden="true">
-                                <path d="M4 10h11M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                        <p class="mt-3 text-[18px] leading-7 text-[#444748]">
-                            Browse questions, peer-reviewed notes, and academic discussions filtered by your current module.
-                        </p>
-                    </div>
-
-                    <div class="relative max-w-[520px]">
-                        <?php foreach ($moduleLinks as $module): ?>
-                            <a href="<?= $module['href'] ?>"
-                               class="flex items-center justify-between border-b border-[rgba(196,199,199,0.22)] py-4 text-[12px] font-medium leading-4 tracking-[0.6px] text-black transition hover:border-black hover:pl-2 [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">
-                                <?= htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8') ?>
-                                <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
-                                    <path d="M4 10h11M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <a href="<?= $url('modules') ?>"
-                       class="relative mt-10 flex items-center gap-2 text-[12px] font-medium uppercase leading-4 tracking-[2.4px] text-black transition hover:gap-4 [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">
-                        View all modules
-                        <svg viewBox="0 0 20 20" class="h-[11px] w-[15px]" fill="none" aria-hidden="true">
-                            <path d="M2 10h14M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </a>
-                </aside>
-            </div>
-
-            <div class="flex items-center justify-between border-t border-[rgba(196,199,199,0.22)] px-16 py-8">
-                <nav class="flex items-center gap-12" aria-label="Utility navigation">
-                    <a href="<?= $url('guidelines') ?>" class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] text-[#444748] hover:text-black [font-family:'JetBrains_Mono',ui-monospace,monospace]">Guidelines</a>
-                    <a href="<?= $url('support') ?>" class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] text-[#444748] hover:text-black [font-family:'JetBrains_Mono',ui-monospace,monospace]">Support</a>
-                    <a href="<?= $url('contact') ?>" class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] text-[#444748] hover:text-black [font-family:'JetBrains_Mono',ui-monospace,monospace]">Contact admin</a>
-                </nav>
-
-                <div class="flex items-center gap-4 text-[12px] font-medium leading-4 tracking-[0.6px] text-[#444748]/50 [font-family:'JetBrains_Mono',ui-monospace,monospace]">
-                    <span>&copy; University of Greenwich</span>
-                    <span class="size-1.5 rounded-full bg-[#444748]/20"></span>
-                    <span>Current Session: 2023/24</span>
-                </div>
-            </div>
-        </div>
+            </span>
+        </button>
     </div>
 </header>
 
-<div id="mobile-navigation"
-     class="fixed inset-0 z-50 hidden overflow-y-auto bg-white"
-     data-mobile-menu
-     aria-hidden="true">
-    <div class="flex min-h-screen flex-col">
-        <div class="flex min-h-[78px] items-center justify-between px-4 py-5 sm:px-8">
-            <button type="button"
-                    class="flex items-center gap-3 text-black"
-                    data-mobile-menu-close
-                    aria-label="Close navigation">
-                <span class="flex size-10 items-center justify-center rounded-full border border-[#747878]">
-                    <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
-                        <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+<div
+    id="site-menu"
+    class="pointer-events-none invisible fixed inset-0 z-50 overflow-y-auto bg-[#0b0b0b] text-white opacity-0 will-change-transform data-[open=true]:pointer-events-auto"
+    data-menu-overlay
+    data-open="false"
+    aria-hidden="true"
+    aria-modal="true"
+    aria-label="Main navigation"
+    role="dialog"
+    inert
+>
+    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div class="absolute -right-40 top-24 size-[36rem] rounded-full bg-emerald-950/35 blur-[120px]"></div>
+        <div class="absolute bottom-0 left-1/3 size-96 rounded-full bg-slate-800/30 blur-[110px]"></div>
+    </div>
+
+    <div class="relative flex min-h-full flex-col">
+        <div class="flex min-h-20 items-center justify-between border-b border-white/10 px-5 sm:px-8 lg:px-12">
+            <a href="<?= $url() ?>" class="block w-[168px] sm:w-[205px]" aria-label="University of Greenwich home">
+                <img
+                    src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
+                    alt="University of Greenwich"
+                    class="h-auto w-full brightness-0 invert"
+                >
+            </a>
+
+            <button
+                type="button"
+                class="group flex min-h-12 items-center gap-3 px-1 text-sm font-semibold uppercase tracking-[0.14em] focus-visible:outline-none"
+                data-menu-close
+                aria-label="Close navigation menu"
+            >
+                <span>Close</span>
+                <span class="flex size-11 items-center justify-center rounded-full border border-white/35 transition group-hover:border-white group-focus-visible:border-white">
+                    <svg viewBox="0 0 24 24" class="size-5" fill="none" aria-hidden="true">
+                        <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                     </svg>
                 </span>
-                <span class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] [font-family:'JetBrains_Mono',ui-monospace,monospace]">Close</span>
             </button>
-
-            <a href="<?= $url() ?>" class="block w-[156px] sm:w-[190px]" aria-label="University of Greenwich home">
-                <img src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
-                     alt="University of Greenwich"
-                     class="h-full object-contain">
-            </a>
         </div>
 
-        <div class="grid flex-1 gap-8 px-4 py-8 sm:px-8 md:grid-cols-2 md:px-12">
-            <nav class="flex flex-col justify-center" aria-label="Mobile primary navigation">
-                <?php foreach ($primaryLinks as $link): ?>
-                    <?php $isActive = $currentPath === $link['path']; ?>
-                    <a href="<?= $link['href'] ?>"
-                       class="<?= $isActive ? 'text-black' : 'text-[#444748]' ?> w-fit border-black text-[clamp(3rem,14vw,5.25rem)] font-normal leading-[1.14] transition hover:text-black <?= $link['label'] === 'Home' ? 'border-b-2' : '' ?> [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">
-                        <?= htmlspecialchars($link['label'], ENT_QUOTES, 'UTF-8') ?>
-                    </a>
+        <div class="grid flex-1 gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(340px,0.9fr)_minmax(360px,1.1fr)] lg:gap-20 lg:px-12 lg:py-14 xl:gap-28 xl:px-20">
+            <nav class="flex flex-col justify-center" aria-label="Primary navigation">
+                <a
+                    href="<?= $url() ?>"
+                    class="group w-fit py-2 text-left font-serif text-[clamp(2.7rem,8vw,5.7rem)] leading-[1.04] text-white/45 transition duration-300 hover:text-white focus-visible:text-white data-[active=true]:text-white lg:py-1"
+                    data-menu-primary-item
+                    data-menu-key="home"
+                    data-active="<?= $isHomeActive ? 'true' : 'false' ?>"
+                    aria-current="<?= $isHomeActive ? 'page' : 'false' ?>"
+                >
+                    <span class="relative inline-block pb-1">
+                        Home
+                        <span class="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-white transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100 group-data-[active=true]:scale-x-100" aria-hidden="true"></span>
+                    </span>
+                </a>
+
+                <?php foreach ($navigation as $key => $menu): ?>
+                    <?php $isActive = $key === $activeMenuKey; ?>
+                    <button
+                        type="button"
+                        class="group w-fit py-2 text-left font-serif text-[clamp(2.7rem,8vw,5.7rem)] leading-[1.04] text-white/45 transition duration-300 hover:text-white focus-visible:text-white data-[active=true]:text-white lg:py-1"
+                        data-menu-primary-item
+                        data-menu-key="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                        data-menu-trigger="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                        data-active="<?= $isActive ? 'true' : 'false' ?>"
+                        aria-controls="menu-panel-<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                        aria-expanded="false"
+                    >
+                        <span class="relative inline-block pb-1">
+                            <?= htmlspecialchars($menu['label'], ENT_QUOTES, 'UTF-8') ?>
+                            <span class="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-white transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100 group-data-[active=true]:scale-x-100" aria-hidden="true"></span>
+                        </span>
+                    </button>
                 <?php endforeach; ?>
             </nav>
 
-            <aside class="border-t border-[rgba(196,199,199,0.3)] pt-8 md:border-l md:border-t-0 md:pl-10">
-                <a href="<?= $url('modules') ?>" class="flex items-center gap-3 text-black">
-                    <span class="text-[28px] font-semibold leading-9 [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">Modules</span>
-                    <svg viewBox="0 0 20 20" class="size-5" fill="none" aria-hidden="true">
-                        <path d="M4 10h11M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </a>
-                <p class="mt-3 max-w-[384px] text-[17px] leading-7 text-[#444748]">
-                    Browse questions, peer-reviewed notes, and academic discussions filtered by your current module.
-                </p>
+            <div
+                class="flex items-center border-t border-white/15 pt-8 data-[empty=true]:invisible lg:border-l lg:border-t-0 lg:pl-16 lg:pt-0 xl:pl-24"
+                data-menu-panel-container
+                data-empty="true"
+            >
+                <?php foreach ($navigation as $key => $menu): ?>
+                    <section
+                        id="menu-panel-<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                        class="w-full max-w-2xl data-[active=false]:hidden"
+                        data-menu-panel="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"
+                        data-active="false"
+                        aria-hidden="true"
+                    >
+                        <p class="max-w-lg text-sm font-semibold uppercase tracking-[0.18em] text-white/50">
+                            Explore <?= htmlspecialchars($menu['label'], ENT_QUOTES, 'UTF-8') ?>
+                        </p>
+                        <h2 class="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
+                            <?= htmlspecialchars($menu['label'], ENT_QUOTES, 'UTF-8') ?>
+                        </h2>
+                        <p class="mt-4 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
+                            <?= htmlspecialchars($menu['description'], ENT_QUOTES, 'UTF-8') ?>
+                        </p>
 
-                <div class="mt-7">
-                    <?php foreach ($moduleLinks as $module): ?>
-                        <a href="<?= $module['href'] ?>"
-                           class="flex items-center justify-between border-b border-[rgba(196,199,199,0.22)] py-4 text-[12px] font-medium leading-4 tracking-[0.6px] text-black [font-family:'Hanken_Grotesk',Inter,ui-sans-serif,sans-serif]">
-                            <?= htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8') ?>
-                            <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
-                                <path d="M4 10h11M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            </aside>
+                        <ul class="mt-8 border-t border-white/20">
+                            <?php foreach ($menu['children'] as $child): ?>
+                                <li class="border-b border-white/20">
+                                    <a
+                                        href="<?= htmlspecialchars($child['href'], ENT_QUOTES, 'UTF-8') ?>"
+                                        class="group flex items-center justify-between gap-6 py-4 text-lg font-semibold transition hover:pl-2 hover:text-emerald-300 focus-visible:pl-2 focus-visible:text-emerald-300 sm:text-xl"
+                                    >
+                                        <span><?= htmlspecialchars($child['label'], ENT_QUOTES, 'UTF-8') ?></span>
+                                        <svg viewBox="0 0 24 24" class="size-5 shrink-0 transition-transform group-hover:translate-x-1" fill="none" aria-hidden="true">
+                                            <path d="M5 12h14M14 7l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </section>
+                <?php endforeach; ?>
+            </div>
         </div>
 
-        <div class="border-t border-[rgba(196,199,199,0.22)] px-4 py-8 sm:px-8 md:px-12">
-            <nav class="flex flex-wrap gap-x-8 gap-y-4" aria-label="Mobile utility navigation">
-                <a href="<?= $url('guidelines') ?>" class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] text-[#444748] [font-family:'JetBrains_Mono',ui-monospace,monospace]">Guidelines</a>
-                <a href="<?= $url('support') ?>" class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] text-[#444748] [font-family:'JetBrains_Mono',ui-monospace,monospace]">Support</a>
-                <a href="<?= $url('contact') ?>" class="text-[12px] font-medium uppercase leading-4 tracking-[1.2px] text-[#444748] [font-family:'JetBrains_Mono',ui-monospace,monospace]">Contact admin</a>
-            </nav>
+        <div class="border-t border-white/10 px-5 py-5 text-xs uppercase tracking-[0.16em] text-white/45 sm:px-8 lg:px-12 xl:px-20">
+            University of Greenwich discussion platform
         </div>
     </div>
 </div>
-
-<script>
-    (() => {
-        const megaToggle = document.querySelector('[data-mega-menu-toggle]');
-        const megaMenu = document.querySelector('[data-mega-menu]');
-        const megaClose = document.querySelector('[data-mega-menu-close]');
-        const mobileMenu = document.querySelector('[data-mobile-menu]');
-        const mobileOpen = document.querySelector('[data-mobile-menu-open]');
-        const mobileClose = document.querySelector('[data-mobile-menu-close]');
-
-        const setMegaOpen = (isOpen) => {
-            if (!megaToggle || !megaMenu) {
-                return;
-            }
-
-            megaMenu.classList.toggle('hidden', !isOpen);
-            megaMenu.setAttribute('aria-hidden', String(!isOpen));
-            megaToggle.setAttribute('aria-expanded', String(isOpen));
-            document.body.classList.toggle('overflow-hidden', isOpen);
-        };
-
-        const setMobileOpen = (isOpen) => {
-            if (!mobileMenu || !mobileOpen) {
-                return;
-            }
-
-            mobileMenu.classList.toggle('hidden', !isOpen);
-            mobileMenu.setAttribute('aria-hidden', String(!isOpen));
-            mobileOpen.setAttribute('aria-expanded', String(isOpen));
-            document.body.classList.toggle('overflow-hidden', isOpen);
-        };
-
-        megaToggle?.addEventListener('click', () => {
-            setMegaOpen(megaMenu.classList.contains('hidden'));
-        });
-
-        megaClose?.addEventListener('click', () => setMegaOpen(false));
-        mobileOpen?.addEventListener('click', () => setMobileOpen(true));
-        mobileClose?.addEventListener('click', () => setMobileOpen(false));
-
-        document.addEventListener('click', (event) => {
-            if (!megaMenu || !megaToggle || megaMenu.classList.contains('hidden')) {
-                return;
-            }
-
-            if (!megaMenu.contains(event.target) && !megaToggle.contains(event.target)) {
-                setMegaOpen(false);
-            }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape') {
-                return;
-            }
-
-            setMegaOpen(false);
-            setMobileOpen(false);
-        });
-    })();
-</script>
