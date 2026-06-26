@@ -3,21 +3,16 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\Module;
+use App\Services\HomePageService;
 
 class HomeController extends Controller
 {
-    private Module $moduleModel;
-
-    public function __construct()
+    public function index()
     {
-        $this->moduleModel = new Module();
-    }
+        $homePage = new HomePageService();
+        $data = $homePage->getViewData();
+        $data['pageScripts'] = ['home.js'];
 
-    public function index(): void
-    {
-        $this->view('home/index', [
-            'modules' => $this->moduleModel->getAll(),
-        ]);
+        $this->view('home/index', $data);
     }
 }

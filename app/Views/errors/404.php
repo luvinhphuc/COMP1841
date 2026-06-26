@@ -7,12 +7,33 @@
         <title>404 - Page Not Found</title>
 
         <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/app.css">
+        <link rel="preconnect" href="https://unpkg.com" crossorigin>
+        <link rel="preconnect" href="https://lottie.host" crossorigin>
+
+        <link rel="modulepreload"
+              href="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js">
+
+        <link rel="preload"
+              href="https://lottie.host/8991c8a3-ab6f-4a57-8245-d9d41c47a959/7SZzrJAVRh.lottie"
+              as="fetch"
+              type="application/octet-stream"
+              crossorigin>
+
+        <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"
+                type="module"></script>
     </head>
     <body>
 
         <main class="error-page flex flex-col items-center justify-center h-screen">
-            <p class="error-code text-9xl text-justify">404</p>
+            <div class="error-code text-9xl text-justify">
+                <dotlottie-wc
+                        src="https://lottie.host/8991c8a3-ab6f-4a57-8245-d9d41c47a959/7SZzrJAVRh.lottie"
+                        style="width: 500px;height: 200px"
+                        autoplay
+                        loop
+                ></dotlottie-wc>
 
+            </div>
             <h1 class="font-bold text-4xl my-[24px]">Page not found</h1>
 
             <p>

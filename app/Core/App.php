@@ -10,6 +10,7 @@ class App {
     public function __construct() {
         // 1. Phân tích URL thành mảng [“controller”, “action”, “param1”]
         $url = $this->parseUrl();
+        $url = $this->mapRoutes($url);
 
         // 2. XỬ LÝ CONTROLLER
         // Kiểm tra xem file Controller có tồn tại trong thư mục app/Controllers không
@@ -60,6 +61,27 @@ class App {
             return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
         }
         return [];
+    }
+
+    private function mapRoutes($url)
+    {
+        if (!isset($url[0])) {
+            return $url;
+        }
+
+        if ($url[0] === 'register') {
+            return ['auth', $url[1] ?? 'register'];
+        }
+
+        if ($url[0] === 'login') {
+            return ['auth', $url[1] ?? 'login'];
+        }
+
+        if ($url[0] === 'logout') {
+            return ['auth', 'logout'];
+        }
+
+        return $url;
     }
 
     private function show404()

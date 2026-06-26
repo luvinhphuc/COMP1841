@@ -2,11 +2,22 @@
 
 namespace App\Core;
 
-Database::connect();
+use App\Services\NavigationService;
+
 class Controller
 {
     protected function view(string $viewPath, array $data = [])
     {
+        $navigation = new NavigationService();
+
+        if (!array_key_exists('navbarModuleLinks', $data)) {
+            $data['navbarModuleLinks'] = $navigation->moduleLinks();
+        }
+
+        if (!array_key_exists('authUser', $data)) {
+            $data['authUser'] = $navigation->authUser();
+        }
+
         if (!empty($data)) {
             extract($data);
         }
@@ -18,6 +29,8 @@ class Controller
         }
 
         require ROOT_PATH . '/app/Views/partials/header.php';
+        require ROOT_PATH . '/app/Views/partials/navbar.php';
+        echo '<main>';
         require $mainViewFile;
         require ROOT_PATH . '/app/Views/partials/footer.php';
     }

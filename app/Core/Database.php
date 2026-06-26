@@ -3,16 +3,14 @@
 namespace App\Core;
 
 use PDO;
-use PDOException;
 
 class Database
 {
     private static ?PDO $connection = null;
 
-    public static function connect(): PDO
+    public static function connect()
     {
         if (self::$connection === null) {
-
             $config = require ROOT_PATH . '/config/database.php';
 
             $dsn = sprintf(
@@ -23,21 +21,16 @@ class Database
                 $config['charset']
             );
 
-            try {
-                self::$connection = new PDO(
-                    $dsn,
-                    $config['username'],
-                    $config['password'],
-                    [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                        PDO::ATTR_EMULATE_PREPARES => false,
-                    ]
-                );
-
-            } catch (PDOException $e) {
-                die('Database connection failed: ' . $e->getMessage());
-            }
+            self::$connection = new PDO(
+                $dsn,
+                $config['username'],
+                $config['password'],
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
         }
 
         return self::$connection;

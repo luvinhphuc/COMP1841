@@ -14,7 +14,7 @@ class Module
         $this->db = Database::connect();
     }
 
-    public function getAll(): array
+    public function getAll()
     {
         $stmt = $this->db->query(
             'SELECT id, module_code AS code, module_name AS name

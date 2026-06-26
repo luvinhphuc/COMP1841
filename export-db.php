@@ -1,6 +1,6 @@
 <?php
 
-$dbName = 'uog_cw_discussion_db';
+$dbName = 'uog_discussion_db';
 
 $databaseDir = __DIR__ . '/database';
 $output = $databaseDir . '/' . $dbName . '.sql';

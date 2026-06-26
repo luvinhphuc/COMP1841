@@ -3,12 +3,18 @@
     const logo = document.querySelector('#site-logo');
     const overlay = document.querySelector('#mega-menu');
     const header = menuButton?.closest('header');
-    const openIcon = menuButton?.querySelector('[data-menu-icon-open]');
-    const closeIcon = menuButton?.querySelector('[data-menu-icon-close]');
+    const iconLines = {
+        top: menuButton?.querySelector('[data-menu-icon-line="top"]'),
+        middle: menuButton?.querySelector('[data-menu-icon-line="middle"]'),
+        bottom: menuButton?.querySelector('[data-menu-icon-line="bottom"]'),
+    };
     const primaryItems = Array.from(document.querySelectorAll('[data-menu-primary-item]'));
     const triggers = Array.from(document.querySelectorAll('[data-menu-trigger]'));
     const panels = Array.from(document.querySelectorAll('[data-menu-panel]'));
     const panelContainer = document.querySelector('[data-menu-panel-container]');
+    const userMenu = document.querySelector('[data-user-menu]');
+    const userMenuButton = document.querySelector('[data-user-menu-button]');
+    const userMenuDropdown = document.querySelector('[data-user-menu-dropdown]');
     const gsap = window.gsap;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const initialMenuKey = primaryItems.find((item) => item.dataset.active === 'true')?.dataset.menuKey ?? 'home';
@@ -21,7 +27,46 @@
 
     if (gsap) {
         gsap.set(overlay, { autoAlpha: 0, yPercent: -100 });
+        gsap.set([iconLines.top, iconLines.middle, iconLines.bottom], {
+            transformOrigin: '50% 50%',
+            svgOrigin: '16.5 12.5',
+        });
     }
+
+    const setMenuIconOpen = (isOpen) => {
+        if (!iconLines.top || !iconLines.middle || !iconLines.bottom) {
+            return;
+        }
+
+        if (!gsap || reduceMotion) {
+            iconLines.top.style.transform = isOpen ? 'translateY(7px) rotate(45deg)' : '';
+            iconLines.middle.style.opacity = isOpen ? '0' : '';
+            iconLines.bottom.style.transform = isOpen ? 'translateY(-7px) rotate(-45deg)' : '';
+            return;
+        }
+
+        gsap.to(iconLines.top, {
+            y: isOpen ? 7 : 0,
+            rotation: isOpen ? 45 : 0,
+            duration: 0.28,
+            ease: 'power3.out',
+            overwrite: true,
+        });
+        gsap.to(iconLines.middle, {
+            autoAlpha: isOpen ? 0 : 1,
+            scaleX: isOpen ? 0.35 : 1,
+            duration: 0.2,
+            ease: 'power2.out',
+            overwrite: true,
+        });
+        gsap.to(iconLines.bottom, {
+            y: isOpen ? -7 : 0,
+            rotation: isOpen ? -45 : 0,
+            duration: 0.28,
+            ease: 'power3.out',
+            overwrite: true,
+        });
+    };
 
     const setActiveMenu = (menuKey, animate = true, showPanel = true) => {
         primaryItems.forEach((item) => {
@@ -79,8 +124,7 @@
         if (isOpen) {
             header.dataset.menuOpen = 'true';
         }
-        openIcon?.classList.toggle('hidden', isOpen);
-        closeIcon?.classList.toggle('hidden', !isOpen);
+        setMenuIconOpen(isOpen);
         document.body.classList.toggle('overflow-hidden', isOpen);
         menuAnimation?.kill();
 
@@ -172,8 +216,30 @@
         trigger.addEventListener('click', activate);
     });
 
+    const setUserMenuOpen = (isOpen) => {
+        if (!userMenuButton || !userMenuDropdown) {
+            return;
+        }
+
+        userMenuButton.setAttribute('aria-expanded', String(isOpen));
+        userMenuDropdown.dataset.open = String(isOpen);
+    };
+
+    userMenuButton?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setUserMenuOpen(userMenuButton.getAttribute('aria-expanded') !== 'true');
+    });
+
+    document.addEventListener('click', (event) => {
+        if (userMenu && !userMenu.contains(event.target)) {
+            setUserMenuOpen(false);
+        }
+    });
+
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
+            setUserMenuOpen(false);
+
             if (menuButton.getAttribute('aria-expanded') === 'true') {
                 setMenuOpen(false);
             }
