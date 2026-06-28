@@ -3,18 +3,21 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Services\LoginService;
-use App\Services\RegisterService;
+use App\Services\AuthService;
 use Throwable;
 
 class AuthController extends Controller
 {
     public function login()
     {
+        $errors = $_SESSION['login_errors'] ?? [];
+
         $this->view('auth/login', [
-            'errors' => $_SESSION['login_errors'] ?? [],
+            'errors' => $errors,
             'old' => $_SESSION['login_old'] ?? [],
             'success' => $_SESSION['login_success'] ?? null,
+            'hasFieldErrors' => $this->hasLoginFieldErrors($errors),
+            'pageScripts' => ['login.js'],
         ]);
 
         unset($_SESSION['login_errors'], $_SESSION['login_old'], $_SESSION['login_success']);
@@ -33,7 +36,7 @@ class AuthController extends Controller
         ];
 
         try {
-            $result = (new LoginService())->login($data);
+            $result = (new AuthService())->login($data);
 
             if (!$result['success']) {
                 $this->redirectLoginWithErrors($result['errors'], $data);
@@ -53,9 +56,12 @@ class AuthController extends Controller
 
     public function register()
     {
+        $errors = $_SESSION['register_errors'] ?? [];
+
         $this->view('auth/register', [
-            'errors' => $_SESSION['register_errors'] ?? [],
+            'errors' => $errors,
             'old' => $_SESSION['register_old'] ?? [],
+            'hasFieldErrors' => $this->hasRegisterFieldErrors($errors),
             'pageScripts' => ['register.js'],
         ]);
 
@@ -69,8 +75,12 @@ class AuthController extends Controller
             exit;
         }
 
+        $firstName = trim($_POST['first_name'] ?? '');
+        $lastName = trim($_POST['last_name'] ?? '');
+
         $data = [
-            'full_name' => trim($_POST['full_name'] ?? ''),
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'username' => trim($_POST['username'] ?? ''),
             'email' => trim($_POST['email'] ?? ''),
             'password' => $_POST['password'] ?? '',
@@ -78,7 +88,7 @@ class AuthController extends Controller
         ];
 
         try {
-            $result = (new RegisterService())->register($data, $_FILES['avatar'] ?? null);
+            $result = (new AuthService())->register($data, $_FILES['avatar'] ?? null);
 
             if (!$result['success']) {
                 $this->redirectBackWithErrors($result['errors'], $data);
@@ -104,7 +114,7 @@ class AuthController extends Controller
         exit;
     }
 
-    private function redirectBackWithErrors($errors, $old)
+    private function redirectBackWithErrors($errors, array $old = [])
     {
         unset($old['password'], $old['confirm_password']);
 
@@ -113,6 +123,28 @@ class AuthController extends Controller
 
         header('Location: ' . BASE_URL . '/register');
         exit;
+    }
+
+    private function hasRegisterFieldErrors(array $errors): bool
+    {
+        foreach (['first_name', 'last_name', 'username', 'email', 'password', 'confirm_password'] as $field) {
+            if (trim((string) ($errors[$field] ?? '')) !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasLoginFieldErrors(array $errors): bool
+    {
+        foreach (['email', 'password'] as $field) {
+            if (trim((string) ($errors[$field] ?? '')) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function redirectLoginWithErrors($errors, $old)

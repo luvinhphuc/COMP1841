@@ -17,8 +17,8 @@ class User
 
     public function getAllUsers()
     {
-        $nameColumn = $this->nameColumn();
-        $query = "SELECT id, $nameColumn AS name, username, email, avatar, role, created_at FROM " . $this->table . " ORDER BY id DESC";
+        $nameSelect = $this->nameSelectSql();
+        $query = "SELECT id, $nameSelect AS name, username, email, avatar, role, created_at FROM " . $this->table . " ORDER BY id DESC";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
 
@@ -43,9 +43,10 @@ class User
 
     public function findByEmail($email): ?array
     {
-        $nameColumn = $this->nameColumn();
+        $nameSelect = $this->nameSelectSql();
+        $firstNameSelect = $this->firstNameSelectSql();
         $stmt = $this->db->prepare(
-            "SELECT id, $nameColumn AS full_name, username, email, password, avatar, role, created_at
+            "SELECT id, $firstNameSelect AS first_name, $nameSelect AS full_name, username, email, password, avatar, role, created_at
              FROM " . $this->table . "
              WHERE email = :email
              LIMIT 1"
@@ -58,13 +59,13 @@ class User
 
     public function create($data)
     {
-        $nameColumn = $this->nameColumn();
-        $sql = "INSERT INTO " . $this->table . " ($nameColumn, username, email, password, avatar, role)
-                VALUES (:full_name, :username, :email, :password, :avatar, :role)";
+        $sql = "INSERT INTO " . $this->table . " (first_name, last_name, username, email, password, avatar, role)
+                VALUES (:first_name, :last_name, :username, :email, :password, :avatar, :role)";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
-            'full_name' => $data['full_name'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
             'username' => $data['username'],
             'email' => $data['email'],
             'password' => $data['password'],
@@ -73,11 +74,13 @@ class User
         ]);
     }
 
-    private function nameColumn()
+    private function nameSelectSql()
     {
-        $stmt = $this->db->prepare("SHOW COLUMNS FROM " . $this->table . " LIKE 'full_name'");
-        $stmt->execute();
+        return "TRIM(CONCAT_WS(' ', first_name, last_name))";
+    }
 
-        return $stmt->fetch(PDO::FETCH_ASSOC) ? 'full_name' : 'name';
+    private function firstNameSelectSql()
+    {
+        return 'first_name';
     }
 }

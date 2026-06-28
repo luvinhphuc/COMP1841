@@ -50,4 +50,20 @@ class NavigationService
 
         return is_array($authUser) ? $authUser : null;
     }
+
+    public function authDisplay(?array $authUser): array
+    {
+        $authName = trim((string) ($authUser['full_name'] ?? $authUser['name'] ?? $authUser['username'] ?? 'Student'));
+        $authUsername = trim((string) ($authUser['username'] ?? ''));
+        $authAvatar = trim((string) ($authUser['avatar'] ?? ''));
+
+        return [
+            'isLoggedIn' => is_array($authUser),
+            'authName' => $authName !== '' ? $authName : 'Student',
+            'authUsername' => $authUsername,
+            'authAvatarUrl' => $authAvatar !== ''
+                ? BASE_URL . '/' . ltrim($authAvatar, '/')
+                : BASE_URL . '/assets/images/header/user-avatar.jpg',
+        ];
+    }
 }

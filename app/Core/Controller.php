@@ -18,6 +18,14 @@ class Controller
             $data['authUser'] = $navigation->authUser();
         }
 
+        $data = array_merge($data, $navigation->authDisplay($data['authUser']));
+
+        if (!array_key_exists('pageScriptUrls', $data)) {
+            $data['pageScriptUrls'] = $this->pageScriptUrls($data['pageScripts'] ?? []);
+        }
+
+        $data['navbarScriptUrl'] = $this->assetScriptUrl('navbar.js');
+
         if (!empty($data)) {
             extract($data);
         }
@@ -33,5 +41,32 @@ class Controller
         echo '<main>';
         require $mainViewFile;
         require ROOT_PATH . '/app/Views/partials/footer.php';
+    }
+
+    private function pageScriptUrls(array $pageScripts): array
+    {
+        $scriptUrls = [];
+
+        foreach ($pageScripts as $pageScript) {
+            $scriptUrl = $this->assetScriptUrl((string) $pageScript);
+
+            if ($scriptUrl !== '') {
+                $scriptUrls[] = $scriptUrl;
+            }
+        }
+
+        return $scriptUrls;
+    }
+
+    private function assetScriptUrl(string $script): string
+    {
+        $scriptName = basename($script);
+        $scriptPath = ROOT_PATH . '/public/assets/js/' . $scriptName;
+
+        if (!is_file($scriptPath)) {
+            return '';
+        }
+
+        return BASE_URL . '/assets/js/' . rawurlencode($scriptName) . '?v=' . filemtime($scriptPath);
     }
 }

@@ -8,6 +8,7 @@ use PDO;
 class Post
 {
     private PDO $db;
+    private ?array $userColumns = null;
 
     public function __construct()
     {
@@ -238,6 +239,7 @@ class Post
 
     public function getRecentViews(?int $userId = null, int $limit = 5)
     {
+        $userNameSelect = $this->userNameSelectSql();
         $sql = '
             SELECT
                 p.id,
@@ -252,7 +254,7 @@ class Post
                 m.module_code,
                 m.module_name,
                 u.username,
-                u.full_name,
+                ' . $userNameSelect . ' AS full_name,
                 u.avatar,
                 pv.viewed_at,
                 (
@@ -305,6 +307,7 @@ class Post
     private function baseSelectSql(string $extraSelect = '')
     {
         $extraSelect = $extraSelect !== '' ? ', ' . $extraSelect : '';
+        $userNameSelect = $this->userNameSelectSql();
 
         return '
             SELECT
@@ -320,7 +323,7 @@ class Post
                 m.module_code,
                 m.module_name,
                 u.username,
-                u.full_name,
+                ' . $userNameSelect . ' AS full_name,
                 u.avatar,
                 (
                     SELECT COUNT(*)
@@ -345,6 +348,30 @@ class Post
             INNER JOIN users u ON u.id = p.user_id
             WHERE p.deleted_at IS NULL
         ';
+    }
+
+    private function userNameSelectSql()
+    {
+        if ($this->userHasColumn('full_name')) {
+            return 'u.full_name';
+        }
+
+        if ($this->userHasColumn('first_name') && $this->userHasColumn('last_name')) {
+            return "TRIM(CONCAT_WS(' ', u.first_name, u.last_name))";
+        }
+
+        return 'u.username';
+    }
+
+    private function userHasColumn(string $column)
+    {
+        if ($this->userColumns === null) {
+            $stmt = $this->db->prepare('SHOW COLUMNS FROM users');
+            $stmt->execute();
+            $this->userColumns = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'Field');
+        }
+
+        return in_array($column, $this->userColumns, true);
     }
 
     private function normaliseStatus(string $status)

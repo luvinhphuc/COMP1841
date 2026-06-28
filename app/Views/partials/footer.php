@@ -42,12 +42,11 @@
     </nav>
 </footer>
 <script src="<?= BASE_URL ?>/assets/js/gsap.min.js"></script>
-<script src="<?= BASE_URL ?>/assets/js/navbar.js?v=<?= filemtime(ROOT_PATH . '/public/assets/js/navbar.js') ?>"></script>
-<?php foreach (($pageScripts ?? []) as $pageScript): ?>
-    <?php $scriptPath = ROOT_PATH . '/public/assets/js/' . $pageScript; ?>
-    <?php if (is_file($scriptPath)): ?>
-        <script src="<?= BASE_URL ?>/assets/js/<?= htmlspecialchars($pageScript, ENT_QUOTES, 'UTF-8') ?>?v=<?= filemtime($scriptPath) ?>"></script>
-    <?php endif; ?>
+<?php if (!empty($navbarScriptUrl)): ?>
+    <script src="<?= htmlspecialchars($navbarScriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
+<?php endif; ?>
+<?php foreach (($pageScriptUrls ?? []) as $pageScriptUrl): ?>
+    <script src="<?= htmlspecialchars($pageScriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php endforeach; ?>
 </body>
 </html>

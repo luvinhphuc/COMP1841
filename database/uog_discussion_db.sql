@@ -1,8 +1,8 @@
--- MariaDB dump 10.19  Distrib 10.4.28-MariaDB, for osx10.10 (x86_64)
+-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
 --
 -- Host: localhost    Database: uog_discussion_db
 -- ------------------------------------------------------
--- Server version	10.4.28-MariaDB
+-- Server version	10.4.32-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -216,7 +216,8 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `full_name` varchar(75) NOT NULL,
+  `first_name` varchar(35) NOT NULL,
+  `last_name` varchar(35) NOT NULL,
   `username` varchar(75) NOT NULL,
   `email` varchar(150) NOT NULL,
   `password` varchar(450) DEFAULT NULL,
@@ -227,7 +228,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -236,7 +237,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Admin User','admin','admin@greenwich.edu.vn',NULL,NULL,'admin','2026-06-24 09:09:38',NULL),(2,'John Smith','johnsmith','johnsmith@greenwich.edu.vn',NULL,NULL,'student','2026-06-24 09:09:38',NULL),(3,'Emily Johnson','emilyj','emilyj@greenwich.edu.vn',NULL,NULL,'student','2026-06-24 09:09:38',NULL),(4,'Michael Brown','michaelb','michaelb@greenwich.edu.vn',NULL,NULL,'student','2026-06-24 09:09:38',NULL),(5,'Sarah Wilson','sarahw','sarahw@greenwich.edu.vn',NULL,NULL,'tutor','2026-06-24 09:09:38',NULL),(6,'Lù Vĩnh Phúc','luvinhfuc@gmail.com','lvp9852@gmail.com','$2y$10$XGpQpWzR5A8U.tnXPZMCuuuy./Ub1OtcRCm6ARXipQxHzgcMoKGzm',NULL,'student','2026-06-24 10:29:21',NULL);
+INSERT INTO `users` VALUES (8,'Lù','Phúc','lvp9852@gmail.com','lvp9852@gre.ac.uk','$2y$10$AbxFLbzxJXegheULQWa1beWu9kMwIB8qjTqUhtNENPwuY.BQCCIIi',NULL,'student','2026-06-28 12:07:38',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -249,4 +250,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-24 17:35:10
+-- Dump completed on 2026-06-28 19:09:06

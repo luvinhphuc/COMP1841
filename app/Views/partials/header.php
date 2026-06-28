@@ -9,15 +9,6 @@
     </head>
 
     <body class="min-h-screen scrollbar-d-none bg-white font-sans text-[#222]">
-        <?php
-        $authUser = $authUser ?? null;
-        $isLoggedIn = is_array($authUser);
-        $authName = trim((string) ($authUser['full_name'] ?? $authUser['name'] ?? $authUser['username'] ?? 'Student'));
-        $authUsername = trim((string) ($authUser['username'] ?? ''));
-        $authAvatar = trim((string) ($authUser['avatar'] ?? ''));
-        $authAvatarUrl = $authAvatar !== '' ? BASE_URL . '/' . ltrim($authAvatar, '/') : BASE_URL . '/assets/images/header/user-avatar.jpg';
-        ?>
-
         <header class="group sticky top-0 z-[80] border-b border-black bg-white data-[menu-open=true]:border-black/10"
                 data-menu-open="false">
             <div class="flex min-h-20 items-center gap-12 px-5 sm:px-8 lg:gap-36 lg:px-32 xl:gap-48">
