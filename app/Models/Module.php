@@ -24,4 +24,22 @@ class Module
 
         return $stmt->fetchAll();
     }
+
+    public function findById(int $id)
+    {
+        if ($id <= 0) {
+            return null;
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT id, module_code AS code, module_name AS name
+             FROM modules
+             WHERE id = :id
+             LIMIT 1'
+        );
+        $stmt->execute(['id' => $id]);
+        $module = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $module ?: null;
+    }
 }

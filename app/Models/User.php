@@ -41,17 +41,17 @@ class User
         return (bool) $stmt->fetch();
     }
 
-    public function findByEmail($email): ?array
+    public function findByUsername($username): ?array
     {
         $nameSelect = $this->nameSelectSql();
         $firstNameSelect = $this->firstNameSelectSql();
         $stmt = $this->db->prepare(
             "SELECT id, $firstNameSelect AS first_name, $nameSelect AS full_name, username, email, password, avatar, role, created_at
              FROM " . $this->table . "
-             WHERE email = :email
+             WHERE username = :username
              LIMIT 1"
         );
-        $stmt->execute(['email' => $email]);
+        $stmt->execute(['username' => $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $user ?: null;

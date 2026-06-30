@@ -25,12 +25,12 @@ class AuthService
             ];
         }
 
-        $user = $this->userModel->findByEmail($data['email']);
+        $user = $this->userModel->findByUsername($data['username']);
 
         if (!$user || !password_verify($data['password'], (string) ($user['password'] ?? ''))) {
             return [
                 'success' => false,
-                'errors' => ['general' => 'The email or password is incorrect.'],
+                'errors' => ['general' => 'The username or password is incorrect.'],
                 'user' => null,
             ];
         }
@@ -86,10 +86,10 @@ class AuthService
     {
         $errors = [];
 
-        if ($data['email'] === '') {
-            $errors['email'] = 'Email is required.';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address.';
+        if ($data['username'] === '') {
+            $errors['username'] = 'Username is required.';
+        } elseif (mb_strlen($data['username']) > 75) {
+            $errors['username'] = 'Username must be 75 characters or fewer.';
         }
 
         if ($data['password'] === '') {
@@ -129,8 +129,6 @@ class AuthService
             $errors['email'] = 'Email must be 150 characters or fewer.';
         } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Please enter a valid email address.';
-        } elseif (!$this->isGreenwichEmail($data['email'])) {
-            $errors['email'] = 'Please use your @gre.ac.uk email address.';
         }
 
         if ($data['password'] === '') {
@@ -150,10 +148,5 @@ class AuthService
         }
 
         return $errors;
-    }
-
-    private function isGreenwichEmail(string $email)
-    {
-        return str_ends_with(strtolower($email), '@gre.ac.uk');
     }
 }

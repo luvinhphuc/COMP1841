@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Coursework Discussion</title>
         <link rel="shortcut icon" href="https://moodlecurrent.gre.ac.uk/pluginfile.php/1/core_admin/favicon/64x64/1778282230/v32.png">
-        <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/app.css">
+        <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/app.css?v=<?= filemtime(ROOT_PATH . '/public/assets/css/app.css') ?>">
     </head>
 
     <body class="min-h-screen scrollbar-d-none bg-white font-sans text-[#222]">

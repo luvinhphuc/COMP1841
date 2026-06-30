@@ -43,7 +43,7 @@ CREATE TABLE `media` (
 
 LOCK TABLES `media` WRITE;
 /*!40000 ALTER TABLE `media` DISABLE KEYS */;
-INSERT INTO `media` VALUES (1,3,'image','uploads/posts/tailwind-error.png','tailwind-error.png','image/png',245760,'2026-06-24 09:09:38'),(2,5,'image','uploads/posts/navbar-mockup.jpg','navbar-mockup.jpg','image/jpeg',187420,'2026-06-24 09:09:38');
+INSERT INTO `media` VALUES (1,3,'image','uploads/images/tailwind-error.png','tailwind-error.png','image/png',245760,'2026-06-28 14:50:25'),(2,5,'image','uploads/images/navbar-mockup.jpg','navbar-mockup.jpg','image/jpeg',187420,'2026-06-28 14:50:25');
 /*!40000 ALTER TABLE `media` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -72,8 +72,47 @@ CREATE TABLE `modules` (
 
 LOCK TABLES `modules` WRITE;
 /*!40000 ALTER TABLE `modules` DISABLE KEYS */;
-INSERT INTO `modules` VALUES (1,'COMP1841','Application Development','PHP MVC and Web Development','2026-06-24 09:09:38',NULL),(2,'COMP1551','Programming Fundamentals','Introduction to Programming','2026-06-24 09:09:38',NULL),(3,'COMP1786','Object Oriented Programming','Java and OOP Concepts','2026-06-24 09:09:38',NULL),(4,'DESN2200','Web Design','UI UX and Web Design','2026-06-24 09:09:38',NULL),(5,'MATH1020','Discrete Mathematics','Mathematical Foundations','2026-06-24 09:09:38',NULL);
+INSERT INTO `modules` VALUES (1,'COMP1841','Web Programming 1','PHP MVC, PDO, MySQL and CRUD web development.','2026-06-28 14:50:25',NULL),(2,'COMP1551','Application Development','Programming fundamentals and application development.','2026-06-28 14:50:25',NULL),(3,'COMP1786','Object Oriented Programming','Object oriented programming concepts and software structure.','2026-06-28 14:50:25',NULL),(4,'DESN2200','Web Design','UI, UX, accessibility and web design practice.','2026-06-28 14:50:25',NULL),(5,'MATH1020','Discrete Mathematics','Logic, proofs, sets and mathematical foundations.','2026-06-28 14:50:25',NULL);
 /*!40000 ALTER TABLE `modules` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notifications`
+--
+
+DROP TABLE IF EXISTS `notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `actor_id` int(11) DEFAULT NULL,
+  `post_id` int(11) DEFAULT NULL,
+  `reply_id` int(11) DEFAULT NULL,
+  `type` enum('reply','accepted_answer','module_update','system') NOT NULL,
+  `message` varchar(255) NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_notifications_user` (`user_id`),
+  KEY `fk_notifications_actor` (`actor_id`),
+  KEY `fk_notifications_post` (`post_id`),
+  KEY `fk_notifications_reply` (`reply_id`),
+  CONSTRAINT `fk_notifications_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_notifications_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notifications_reply` FOREIGN KEY (`reply_id`) REFERENCES `replies` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notifications`
+--
+
+LOCK TABLES `notifications` WRITE;
+/*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
+INSERT INTO `notifications` VALUES (1,1,3,1,2,'reply','Minh replied to your MVC routing post.',0,'2026-06-28 14:50:25'),(2,4,5,2,3,'accepted_answer','Your OOP question has an accepted answer.',1,'2026-06-28 14:50:25'),(3,3,NULL,NULL,NULL,'system','Welcome to Greenwich CourseMate.',0,'2026-06-28 14:50:25'),(4,1,NULL,NULL,NULL,'module_update','New discussions are available in COMP1841.',0,'2026-06-28 14:50:25');
+/*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -102,7 +141,7 @@ CREATE TABLE `post_views` (
 
 LOCK TABLES `post_views` WRITE;
 /*!40000 ALTER TABLE `post_views` DISABLE KEYS */;
-INSERT INTO `post_views` VALUES (1,2,1,'2026-06-24 09:09:38'),(2,3,1,'2026-06-24 09:09:38'),(3,4,1,'2026-06-24 09:09:38'),(4,5,1,'2026-06-24 09:09:38'),(5,2,2,'2026-06-24 09:09:38'),(6,3,2,'2026-06-24 09:09:38'),(7,2,3,'2026-06-24 09:09:38'),(8,4,3,'2026-06-24 09:09:38'),(9,5,3,'2026-06-24 09:09:38'),(10,3,5,'2026-06-24 09:09:38');
+INSERT INTO `post_views` VALUES (1,1,2,'2026-06-28 14:50:25'),(2,1,3,'2026-06-28 14:50:25'),(3,2,1,'2026-06-28 14:50:25'),(4,2,3,'2026-06-28 14:50:25'),(5,3,1,'2026-06-28 14:50:25'),(6,3,5,'2026-06-28 14:50:25'),(7,4,1,'2026-06-28 14:50:25'),(8,4,2,'2026-06-28 14:50:25'),(9,5,1,'2026-06-28 14:50:25'),(10,6,3,'2026-06-28 14:50:25');
 /*!40000 ALTER TABLE `post_views` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -139,7 +178,7 @@ CREATE TABLE `posts` (
 
 LOCK TABLES `posts` WRITE;
 /*!40000 ALTER TABLE `posts` DISABLE KEYS */;
-INSERT INTO `posts` VALUES (1,'How to implement MVC routing in PHP?','how-to-implement-mvc-routing-in-php','I am struggling with creating a custom router for my COMP1841 project. Can someone explain the basic structure?','open',2,1,'2026-06-24 09:09:38',NULL,NULL),(2,'Difference between composition and inheritance','difference-between-composition-and-inheritance','Can anyone explain when composition should be used instead of inheritance in OOP?','solved',4,3,'2026-06-24 09:09:38',NULL,NULL),(3,'TailwindCSS not loading after npm build','tailwindcss-not-loading-after-npm-build','My CSS file is generated successfully but the styles are not appearing in the browser.','open',3,1,'2026-06-24 09:09:38',NULL,NULL),(4,'Best way to study Discrete Mathematics','best-way-to-study-discrete-mathematics','Any tips for understanding proofs and logic questions?','open',4,5,'2026-06-24 09:09:38',NULL,NULL),(5,'Responsive navbar design ideas','responsive-navbar-design-ideas','I need inspiration for a responsive navigation menu for DESN2200.','solved',3,4,'2026-06-24 09:09:38',NULL,NULL);
+INSERT INTO `posts` VALUES (1,'How to implement MVC routing in PHP?','how-to-implement-mvc-routing-in-php','I am struggling with creating a custom router for my COMP1841 project. Can someone explain the basic structure?','open',1,1,'2026-06-28 14:50:25',NULL,NULL),(2,'Difference between composition and inheritance','difference-between-composition-and-inheritance','Can anyone explain when composition should be used instead of inheritance in OOP?','solved',4,3,'2026-06-28 14:50:25',NULL,NULL),(3,'TailwindCSS not loading after npm build','tailwindcss-not-loading-after-npm-build','My CSS file is generated successfully but the styles are not appearing in the browser.','open',3,1,'2026-06-28 14:50:25',NULL,NULL),(4,'Best way to study Discrete Mathematics','best-way-to-study-discrete-mathematics','Any tips for understanding proofs and logic questions?','open',4,5,'2026-06-28 14:50:25',NULL,NULL),(5,'Responsive navbar design ideas','responsive-navbar-design-ideas','I need inspiration for a responsive navigation menu for DESN2200.','solved',3,4,'2026-06-28 14:50:25',NULL,NULL);
 /*!40000 ALTER TABLE `posts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -173,7 +212,7 @@ CREATE TABLE `replies` (
 
 LOCK TABLES `replies` WRITE;
 /*!40000 ALTER TABLE `replies` DISABLE KEYS */;
-INSERT INTO `replies` VALUES (1,1,5,'Create a Front Controller using index.php and route every request through it.',0,'2026-06-24 09:09:38',NULL,NULL),(2,1,3,'Use .htaccess to redirect requests and map URLs to controllers.',1,'2026-06-24 09:09:38',NULL,NULL),(3,2,5,'Composition is preferred when objects have a HAS-A relationship.',1,'2026-06-24 09:09:38',NULL,NULL),(4,3,2,'Check that app.css is correctly linked and browser cache is cleared.',0,'2026-06-24 09:09:38',NULL,NULL),(5,5,5,'Look at Harvard and Stripe navigation patterns for inspiration.',1,'2026-06-24 09:09:38',NULL,NULL);
+INSERT INTO `replies` VALUES (1,1,5,'Create a front controller using public/index.php and route every request through it.',0,'2026-06-28 14:50:25',NULL,NULL),(2,1,3,'Use .htaccess to redirect requests and map URLs to controllers.',1,'2026-06-28 14:50:25',NULL,NULL),(3,2,5,'Composition is preferred when objects have a HAS-A relationship.',1,'2026-06-28 14:50:25',NULL,NULL),(4,3,2,'Check that app.css is correctly linked and clear the browser cache.',0,'2026-06-28 14:50:25',NULL,NULL),(5,5,5,'Look at university navigation patterns and keep the mobile menu simple.',1,'2026-06-28 14:50:25',NULL,NULL);
 /*!40000 ALTER TABLE `replies` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,7 +242,7 @@ CREATE TABLE `user_modules` (
 
 LOCK TABLES `user_modules` WRITE;
 /*!40000 ALTER TABLE `user_modules` DISABLE KEYS */;
-INSERT INTO `user_modules` VALUES (1,2,1,'2026-06-24 09:09:38'),(2,2,2,'2026-06-24 09:09:38'),(3,3,1,'2026-06-24 09:09:38'),(4,3,4,'2026-06-24 09:09:38'),(5,4,3,'2026-06-24 09:09:38'),(6,4,5,'2026-06-24 09:09:38'),(7,5,1,'2026-06-24 09:09:38'),(8,5,3,'2026-06-24 09:09:38');
+INSERT INTO `user_modules` VALUES (1,1,1,'2026-06-28 14:50:25'),(2,1,2,'2026-06-28 14:50:25'),(3,2,1,'2026-06-28 14:50:25'),(4,2,4,'2026-06-28 14:50:25'),(5,3,1,'2026-06-28 14:50:25'),(6,3,4,'2026-06-28 14:50:25'),(7,4,3,'2026-06-28 14:50:25'),(8,4,5,'2026-06-28 14:50:25');
 /*!40000 ALTER TABLE `user_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -216,11 +255,11 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `first_name` varchar(35) NOT NULL,
-  `last_name` varchar(35) NOT NULL,
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
   `username` varchar(75) NOT NULL,
   `email` varchar(150) NOT NULL,
-  `password` varchar(450) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `avatar` varchar(255) DEFAULT NULL,
   `role` enum('student','tutor','admin') DEFAULT 'student',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -228,7 +267,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -237,7 +276,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (8,'Lù','Phúc','lvp9852@gmail.com','lvp9852@gre.ac.uk','$2y$10$AbxFLbzxJXegheULQWa1beWu9kMwIB8qjTqUhtNENPwuY.BQCCIIi',NULL,'student','2026-06-28 12:07:38',NULL);
+INSERT INTO `users` VALUES (1,'Lù','Phúc','lvp9852','lvp9852@gmail.com','$2y$10$AbxFLbzxJXegheULQWa1beWu9kMwIB8qjTqUhtNENPwuY.BQCCIIi',NULL,'student','2026-06-28 14:50:25',NULL),(2,'Linh','Nguyen','linhnguyen','linh.nguyen@gmail.com',NULL,'uploads/avatars/linh-nguyen.png','student','2026-06-28 14:50:25',NULL),(3,'Minh','Tran','minhtran','minh.tran@gmail.com',NULL,'uploads/avatars/minh-tran.png','student','2026-06-28 14:50:25',NULL),(4,'An','Pham','anpham','an.pham@gmail.com',NULL,NULL,'student','2026-06-28 14:50:25',NULL),(5,'Matt','Tutor','matttutor','matt.tutor@gmail.com',NULL,NULL,'tutor','2026-06-28 14:50:25',NULL),(6,'Admin','User','admin','admin@gmail.com',NULL,NULL,'admin','2026-06-28 14:50:25',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -250,4 +289,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-28 19:09:06
+-- Dump completed on 2026-06-29  0:25:17

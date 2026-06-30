@@ -31,7 +31,7 @@ class AuthController extends Controller
         }
 
         $data = [
-            'email' => trim($_POST['email'] ?? ''),
+            'username' => trim($_POST['username'] ?? ''),
             'password' => $_POST['password'] ?? '',
         ];
 
@@ -94,7 +94,7 @@ class AuthController extends Controller
                 $this->redirectBackWithErrors($result['errors'], $data);
             }
 
-            $_SESSION['login_success'] = 'Account created. Please sign in with your Greenwich email.';
+            $_SESSION['login_success'] = 'Account created. Please sign in with your username.';
 
             header('Location: ' . BASE_URL . '/login');
             exit;
@@ -138,7 +138,7 @@ class AuthController extends Controller
 
     private function hasLoginFieldErrors(array $errors): bool
     {
-        foreach (['email', 'password'] as $field) {
+        foreach (['username', 'password'] as $field) {
             if (trim((string) ($errors[$field] ?? '')) !== '') {
                 return true;
             }

@@ -58,6 +58,44 @@ class Post
         return $stmt->fetchAll();
     }
 
+    public function getDiscussionList(array $filters, int $limit = 20, int $offset = 0)
+    {
+        $params = [];
+        $sql = $this->baseSelectSql() . $this->discussionFilterSql($filters, $params) . $this->discussionOrderSql($filters) . '
+            LIMIT :limit OFFSET :offset
+        ';
+
+        $stmt = $this->db->prepare($sql);
+        $this->bindDiscussionParams($stmt, $params);
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function getDiscussionCount(array $filters)
+    {
+        $params = [];
+        $sql = '
+            SELECT COUNT(*)
+            FROM posts p
+            INNER JOIN modules m ON m.id = p.module_id
+            WHERE p.deleted_at IS NULL
+        ' . $this->discussionFilterSql($filters, $params);
+
+        $stmt = $this->db->prepare($sql);
+        $this->bindDiscussionParams($stmt, $params);
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function getPopularDiscussions(int $limit = 5)
+    {
+        return $this->getDiscussionList(['sort' => 'popular'], $limit, 0);
+    }
+
     public function find(int $id)
     {
         $stmt = $this->db->prepare($this->baseSelectSql() . '
@@ -93,7 +131,7 @@ class Post
         $status = $this->normaliseStatus((string) ($data['status'] ?? 'open'));
         $slug = trim((string) ($data['slug'] ?? ''));
 
-        if ($title === '' || $content === '' || $userId <= 0 || $moduleId <= 0) {
+        if ($title === '' || $userId <= 0 || $moduleId <= 0) {
             return 0;
         }
 
@@ -143,10 +181,6 @@ class Post
         if (array_key_exists('content', $data)) {
             $content = trim((string) $data['content']);
 
-            if ($content === '') {
-                return false;
-            }
-
             $fields[] = 'content = :content';
             $params['content'] = $content;
         }
@@ -180,13 +214,55 @@ class Post
 
     public function delete(int $id)
     {
-        $stmt = $this->db->prepare(
-            'UPDATE posts
-             SET deleted_at = NOW()
-             WHERE id = :id AND deleted_at IS NULL'
-        );
+        if ($id <= 0) {
+            return false;
+        }
 
-        return $stmt->execute(['id' => $id]);
+        try {
+            $this->db->beginTransaction();
+
+            $this->db->prepare(
+                'DELETE FROM notifications
+                 WHERE post_id = :post_id
+                    OR reply_id IN (
+                        SELECT id FROM replies WHERE post_id = :reply_post_id
+                    )'
+            )->execute([
+                'post_id' => $id,
+                'reply_post_id' => $id,
+            ]);
+
+            $this->db->prepare('DELETE FROM post_views WHERE post_id = :post_id')
+                ->execute(['post_id' => $id]);
+
+            $this->db->prepare('DELETE FROM media WHERE post_id = :post_id')
+                ->execute(['post_id' => $id]);
+
+            $this->db->prepare(
+                'UPDATE replies
+                 SET deleted_at = NOW(), is_accepted = 0, updated_at = NOW()
+                 WHERE post_id = :post_id AND deleted_at IS NULL'
+            )->execute(['post_id' => $id]);
+
+            $stmt = $this->db->prepare(
+                'UPDATE posts
+                 SET deleted_at = NOW(), status = "open", updated_at = NOW()
+                 WHERE id = :id AND deleted_at IS NULL'
+            );
+
+            $stmt->execute(['id' => $id]);
+            $deleted = $stmt->rowCount() > 0;
+
+            $this->db->commit();
+
+            return $deleted;
+        } catch (\Throwable $exception) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $exception;
+        }
     }
 
     public function setStatus(int $id, string $status)
@@ -348,6 +424,101 @@ class Post
             INNER JOIN users u ON u.id = p.user_id
             WHERE p.deleted_at IS NULL
         ';
+    }
+
+    public function refreshActivityTimestamp(int $postId)
+    {
+        if ($postId <= 0) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT COALESCE(
+                (
+                    SELECT MAX(COALESCE(r.updated_at, r.created_at))
+                    FROM replies r
+                    WHERE r.post_id = :reply_post_id AND r.deleted_at IS NULL
+                ),
+                p.created_at
+             ) AS last_activity
+             FROM posts p
+             WHERE p.id = :post_id AND p.deleted_at IS NULL
+             LIMIT 1'
+        );
+
+        $stmt->execute([
+            'reply_post_id' => $postId,
+            'post_id' => $postId,
+        ]);
+
+        $lastActivity = $stmt->fetchColumn();
+
+        if (!$lastActivity) {
+            return false;
+        }
+
+        $update = $this->db->prepare(
+            'UPDATE posts
+             SET updated_at = :last_activity
+             WHERE id = :post_id AND deleted_at IS NULL'
+        );
+
+        return $update->execute([
+            'last_activity' => $lastActivity,
+            'post_id' => $postId,
+        ]);
+    }
+
+    private function discussionFilterSql(array $filters, array &$params)
+    {
+        $sql = '';
+        $query = trim((string) ($filters['q'] ?? ''));
+        $status = trim((string) ($filters['status'] ?? ''));
+        $module = trim((string) ($filters['module'] ?? ''));
+
+        if ($query !== '') {
+            $sql .= '
+                AND (
+                    p.title LIKE :query
+                    OR p.content LIKE :query
+                    OR m.module_code LIKE :query
+                    OR m.module_name LIKE :query
+                )
+            ';
+            $params['query'] = '%' . $query . '%';
+        }
+
+        if (in_array($status, ['open', 'solved'], true)) {
+            $sql .= ' AND p.status = :status';
+            $params['status'] = $status;
+        }
+
+        if ($module !== '') {
+            $sql .= ' AND m.module_code = :module';
+            $params['module'] = $module;
+        }
+
+        return $sql;
+    }
+
+    private function discussionOrderSql(array $filters)
+    {
+        if (($filters['sort'] ?? '') === 'popular') {
+            return '
+                ORDER BY reply_count DESC, view_count DESC, p.created_at DESC
+            ';
+        }
+
+        return '
+            ORDER BY p.created_at DESC
+        ';
+    }
+
+    private function bindDiscussionParams($stmt, array $params)
+    {
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
     }
 
     private function userNameSelectSql()

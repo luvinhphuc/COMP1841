@@ -1,4 +1,8 @@
 @import "tailwindcss";
+
+@source "../../app/**/*.php";
+@source "../../public/assets/js/**/*.js";
+
 @utility scrollbar-d-none {
 	&::-webkit-scrollbar {
 		display: none;

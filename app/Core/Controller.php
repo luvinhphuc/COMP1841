@@ -25,6 +25,8 @@ class Controller
         }
 
         $data['navbarScriptUrl'] = $this->assetScriptUrl('navbar.js');
+        $data['csrfToken'] = $this->csrfToken();
+        $data['flashToast'] = $this->flashToast();
 
         if (!empty($data)) {
             extract($data);
@@ -41,6 +43,47 @@ class Controller
         echo '<main>';
         require $mainViewFile;
         require ROOT_PATH . '/app/Views/partials/footer.php';
+    }
+
+    protected function csrfToken(): string
+    {
+        if (empty($_SESSION['_csrf_token']) || !is_string($_SESSION['_csrf_token'])) {
+            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['_csrf_token'];
+    }
+
+    protected function verifyCsrfToken(?string $token): bool
+    {
+        $sessionToken = $_SESSION['_csrf_token'] ?? '';
+
+        return is_string($sessionToken)
+            && is_string($token)
+            && $sessionToken !== ''
+            && hash_equals($sessionToken, $token);
+    }
+
+    private function flashToast()
+    {
+        $toast = $_SESSION['flash_toast'] ?? null;
+        unset($_SESSION['flash_toast']);
+
+        if (!is_array($toast)) {
+            return null;
+        }
+
+        $message = trim((string) ($toast['message'] ?? ''));
+
+        if ($message === '') {
+            return null;
+        }
+
+        return [
+            'type' => trim((string) ($toast['type'] ?? 'info')),
+            'title' => trim((string) ($toast['title'] ?? '')),
+            'message' => $message,
+        ];
     }
 
     private function pageScriptUrls(array $pageScripts): array
