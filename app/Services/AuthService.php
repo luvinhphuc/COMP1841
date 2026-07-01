@@ -106,13 +106,13 @@ class AuthService
         $lastName = trim((string) ($data['last_name'] ?? ''));
 
         if ($firstName === '') {
-            $errors['first_name'] = 'First name is required.';
+            $errors['first_name'] = "What's your first name?";
         } elseif (mb_strlen($firstName) > 35) {
             $errors['first_name'] = 'First name must be 35 characters or fewer.';
         }
 
         if ($lastName === '') {
-            $errors['last_name'] = 'Last name is required.';
+            $errors['last_name'] = "What's your last name?";
         } elseif (mb_strlen($lastName) > 35) {
             $errors['last_name'] = 'Last name must be 35 characters or fewer.';
         }

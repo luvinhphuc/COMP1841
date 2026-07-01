@@ -12,6 +12,7 @@ $searchValue = (string) ($filters['q'] ?? '');
 $activeModule = (string) ($filters['module'] ?? '');
 $activeSort = (string) ($filters['sort'] ?? '');
 $activeStatus = (string) ($filters['status'] ?? '');
+$hasActiveFilter = $activeModule !== '' || $activeSort !== '' || $activeStatus !== '';
 $discussionCountLabel = $totalDiscussions === 1 ? '1 discussion' : $totalDiscussions . ' discussions';
 $visibleCount = count($feedPosts);
 ?>
@@ -62,7 +63,7 @@ $visibleCount = count($feedPosts);
 
                 <details class="relative w-fit sm:justify-self-end">
                     <summary
-                        class="inline-flex h-12 cursor-pointer list-none items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-medium text-[#2563EB] ring-1 ring-[#60A5FA] transition duration-200 hover:bg-[#EFF6FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] [&::-webkit-details-marker]:hidden"
+                        class="inline-flex h-12 cursor-pointer list-none items-center justify-center gap-2 rounded-full px-4 text-sm font-medium ring-1 transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] [&::-webkit-details-marker]:hidden <?= $hasActiveFilter ? 'bg-[rgb(37,99,235)] text-white ring-[rgb(37,99,235)] hover:bg-[rgb(37,99,235)]' : 'bg-white text-[#2563EB] ring-[#60A5FA] hover:bg-[#EFF6FF]' ?>"
                     >
                         <svg viewBox="0 0 18 18" class="size-4 shrink-0" fill="none" aria-hidden="true">
                             <path d="M3.75 5h10.5M5.75 9h6.5M7.75 13h2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
@@ -125,28 +126,6 @@ $visibleCount = count($feedPosts);
                 </details>
             </form>
 
-            <?php if (!empty($moduleChips)): ?>
-                <div class="mt-4 flex gap-2 overflow-x-auto pb-1" aria-label="Quick module filters">
-                    <a
-                        href="<?= BASE_URL ?>/discussions"
-                        class="inline-flex h-9 shrink-0 items-center rounded-full px-3 text-xs font-semibold transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] <?= $activeModule === '' ? 'bg-[#1E3A8A] text-white' : 'bg-[#EEF2FF] text-[#1E3A8A] hover:bg-[#DBEAFE]' ?>"
-                    >
-                        All
-                    </a>
-                    <?php foreach ($moduleChips as $module): ?>
-                        <a
-                            href="<?= htmlspecialchars((string) ($module['url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
-                            class="inline-flex h-9 max-w-[180px] shrink-0 items-center rounded-full px-3 font-mono text-xs font-semibold transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] <?= !empty($module['active']) ? 'bg-[#1E3A8A] text-white' : 'bg-[#EEF2FF] text-[#1E3A8A] hover:bg-[#DBEAFE]' ?>"
-                            title="<?= htmlspecialchars((string) ($module['name'] ?? $module['code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                            <?= !empty($module['active']) ? 'aria-current="page"' : '' ?>
-                        >
-                            <span class="truncate">
-                                <?= htmlspecialchars((string) ($module['code'] ?? 'MODULE'), ENT_QUOTES, 'UTF-8') ?>
-                            </span>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
         </section>
 
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">

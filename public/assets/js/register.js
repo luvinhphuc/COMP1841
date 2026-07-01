@@ -25,6 +25,14 @@
 		password: 128,
 		confirm_password: 128,
 	};
+	const maxLengthMessages = {
+		first_name: "First name must be 35 characters or fewer.",
+		last_name: "Last name must be 35 characters or fewer.",
+		username: "Username must be 75 characters or fewer.",
+		email: "Email must be 150 characters or fewer.",
+		password: "Password must be 128 characters or fewer.",
+		confirm_password: "Confirm password must be 128 characters or fewer.",
+	};
 
 	const setError = (name, message) => {
 		const error = form.querySelector(`[data-error-for="${name}"]`);
@@ -111,6 +119,78 @@
 		submitButton.textContent =
 			submitButton.dataset.loadingLabel || "Creating account...";
 	};
+
+	const lengthOf = (value) => Array.from(value).length;
+	const limitTo = (value, maxLength) =>
+		Array.from(value).slice(0, maxLength).join("");
+
+	const enforceMaxLength = (event) => {
+		const field = event.currentTarget;
+		const maxLength = maxLengths[field.name];
+
+		if (!maxLength || !event.inputType?.startsWith("insert")) {
+			return;
+		}
+
+		const incomingText = event.data || "";
+		const selectionStart = field.selectionStart ?? field.value.length;
+		const selectionEnd = field.selectionEnd ?? field.value.length;
+		const selectedText = field.value.slice(selectionStart, selectionEnd);
+		const remainingLength =
+			maxLength - (lengthOf(field.value) - lengthOf(selectedText));
+		const nextValue =
+			field.value.slice(0, selectionStart) +
+			incomingText +
+			field.value.slice(selectionEnd);
+
+		if (lengthOf(nextValue) <= maxLength) {
+			if (field.dataset.limitError === "true") {
+				setError(field.name, "");
+				field.dataset.limitError = "false";
+			}
+
+			return;
+		}
+
+		event.preventDefault();
+		field.dataset.limitError = "true";
+		setError(field.name, maxLengthMessages[field.name]);
+
+		if (!incomingText || remainingLength <= 0) {
+			return;
+		}
+
+		const allowedText = limitTo(incomingText, remainingLength);
+		const nextSelectionStart = selectionStart + allowedText.length;
+		field.value =
+			field.value.slice(0, selectionStart) +
+			allowedText +
+			field.value.slice(selectionEnd);
+		field.setSelectionRange(nextSelectionStart, nextSelectionStart);
+	};
+
+	const clearLimitError = (event) => {
+		const field = event.currentTarget;
+
+		if (
+			field.dataset.limitError === "true" &&
+			lengthOf(field.value) < maxLengths[field.name]
+		) {
+			setError(field.name, "");
+			field.dataset.limitError = "false";
+		}
+	};
+
+	fieldNames.forEach((name) => {
+		const field = form.elements[name];
+
+		if (!field || !maxLengths[name]) {
+			return;
+		}
+
+		field.addEventListener("beforeinput", enforceMaxLength);
+		field.addEventListener("input", clearLimitError);
+	});
 
 	form.addEventListener("submit", (event) => {
 		if (form.dataset.submitting === "true") {

@@ -6,56 +6,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
 ?>
 
 <section class="min-h-screen bg-[#F7F8FB] px-4 py-8 [font-family:Inter,ui-sans-serif,system-ui,sans-serif] text-[#111827] sm:px-6 lg:px-10 lg:py-10">
-    <div class="mx-auto grid w-full max-w-[1180px] gap-8 lg:min-h-[720px] lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.8fr)] lg:items-stretch">
-        <section class="relative hidden overflow-hidden rounded-[20px] bg-[#0F172A] p-8 text-white lg:flex lg:flex-col lg:justify-between" aria-label="Greenwich discussion benefits">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(37,99,235,0.35),transparent_32%),linear-gradient(135deg,rgba(30,58,138,0.96),rgba(15,23,42,1))]" aria-hidden="true"></div>
-            <div class="relative">
-                <p class="text-sm font-semibold text-[#BFDBFE]">University coursework discussions</p>
-                <h1 class="mt-5 max-w-xl text-4xl font-semibold leading-tight tracking-[-0.01em]">
-                    Continue the module conversation where you left off.
-                </h1>
-                <p class="mt-4 max-w-lg text-base leading-7 text-[#DBEAFE]">
-                    Sign in to ask focused coursework questions, follow useful replies, and keep your module activity organized.
-                </p>
-            </div>
-
-            <div class="relative my-10 rounded-[20px] bg-white/10 p-5 ring-1 ring-white/15">
-                <div class="grid gap-3">
-                    <div class="rounded-2xl bg-white p-4 text-[#0F172A]">
-                        <div class="flex items-center justify-between gap-4">
-                            <span class="rounded-full bg-[#EEF2FF] px-3 py-1 font-mono text-xs font-semibold text-[#1E3A8A]">COMP1841</span>
-                            <span class="text-xs font-semibold text-[#16A34A]">Solved</span>
-                        </div>
-                        <div class="mt-4 h-3 w-4/5 rounded-full bg-[#D1D5DB]"></div>
-                        <div class="mt-2 h-3 w-3/5 rounded-full bg-[#E5E7EB]"></div>
-                    </div>
-                    <div class="ml-10 rounded-2xl bg-[#DBEAFE] p-4 text-[#1E3A8A]">
-                        <div class="h-3 w-2/3 rounded-full bg-[#93C5FD]"></div>
-                        <div class="mt-2 h-3 w-1/2 rounded-full bg-[#BFDBFE]"></div>
-                    </div>
-                </div>
-            </div>
-
-            <ul class="relative grid gap-3 text-sm font-medium text-[#EFF6FF]">
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Ask coursework questions
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Join module discussions
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Track learning activity
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Receive notifications
-                </li>
-            </ul>
-        </section>
-
+    <div class="mx-auto flex w-full max-w-[520px] justify-center lg:min-h-[720px]">
         <section class="flex items-center">
             <div class="w-full rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-8 lg:p-10">
                 <div class="mb-7">

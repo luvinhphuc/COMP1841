@@ -5,52 +5,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
 ?>
 
 <section class="min-h-screen bg-[#F7F8FB] px-4 py-8 [font-family:Inter,ui-sans-serif,system-ui,sans-serif] text-[#111827] sm:px-6 lg:px-10 lg:py-10">
-    <div class="mx-auto grid w-full max-w-[1240px] gap-8 lg:min-h-[760px] lg:grid-cols-[minmax(0,0.9fr)_minmax(460px,0.95fr)] lg:items-stretch">
-        <section class="relative hidden overflow-hidden rounded-[20px] bg-[#0F172A] p-8 text-white lg:flex lg:flex-col lg:justify-between" aria-label="Greenwich community benefits">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(37,99,235,0.35),transparent_30%),linear-gradient(135deg,rgba(15,23,42,1),rgba(30,58,138,0.96))]" aria-hidden="true"></div>
-            <div class="relative">
-                <p class="text-sm font-semibold text-[#BFDBFE]">Join the academic community</p>
-                <h1 class="mt-5 max-w-xl text-4xl font-semibold leading-tight tracking-[-0.01em]">
-                    Build your coursework profile from the first question.
-                </h1>
-                <p class="mt-4 max-w-lg text-base leading-7 text-[#DBEAFE]">
-                    Create an account with your email to join module conversations and share knowledge with classmates.
-                </p>
-            </div>
-
-            <div class="relative my-10 rounded-[20px] bg-white/10 p-5 ring-1 ring-white/15">
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="rounded-2xl bg-white p-4 text-[#0F172A]">
-                        <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-[#DBEAFE] text-sm font-semibold text-[#1E3A8A]">AL</div>
-                        <div class="mx-auto mt-4 h-2 w-16 rounded-full bg-[#D1D5DB]"></div>
-                    </div>
-                    <div class="rounded-2xl bg-[#DBEAFE] p-4 text-[#1E3A8A]">
-                        <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-white text-sm font-semibold">MP</div>
-                        <div class="mx-auto mt-4 h-2 w-16 rounded-full bg-[#93C5FD]"></div>
-                    </div>
-                    <div class="rounded-2xl bg-white p-4 text-[#0F172A]">
-                        <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-[#EEF2FF] text-sm font-semibold text-[#1E3A8A]">VN</div>
-                        <div class="mx-auto mt-4 h-2 w-16 rounded-full bg-[#D1D5DB]"></div>
-                    </div>
-                </div>
-            </div>
-
-            <ul class="relative grid gap-3 text-sm font-medium text-[#EFF6FF]">
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Join module discussions
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Share knowledge
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="flex size-6 items-center justify-center rounded-full bg-white text-[#1E3A8A]">&#10003;</span>
-                    Build your academic profile
-                </li>
-            </ul>
-        </section>
-
+    <div class="mx-auto flex w-full max-w-[560px] justify-center lg:min-h-[760px]">
         <section class="flex items-center">
             <div class="w-full rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-8 lg:p-10">
                 <div class="mb-7">
