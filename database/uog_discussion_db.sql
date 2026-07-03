@@ -34,7 +34,7 @@ CREATE TABLE `media` (
   PRIMARY KEY (`id`),
   KEY `fk_media_post` (`post_id`),
   CONSTRAINT `fk_media_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +43,7 @@ CREATE TABLE `media` (
 
 LOCK TABLES `media` WRITE;
 /*!40000 ALTER TABLE `media` DISABLE KEYS */;
-INSERT INTO `media` VALUES (1,3,'image','uploads/images/tailwind-error.png','tailwind-error.png','image/png',245760,'2026-06-28 14:50:25'),(2,5,'image','uploads/images/navbar-mockup.jpg','navbar-mockup.jpg','image/jpeg',187420,'2026-06-28 14:50:25');
+INSERT INTO `media` VALUES (1,3,'image','uploads/images/tailwind-error.png','tailwind-error.png','image/png',245760,'2026-06-28 14:50:25'),(2,5,'image','uploads/images/navbar-mockup.jpg','navbar-mockup.jpg','image/jpeg',187420,'2026-06-28 14:50:25'),(3,7,'document','uploads/documents/20260629071211-997e665014862949.sql.txt','uog_discussion_db.sql','text/plain',14890,'2026-06-29 05:12:11');
 /*!40000 ALTER TABLE `media` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,7 +132,7 @@ CREATE TABLE `post_views` (
   KEY `fk_post_views_post` (`post_id`),
   CONSTRAINT `fk_post_views_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_post_views_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,7 +141,7 @@ CREATE TABLE `post_views` (
 
 LOCK TABLES `post_views` WRITE;
 /*!40000 ALTER TABLE `post_views` DISABLE KEYS */;
-INSERT INTO `post_views` VALUES (1,1,2,'2026-06-28 14:50:25'),(2,1,3,'2026-06-28 14:50:25'),(3,2,1,'2026-06-28 14:50:25'),(4,2,3,'2026-06-28 14:50:25'),(5,3,1,'2026-06-28 14:50:25'),(6,3,5,'2026-06-28 14:50:25'),(7,4,1,'2026-06-28 14:50:25'),(8,4,2,'2026-06-28 14:50:25'),(9,5,1,'2026-06-28 14:50:25'),(10,6,3,'2026-06-28 14:50:25');
+INSERT INTO `post_views` VALUES (1,1,2,'2026-06-28 14:50:25'),(2,1,3,'2026-06-28 14:50:25'),(3,2,1,'2026-06-28 14:50:25'),(4,2,3,'2026-06-28 14:50:25'),(5,3,1,'2026-06-28 14:50:25'),(6,3,5,'2026-06-28 14:50:25'),(7,4,1,'2026-06-28 14:50:25'),(8,4,2,'2026-06-28 14:50:25'),(9,5,1,'2026-06-28 14:50:25'),(10,6,3,'2026-06-28 14:50:25'),(11,1,7,'2026-06-29 05:12:11'),(12,1,7,'2026-06-29 05:12:23'),(13,1,7,'2026-06-29 05:12:36'),(14,1,7,'2026-06-29 05:12:56'),(15,1,7,'2026-06-29 05:13:00'),(16,1,7,'2026-06-29 05:13:04'),(17,1,7,'2026-06-29 05:13:08'),(18,1,7,'2026-06-29 05:52:29'),(19,1,7,'2026-06-29 05:58:09'),(20,1,7,'2026-06-29 05:58:17'),(21,1,7,'2026-06-29 05:58:21'),(22,1,7,'2026-06-29 05:58:23'),(23,1,7,'2026-06-29 05:58:52'),(24,1,7,'2026-06-29 06:31:47'),(25,1,7,'2026-06-29 06:35:59'),(26,1,7,'2026-06-29 06:41:38'),(27,1,7,'2026-06-29 06:44:09'),(28,1,7,'2026-06-29 06:44:20'),(29,1,7,'2026-06-29 06:44:33'),(30,1,7,'2026-06-29 06:44:35'),(31,1,7,'2026-06-29 06:46:21'),(32,1,7,'2026-06-29 06:46:30'),(33,1,7,'2026-06-29 06:47:29'),(34,1,7,'2026-06-29 06:47:33'),(35,1,7,'2026-06-29 06:47:39'),(36,1,7,'2026-06-29 06:50:47'),(37,1,7,'2026-06-29 06:50:57'),(38,1,7,'2026-06-29 06:51:04'),(39,1,7,'2026-06-29 06:51:26'),(40,1,7,'2026-06-29 06:52:26'),(41,1,7,'2026-06-29 06:52:30'),(42,1,7,'2026-06-29 06:53:02'),(43,1,7,'2026-06-29 06:53:04'),(44,1,7,'2026-06-29 06:53:22'),(45,1,7,'2026-06-29 06:54:48'),(46,1,7,'2026-06-29 06:55:50'),(47,1,7,'2026-06-29 06:58:09'),(48,1,7,'2026-06-29 06:58:12'),(49,1,7,'2026-06-29 06:59:54'),(50,1,7,'2026-06-29 06:59:57'),(51,1,7,'2026-06-29 07:02:24'),(52,1,7,'2026-06-29 07:04:14'),(53,1,7,'2026-06-29 07:06:22'),(54,1,7,'2026-06-29 07:06:30'),(55,1,7,'2026-06-29 07:06:33'),(56,1,7,'2026-06-29 07:06:39'),(57,1,7,'2026-06-29 07:06:52'),(58,1,7,'2026-06-29 07:07:38'),(59,1,7,'2026-06-29 07:07:40'),(60,1,7,'2026-06-29 07:07:40'),(61,1,7,'2026-06-29 07:07:40'),(62,1,7,'2026-06-29 07:07:41'),(63,1,3,'2026-06-29 09:03:21'),(64,1,3,'2026-06-29 09:03:26'),(65,1,3,'2026-06-29 09:17:48'),(66,1,3,'2026-06-29 09:17:49'),(67,1,3,'2026-06-29 09:27:27'),(68,1,3,'2026-06-29 09:27:32'),(69,1,3,'2026-06-29 09:31:37');
 /*!40000 ALTER TABLE `post_views` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -169,7 +169,7 @@ CREATE TABLE `posts` (
   KEY `fk_posts_module` (`module_id`),
   CONSTRAINT `fk_posts_module` FOREIGN KEY (`module_id`) REFERENCES `modules` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +178,7 @@ CREATE TABLE `posts` (
 
 LOCK TABLES `posts` WRITE;
 /*!40000 ALTER TABLE `posts` DISABLE KEYS */;
-INSERT INTO `posts` VALUES (1,'How to implement MVC routing in PHP?','how-to-implement-mvc-routing-in-php','I am struggling with creating a custom router for my COMP1841 project. Can someone explain the basic structure?','open',1,1,'2026-06-28 14:50:25',NULL,NULL),(2,'Difference between composition and inheritance','difference-between-composition-and-inheritance','Can anyone explain when composition should be used instead of inheritance in OOP?','solved',4,3,'2026-06-28 14:50:25',NULL,NULL),(3,'TailwindCSS not loading after npm build','tailwindcss-not-loading-after-npm-build','My CSS file is generated successfully but the styles are not appearing in the browser.','open',3,1,'2026-06-28 14:50:25',NULL,NULL),(4,'Best way to study Discrete Mathematics','best-way-to-study-discrete-mathematics','Any tips for understanding proofs and logic questions?','open',4,5,'2026-06-28 14:50:25',NULL,NULL),(5,'Responsive navbar design ideas','responsive-navbar-design-ideas','I need inspiration for a responsive navigation menu for DESN2200.','solved',3,4,'2026-06-28 14:50:25',NULL,NULL);
+INSERT INTO `posts` VALUES (1,'How to implement MVC routing in PHP?','how-to-implement-mvc-routing-in-php','I am struggling with creating a custom router for my COMP1841 project. Can someone explain the basic structure?','open',1,1,'2026-06-28 14:50:25',NULL,NULL),(2,'Difference between composition and inheritance','difference-between-composition-and-inheritance','Can anyone explain when composition should be used instead of inheritance in OOP?','solved',4,3,'2026-06-28 14:50:25',NULL,NULL),(3,'TailwindCSS not loading after npm build','tailwindcss-not-loading-after-npm-build','My CSS file is generated successfully but the styles are not appearing in the browser.','open',3,1,'2026-06-28 14:50:25','2026-06-29 09:27:32',NULL),(4,'Best way to study Discrete Mathematics','best-way-to-study-discrete-mathematics','Any tips for understanding proofs and logic questions?','open',4,5,'2026-06-28 14:50:25',NULL,NULL),(5,'Responsive navbar design ideas','responsive-navbar-design-ideas','I need inspiration for a responsive navigation menu for DESN2200.','solved',3,4,'2026-06-28 14:50:25',NULL,NULL),(6,'123123123','123123123','123123123123123123123','open',1,2,'2026-06-29 04:39:48',NULL,NULL),(7,'asd1asdasdasdasd','asd1asdasdasdasd','asdasdasdasdasdasdasddddaaaaaaaaaaaaaaaaaa','open',1,2,'2026-06-29 05:12:11','2026-06-29 05:12:11',NULL);
 /*!40000 ALTER TABLE `posts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,7 +203,7 @@ CREATE TABLE `replies` (
   KEY `fk_replies_user` (`user_id`),
   CONSTRAINT `fk_replies_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_replies_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -212,7 +212,7 @@ CREATE TABLE `replies` (
 
 LOCK TABLES `replies` WRITE;
 /*!40000 ALTER TABLE `replies` DISABLE KEYS */;
-INSERT INTO `replies` VALUES (1,1,5,'Create a front controller using public/index.php and route every request through it.',0,'2026-06-28 14:50:25',NULL,NULL),(2,1,3,'Use .htaccess to redirect requests and map URLs to controllers.',1,'2026-06-28 14:50:25',NULL,NULL),(3,2,5,'Composition is preferred when objects have a HAS-A relationship.',1,'2026-06-28 14:50:25',NULL,NULL),(4,3,2,'Check that app.css is correctly linked and clear the browser cache.',0,'2026-06-28 14:50:25',NULL,NULL),(5,5,5,'Look at university navigation patterns and keep the mobile menu simple.',1,'2026-06-28 14:50:25',NULL,NULL);
+INSERT INTO `replies` VALUES (1,1,5,'Create a front controller using public/index.php and route every request through it.',0,'2026-06-28 14:50:25',NULL,NULL),(2,1,3,'Use .htaccess to redirect requests and map URLs to controllers.',1,'2026-06-28 14:50:25',NULL,NULL),(3,2,5,'Composition is preferred when objects have a HAS-A relationship.',1,'2026-06-28 14:50:25',NULL,NULL),(4,3,2,'Check that app.css is correctly linked and clear the browser cache.',0,'2026-06-28 14:50:25',NULL,NULL),(5,5,5,'Look at university navigation patterns and keep the mobile menu simple.',1,'2026-06-28 14:50:25',NULL,NULL),(6,7,1,'hello 123 123',0,'2026-06-29 05:58:21','2026-06-29 06:35:59','2026-06-29 06:35:59'),(7,3,1,'1ad',0,'2026-06-29 09:17:49','2026-06-29 09:27:32',NULL);
 /*!40000 ALTER TABLE `replies` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -276,7 +276,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Lù','Phúc','lvp9852','lvp9852@gmail.com','$2y$10$AbxFLbzxJXegheULQWa1beWu9kMwIB8qjTqUhtNENPwuY.BQCCIIi',NULL,'student','2026-06-28 14:50:25',NULL),(2,'Linh','Nguyen','linhnguyen','linh.nguyen@gmail.com',NULL,'uploads/avatars/linh-nguyen.png','student','2026-06-28 14:50:25',NULL),(3,'Minh','Tran','minhtran','minh.tran@gmail.com',NULL,'uploads/avatars/minh-tran.png','student','2026-06-28 14:50:25',NULL),(4,'An','Pham','anpham','an.pham@gmail.com',NULL,NULL,'student','2026-06-28 14:50:25',NULL),(5,'Matt','Tutor','matttutor','matt.tutor@gmail.com',NULL,NULL,'tutor','2026-06-28 14:50:25',NULL),(6,'Admin','User','admin','admin@gmail.com',NULL,NULL,'admin','2026-06-28 14:50:25',NULL);
+INSERT INTO `users` VALUES (1,'Lù','Phúc','lvp9852','lvp9852@gre.ac.uk','$2y$10$AbxFLbzxJXegheULQWa1beWu9kMwIB8qjTqUhtNENPwuY.BQCCIIi',NULL,'student','2026-06-28 14:50:25',NULL),(2,'Linh','Nguyen','linhnguyen','linh.nguyen@gre.ac.uk',NULL,'uploads/avatars/linh-nguyen.png','student','2026-06-28 14:50:25',NULL),(3,'Minh','Tran','minhtran','minh.tran@gre.ac.uk',NULL,'uploads/avatars/minh-tran.png','student','2026-06-28 14:50:25',NULL),(4,'An','Pham','anpham','an.pham@gre.ac.uk',NULL,NULL,'student','2026-06-28 14:50:25',NULL),(5,'Matt','Tutor','matttutor','matt.tutor@gre.ac.uk',NULL,NULL,'tutor','2026-06-28 14:50:25',NULL),(6,'Admin','User','admin','admin@gre.ac.uk',NULL,NULL,'admin','2026-06-28 14:50:25',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -289,4 +289,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-29  0:25:17
+-- Dump completed on 2026-07-02 19:46:22

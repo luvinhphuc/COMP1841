@@ -5,10 +5,10 @@ $success = $success ?? null;
 $hasFieldErrors = $hasFieldErrors ?? false;
 ?>
 
-<section class="min-h-screen bg-[#F7F8FB] px-4 py-8 [font-family:Inter,ui-sans-serif,system-ui,sans-serif] text-[#111827] sm:px-6 lg:px-10 lg:py-10">
+<section class="min-h-screen bg-[#F7F8FB] px-4 py-8 font-sans text-[#111827] sm:px-6 lg:px-10 lg:py-10">
     <div class="mx-auto flex w-full max-w-[520px] justify-center lg:min-h-[720px]">
         <section class="flex items-center">
-            <div class="w-full rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-8 lg:p-10">
+            <div class="w-full rounded-xl bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-8 lg:p-10">
                 <div class="mb-7">
                     <p class="text-sm font-semibold text-[#1E3A8A]">Sign in</p>
                     <h2 class="mt-2 text-3xl font-semibold leading-tight tracking-[-0.01em] text-[#0F172A]">
@@ -20,19 +20,19 @@ $hasFieldErrors = $hasFieldErrors ?? false;
                 </div>
 
                 <?php if (!empty($success)): ?>
-                    <div class="mb-5 rounded-2xl bg-[#F0FDF4] p-4 text-sm leading-6 text-[#166534] ring-1 ring-[#BBF7D0]" role="status">
+                    <div class="mb-5 border-y border-[#BBF7D0] bg-[#F0FDF4] py-3 text-sm leading-6 text-[#166534]" role="status">
                         <?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 <?php endif; ?>
 
                 <?php if (!empty($errors['general'])): ?>
-                    <div class="mb-5 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]" role="alert">
+                    <div class="mb-5 border-y border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]" role="alert">
                         <?= htmlspecialchars($errors['general'], ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 <?php endif; ?>
 
                 <p id="login-error-summary"
-                   class="<?= $hasFieldErrors ? 'mb-5 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]' : 'sr-only' ?>"
+                   class="<?= $hasFieldErrors ? 'mb-5 border-y border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]' : 'sr-only' ?>"
                    <?= $hasFieldErrors ? 'role="alert" tabindex="-1"' : '' ?>>
                     <?= $hasFieldErrors ? 'Please fix the highlighted fields and try again.' : '' ?>
                 </p>
@@ -53,7 +53,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
                                aria-describedby="username-error"
                                aria-invalid="<?= !empty($errors['username']) ? 'true' : 'false' ?>"
                                required
-                               class="h-12 w-full min-w-0 rounded-2xl border-0 bg-[#F7F8FB] px-4 text-base text-[#111827] outline-none ring-1 <?= !empty($errors['username']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 placeholder:text-[#4B5563] focus:ring-2">
+                               class="h-12 w-full min-w-0 rounded-lg border-0 bg-[#F7F8FB] px-4 text-base text-[#111827] outline-none ring-1 <?= !empty($errors['username']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 placeholder:text-[#4B5563] focus:ring-2">
                         <p id="username-error"
                            class="mt-2 <?= empty($errors['username']) ? 'hidden' : 'flex' ?> min-w-0 items-start gap-1.5 break-words text-sm leading-5 text-[#B91C1C]"
                            data-error-for="username" aria-live="polite">
@@ -77,7 +77,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
                                aria-describedby="password-error"
                                aria-invalid="<?= !empty($errors['password']) ? 'true' : 'false' ?>"
                                required
-                               class="h-12 w-full min-w-0 rounded-2xl border-0 bg-[#F7F8FB] px-4 text-base text-[#111827] outline-none ring-1 <?= !empty($errors['password']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 placeholder:text-[#4B5563] focus:ring-2">
+                               class="h-12 w-full min-w-0 rounded-lg border-0 bg-[#F7F8FB] px-4 text-base text-[#111827] outline-none ring-1 <?= !empty($errors['password']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 placeholder:text-[#4B5563] focus:ring-2">
                         <p id="password-error"
                            class="mt-2 <?= empty($errors['password']) ? 'hidden' : 'flex' ?> min-w-0 items-start gap-1.5 break-words text-sm leading-5 text-[#B91C1C]"
                            data-error-for="password" aria-live="polite">
@@ -93,7 +93,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
                     <button type="submit"
                             data-submit-label="Sign in"
                             data-loading-label="Signing in..."
-                            class="mt-1 inline-flex min-h-12 min-w-0 items-center justify-center rounded-2xl bg-[#1E3A8A] px-6 py-3 text-center text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] disabled:cursor-not-allowed disabled:bg-[#9CA3AF]">
+                            class="mt-1 inline-flex min-h-12 min-w-0 items-center justify-center rounded-lg bg-[#1E3A8A] px-6 py-3 text-center text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A] disabled:cursor-not-allowed disabled:bg-[#9CA3AF]">
                         Sign in
                     </button>
 

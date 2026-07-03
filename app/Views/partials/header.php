@@ -69,7 +69,7 @@
                                      class="size-full rounded-full object-cover">
                             </button>
 
-                            <div class="invisible absolute right-0 top-[calc(100%+12px)] z-[90] w-64 rounded-lg border border-[#c4c7c7] bg-white p-2 opacity-0 shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition data-[open=true]:visible data-[open=true]:opacity-100"
+                            <div class="invisible absolute right-0 top-[calc(100%+12px)] z-[90] w-64 rounded-lg border border-[#c4c7c7] bg-white p-2 opacity-0 shadow-[0_8px_8px_rgba(15,23,42,0.06)] transition data-[open=true]:visible data-[open=true]:opacity-100"
                                  data-user-menu-dropdown data-open="false">
                                 <div class="border-b border-[#e6e8ec] px-3 py-3">
                                     <p class="text-sm font-semibold leading-5 text-[#191c1f]">

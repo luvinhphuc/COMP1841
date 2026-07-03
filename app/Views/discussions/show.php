@@ -46,11 +46,11 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
 ?>
 
 <section
-    class="box-border min-h-screen bg-[#F7F8FB] px-4 py-8 [font-family:Inter,ui-sans-serif,system-ui,sans-serif] text-[#111827] sm:px-6 lg:px-10 lg:py-10">
+    class="box-border min-h-screen bg-[#F7F8FB] px-4 py-8 font-sans text-[#111827] sm:px-6 lg:px-10 lg:py-10">
     <div class="mx-auto flex max-w-[1180px] flex-col gap-8">
         <header class="max-w-4xl">
             <a href="<?= htmlspecialchars((string) ($discussion['back_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
-                class="inline-flex min-h-10 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold text-[#1E3A8A] ring-1 ring-[#E5E7EB] transition duration-200 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
+                class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-[#1E3A8A] ring-1 ring-[#E5E7EB] transition duration-200 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                 <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none" aria-hidden="true">
                     <path d="M12.5 5 7.5 10l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
                         stroke-linejoin="round" />
@@ -107,7 +107,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
 
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="flex min-w-0 flex-col gap-6">
-                <article class="rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-7"
+                <article class="bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-7"
                     aria-labelledby="question-content-heading">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E7EB] pb-5">
                         <h2 id="question-content-heading" class="text-lg font-semibold text-[#0F172A]">Question</h2>
@@ -255,7 +255,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
 
                 <?php if ($acceptedReply !== null): ?>
                 <section id="reply-<?= htmlspecialchars((string) ($acceptedReply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
-                    class="rounded-[20px] bg-[#F0FDF4] p-5 ring-1 ring-[#BBF7D0] sm:p-6"
+                    class="rounded-xl bg-[#F0FDF4] p-5 ring-1 ring-[#BBF7D0] sm:p-6"
                     aria-labelledby="accepted-answer-heading">
                     <div class="flex items-start gap-4">
                         <span
@@ -299,7 +299,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     <?php if (!empty($threadReplies)): ?>
                     <?php foreach ($threadReplies as $reply): ?>
                     <article id="reply-<?= htmlspecialchars((string) ($reply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
-                        class="grid gap-3 rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB] sm:grid-cols-[44px_minmax(0,1fr)] sm:p-6">
+                        class="grid gap-3 border-t border-[#e6e8ec] bg-white p-5 sm:grid-cols-[44px_minmax(0,1fr)] sm:p-6">
                         <span
                             class="flex size-11 items-center justify-center rounded-full bg-[#DBEAFE] text-sm font-semibold text-[#1E3A8A]"
                             aria-hidden="true">
@@ -331,21 +331,20 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     </article>
                     <?php endforeach; ?>
                     <?php else: ?>
-                    <div class="rounded-[20px] border border-dashed border-[#CBD5E1] bg-white p-6">
+                    <div class="border-y border-dashed border-[#CBD5E1] bg-white py-6">
                         <h3 class="font-semibold text-[#0F172A]">No replies yet</h3>
-                        <p class="mt-2 text-sm leading-6 text-[#4B5563]">Be the first to share a useful direction,
-                            reference, or clarification.</p>
+                        <p class="mt-2 text-sm leading-6 text-[#4B5563]">Be the first to share a useful direction or resource.</p>
                     </div>
                     <?php endif; ?>
                 </section>
 
-                <section id="reply-editor" class="rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-6"
+                <section id="reply-editor" class="border-y border-[#e6e8ec] bg-white p-5 sm:p-6"
                     aria-labelledby="reply-editor-heading">
                     <?php if ($isLoggedIn): ?>
                     <h2 id="reply-editor-heading" class="text-lg font-semibold text-[#0F172A]">Add a reply</h2>
 
                     <?php if (!empty($replyErrors['general'])): ?>
-                    <div class="mt-4 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]"
+                    <div class="mt-4 border-y border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]"
                         role="alert">
                         <?= htmlspecialchars((string) $replyErrors['general'], ENT_QUOTES, 'UTF-8') ?>
                     </div>
@@ -363,7 +362,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                             <textarea id="reply-content" name="content" rows="6" maxlength="5000" required
                                 aria-describedby="reply-content-error"
                                 aria-invalid="<?= !empty($replyErrors['content']) ? 'true' : 'false' ?>"
-                                class="min-h-36 w-full resize-y rounded-2xl border-0 bg-[#F7F8FB] px-4 py-3 text-base leading-7 text-[#111827] outline-none ring-1 <?= !empty($replyErrors['content']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 focus:ring-2"
+                                class="min-h-36 w-full resize-y rounded-lg border-0 bg-[#F7F8FB] px-4 py-3 text-base leading-7 text-[#111827] outline-none ring-1 <?= !empty($replyErrors['content']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 focus:ring-2"
                                 placeholder="Share a clear explanation, useful resource, or next step."><?= htmlspecialchars((string) ($replyOld['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                             <p id="reply-content-error"
                                 class="mt-2 <?= empty($replyErrors['content']) ? 'hidden' : 'block' ?> text-sm leading-5 text-[#B91C1C]"
@@ -372,7 +371,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                             </p>
                         </div>
                         <button type="submit"
-                            class="inline-flex min-h-12 w-fit items-center justify-center rounded-2xl bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
+                            class="inline-flex min-h-12 w-fit items-center justify-center rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                             Post reply
                         </button>
                     </form>
@@ -385,7 +384,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                                 activity, and keep your coursework conversations organized.</p>
                         </div>
                         <a href="<?= BASE_URL ?>/login"
-                            class="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
+                            class="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                             Log in
                         </a>
                     </div>
@@ -393,8 +392,8 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                 </section>
             </div>
 
-            <aside class="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start" aria-label="Discussion sidebar">
-                <section class="rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB]"
+            <aside class="flex flex-col border-[#e6e8ec] lg:sticky lg:top-28 lg:self-start lg:border-l lg:pl-8" aria-label="Discussion sidebar">
+                <section class="border-b border-[#e6e8ec] pb-5"
                     aria-labelledby="about-discussion-heading">
                     <h2 id="about-discussion-heading" class="text-base font-semibold text-[#0F172A]">About this
                         discussion</h2>
@@ -418,7 +417,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     </dl>
                 </section>
 
-                <section class="rounded-[20px] bg-white p-5 ring-1 ring-[#E5E7EB]"
+                <section class="pt-5"
                     aria-labelledby="related-discussions-heading">
                     <h2 id="related-discussions-heading" class="text-base font-semibold text-[#0F172A]">Related
                         discussions</h2>
@@ -426,7 +425,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         <?php if (!empty($relatedDiscussions)): ?>
                         <?php foreach ($relatedDiscussions as $related): ?>
                         <a href="<?= htmlspecialchars((string) ($related['url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
-                            class="block rounded-2xl transition duration-200 hover:text-[#1E3A8A] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
+                            class="block rounded-md transition duration-200 hover:text-[#1E3A8A] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                             <span class="block text-sm font-semibold leading-5 text-[#111827] [overflow-wrap:anywhere]"
                                 dir="auto">
                                 <?= htmlspecialchars((string) ($related['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
@@ -438,8 +437,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         </a>
                         <?php endforeach; ?>
                         <?php else: ?>
-                        <p class="text-sm leading-6 text-[#4B5563]">Similar questions will appear as more discussions
-                            become active.</p>
+                        <p class="text-sm leading-6 text-[#4B5563]">Similar questions will appear as more discussions become active.</p>
                         <?php endif; ?>
                     </div>
                 </section>
