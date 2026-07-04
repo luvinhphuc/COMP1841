@@ -76,19 +76,19 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                 </span>
             </div>
 
-            <h1 class="mt-4 text-3xl font-semibold leading-tight tracking-[-0.01em] text-[#0F172A] [overflow-wrap:anywhere] sm:text-5xl"
+            <h1 class="mt-4 text-3xl font-semibold text-[#0F172A] sm:text-5xl"
                 dir="auto">
                 <?= htmlspecialchars((string) ($discussion['title'] ?? 'Untitled question'), ENT_QUOTES, 'UTF-8') ?>
             </h1>
 
-            <div class="mt-5 flex flex-wrap items-center gap-4 text-sm leading-6 text-[#4B5563]">
+            <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#4B5563]">
                 <span class="inline-flex min-w-0 items-center gap-3">
                     <span
                         class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-semibold text-white"
                         aria-hidden="true">
                         <?= htmlspecialchars((string) ($discussion['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
                     </span>
-                    <span class="min-w-0 [overflow-wrap:anywhere]" dir="auto">
+                    <span class="min-w-0 ">
                         <span class="font-semibold text-[#111827]">
                             <?= htmlspecialchars((string) ($discussion['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
                         </span>
@@ -98,18 +98,15 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         <?php endif; ?>
                     </span>
                 </span>
-                <span><?= htmlspecialchars((string) ($discussion['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?></span>
-                <span><?= htmlspecialchars((string) ($discussion['views'] ?? '0'), ENT_QUOTES, 'UTF-8') ?> views</span>
-                <span><?= htmlspecialchars((string) $replyCount, ENT_QUOTES, 'UTF-8') ?>
-                    <?= $replyCount === 1 ? 'reply' : 'replies' ?></span>
+                <span><?= htmlspecialchars((string) ($discussion['created_at'] ?? 'Nơ'), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </header>
 
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="flex min-w-0 flex-col gap-6">
-                <article class="bg-white p-5 ring-1 ring-[#E5E7EB] sm:p-7"
+                <article class="bg-white p-5 rounded-2xl sm:p-7 border border-gray-200"
                     aria-labelledby="question-content-heading">
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E7EB] pb-5">
+                    <div class="flex justify-between pb-5 border-b border-gray-200">
                         <h2 id="question-content-heading" class="text-lg font-semibold text-[#0F172A]">Question</h2>
                         <div class="relative" data-action-menu>
                             <button type="button"
@@ -121,7 +118,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                                         stroke-linecap="round" />
                                 </svg>
                             </button>
-
+                            <!-- Post actions -->
                             <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
                                 role="menu" data-action-menu-dropdown data-open="false">
                                 <?php if (!empty($discussion['can_edit'])): ?>
@@ -185,7 +182,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         </div>
                     </div>
 
-                    <div class="mt-6 max-w-[72ch] whitespace-pre-line text-base leading-8 text-[#111827] [overflow-wrap:anywhere]"
+                    <div class="pt-5 max-w-[72ch] whitespace-pre-line text-base leading-8 text-[#111827]"
                         dir="auto"><?= htmlspecialchars((string) ($discussion['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
 
                     <?php if (!empty($attachments)): ?>

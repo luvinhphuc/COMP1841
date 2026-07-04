@@ -33,18 +33,6 @@
                     </a>
                 </div>
 
-                <form
-                        class="relative hidden h-[52px] min-w-0 flex-1 items-center rounded-full border border-[#d8dbe2] bg-[#f5f6fa] px-5 transition-opacity duration-200 group-data-[menu-open=true]:pointer-events-none group-data-[menu-open=true]:opacity-0 md:flex"
-                        role="search" action="<?= BASE_URL ?>/discussions" method="get">
-                    <label class="sr-only" for="site-search">Search coursework questions</label>
-                    <svg viewBox="0 0 18 18" class="mr-4 size-5 shrink-0 text-[#6b7280]" fill="none" aria-hidden="true">
-                        <circle cx="8" cy="8" r="5.75" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="m12.25 12.25 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    <input id="site-search" name="q" type="search" placeholder="Search coursework questions..."
-                           class="min-w-0 flex-1 bg-transparent text-base text-[#5f6368] outline-none placeholder:text-[#5f6368]">
-                </form>
-
                 <div class="ml-auto hidden shrink-0 items-center gap-3 transition-opacity duration-200 group-data-[menu-open=true]:pointer-events-none group-data-[menu-open=true]:opacity-0 sm:flex">
                     <?php if ($isLoggedIn): ?>
                         <button type="button"
