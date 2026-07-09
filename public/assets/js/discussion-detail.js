@@ -2,9 +2,15 @@
     const actionMenus = Array.from(document.querySelectorAll('[data-action-menu]'));
     const shareButton = document.querySelector('[data-share-discussion]');
     const modals = Array.from(document.querySelectorAll('[data-modal]'));
+    const replyTargets = Array.from(document.querySelectorAll('[data-reply-target]'));
+    const replyParentInput = document.querySelector('#reply-parent-id');
+    const replyParentPreview = document.querySelector('[data-reply-parent-preview]');
+    const replyingToUsername = document.querySelector('[data-replying-to-username]');
+    const replyTextarea = document.querySelector('#reply-content');
+    const replyEditor = document.querySelector('#reply-editor');
     let lastModalTrigger = null;
 
-    if (!shareButton && actionMenus.length === 0 && modals.length === 0) {
+    if (!shareButton && actionMenus.length === 0 && modals.length === 0 && replyTargets.length === 0) {
         return;
     }
 
@@ -65,6 +71,50 @@
         modal.close();
     };
 
+    const clearReplyTarget = () => {
+        if (replyParentInput) {
+            replyParentInput.value = '';
+        }
+
+        if (replyingToUsername) {
+            replyingToUsername.textContent = '';
+        }
+
+        if (replyParentPreview) {
+            replyParentPreview.classList.add('hidden');
+            replyParentPreview.classList.remove('flex');
+        }
+    };
+
+    const setReplyTarget = (trigger) => {
+        if (!replyParentInput || !replyParentPreview || !replyingToUsername) {
+            return;
+        }
+
+        const replyId = trigger.dataset.replyId || '';
+        const username = trigger.dataset.replyUsername || '';
+
+        if (!replyId || !username) {
+            clearReplyTarget();
+            return;
+        }
+
+        replyParentInput.value = replyId;
+        replyingToUsername.textContent = username;
+        replyParentPreview.classList.remove('hidden');
+        replyParentPreview.classList.add('flex');
+
+        if (replyEditor) {
+            replyEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (replyTextarea) {
+            window.requestAnimationFrame(() => {
+                replyTextarea.focus({ preventScroll: true });
+            });
+        }
+    };
+
     actionMenus.forEach((menu) => {
         const button = menu.querySelector('[data-action-menu-button]');
         const dropdown = menu.querySelector('[data-action-menu-dropdown]');
@@ -110,6 +160,22 @@
         const target = event.target;
 
         if (!(target instanceof Element)) {
+            return;
+        }
+
+        const replyTarget = target.closest('[data-reply-target]');
+
+        if (replyTarget instanceof HTMLElement) {
+            event.preventDefault();
+            setReplyTarget(replyTarget);
+            return;
+        }
+
+        const clearReplyTargetButton = target.closest('[data-clear-reply-target]');
+
+        if (clearReplyTargetButton) {
+            event.preventDefault();
+            clearReplyTarget();
             return;
         }
 

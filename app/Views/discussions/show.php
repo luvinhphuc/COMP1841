@@ -1,23 +1,30 @@
 <?php
-$discussion = $discussion ?? [];
-$replies = $replies ?? [];
-$relatedDiscussions = $relatedDiscussions ?? [];
-$replyErrors = $replyErrors ?? [];
-$replyOld = $replyOld ?? [];
-$statusTone = (string) ($discussion['status_tone'] ?? 'neutral');
-$replyCount = (int) ($discussion['replies'] ?? count($replies));
-$attachments = $discussion['attachments'] ?? [];
-$isLoggedIn = $isLoggedIn ?? false;
-$modules = $modules ?? [];
-$discussionEditErrors = $discussionEditErrors ?? [];
-$discussionEditOld = $discussionEditOld ?? [];
-$replyEditErrors = $replyEditErrors ?? [];
-$replyEditOld = $replyEditOld ?? [];
-$activeReplyEditId = (int) ($activeReplyEditId ?? 0);
-$openModalId = (string) ($openModalId ?? '');
-$acceptedReply = null;
-$threadReplies = [];
-$modalReplies = [];
+/**
+ * Variables passed from DiscussionsController::show()
+ *
+ * @var array $discussion
+ * @var array $replies
+ * @var array|null $acceptedReply
+ * @var array $modalReplies
+ * @var array $attachments
+ * @var array $relatedDiscussions
+ * @var array $replyErrors
+ * @var array $replyOld
+ * @var array $modules
+ * @var array $discussionEditErrors
+ * @var array $discussionEditOld
+ * @var string $discussionEditTitle
+ * @var int|string $discussionEditModuleId
+ * @var string $discussionEditContent
+ * @var array $replyEditErrors
+ * @var array $replyEditOld
+ * @var int $activeReplyEditId
+ * @var string $openModalId
+ * @var string $statusTone
+ * @var int $replyCount
+ * @var bool $isLoggedIn
+ * @var string $csrfToken
+ */
 
 $fieldError = static function (array $errors, string $field) {
     return trim((string) ($errors[$field] ?? ''));
@@ -28,28 +35,12 @@ $fieldRing = static function (array $errors, string $field) {
         ? 'ring-[#DC2626] focus:ring-[#DC2626]/40'
         : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30';
 };
-
-foreach ($replies as $reply) {
-    $modalReplies[] = $reply;
-
-    if (!empty($reply['is_accepted']) && $acceptedReply === null) {
-        $acceptedReply = $reply;
-        continue;
-    }
-
-    $threadReplies[] = $reply;
-}
-
-$discussionEditTitle = (string) ($discussionEditOld['title'] ?? $discussion['title'] ?? '');
-$discussionEditModuleId = (string) ($discussionEditOld['module_id'] ?? $discussion['module_id'] ?? '');
-$discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion['content'] ?? '');
 ?>
 
-<section
-    class="box-border min-h-screen bg-[#F7F8FB] px-4 py-8 font-sans text-[#111827] sm:px-6 lg:px-10 lg:py-10">
+<section class="box-border min-h-screen bg-[#F7F8FB] px-4 py-8 font-sans text-[#111827] sm:px-6 lg:px-10 lg:py-10">
     <div class="mx-auto flex max-w-[1180px] flex-col gap-8">
         <header class="max-w-4xl">
-            <a href="<?= htmlspecialchars((string) ($discussion['back_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
+            <a href="<?= htmlspecialchars(($discussion['back_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
                 class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-[#1E3A8A] ring-1 ring-[#E5E7EB] transition duration-200 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                 <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none" aria-hidden="true">
                     <path d="M12.5 5 7.5 10l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
@@ -59,10 +50,10 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
             </a>
 
             <div class="mt-6 flex flex-wrap gap-2">
-                <a href="<?= htmlspecialchars((string) ($discussion['module_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
+                <a href="<?= htmlspecialchars(($discussion['module_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
                     class="inline-flex max-w-full items-center rounded-full bg-[#EEF2FF] px-3 py-1 font-mono text-xs font-semibold text-[#1E3A8A] transition duration-200 hover:bg-[#DBEAFE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                     <span
-                        class="truncate"><?= htmlspecialchars((string) ($discussion['module'] ?? 'MODULE'), ENT_QUOTES, 'UTF-8') ?></span>
+                        class="truncate"><?= htmlspecialchars(($discussion['module'] ?? 'MODULE'), ENT_QUOTES, 'UTF-8') ?></span>
                 </a>
                 <span
                     class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold <?= $statusTone === 'green' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F3F4F6] text-[#374151]' ?>">
@@ -72,13 +63,12 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                             stroke-linejoin="round" />
                     </svg>
                     <?php endif; ?>
-                    <?= htmlspecialchars((string) ($discussion['status'] ?? 'Open'), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars(($discussion['status'] ?? 'Open'), ENT_QUOTES, 'UTF-8') ?>
                 </span>
             </div>
 
-            <h1 class="mt-4 text-3xl font-semibold text-[#0F172A] sm:text-5xl"
-                dir="auto">
-                <?= htmlspecialchars((string) ($discussion['title'] ?? 'Untitled question'), ENT_QUOTES, 'UTF-8') ?>
+            <h1 class="mt-4 text-3xl font-semibold text-[#0F172A] sm:text-5xl" dir="auto">
+                <?= htmlspecialchars(($discussion['title'] ?? 'Untitled question'), ENT_QUOTES, 'UTF-8') ?>
             </h1>
 
             <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#4B5563]">
@@ -86,19 +76,19 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     <span
                         class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-semibold text-white"
                         aria-hidden="true">
-                        <?= htmlspecialchars((string) ($discussion['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars(($discussion['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
                     </span>
                     <span class="min-w-0 ">
                         <span class="font-semibold text-[#111827]">
-                            <?= htmlspecialchars((string) ($discussion['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars(($discussion['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
                         </span>
                         <?php if (!empty($discussion['author_handle'])): ?>
                         <span
-                            class="ml-1"><?= htmlspecialchars((string) $discussion['author_handle'], ENT_QUOTES, 'UTF-8') ?></span>
+                            class="ml-1"><?= htmlspecialchars($discussion['author_handle'], ENT_QUOTES, 'UTF-8') ?></span>
                         <?php endif; ?>
                     </span>
                 </span>
-                <span><?= htmlspecialchars((string) ($discussion['created_at'] ?? 'Nơ'), ENT_QUOTES, 'UTF-8') ?></span>
+                <span><?= htmlspecialchars(($discussion['created_at'] ?? 'Nơ'), ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </header>
 
@@ -122,7 +112,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                             <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
                                 role="menu" data-action-menu-dropdown data-open="false">
                                 <?php if (!empty($discussion['can_edit'])): ?>
-                                <a href="<?= htmlspecialchars((string) ($discussion['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                <a href="<?= htmlspecialchars(($discussion['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                                     data-open-modal="discussion-edit-modal"
                                     class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1E3A8A]"
                                     role="menuitem">
@@ -137,7 +127,7 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                                 </a>
                                 <?php endif; ?>
                                 <?php if (!empty($discussion['can_delete'])): ?>
-                                <a href="<?= htmlspecialchars((string) ($discussion['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                <a href="<?= htmlspecialchars(($discussion['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                                     data-open-modal="discussion-delete-modal"
                                     class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#B91C1C] transition duration-150 hover:bg-[#FEF2F2] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#B91C1C]"
                                     role="menuitem">
@@ -182,20 +172,40 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         </div>
                     </div>
 
-                    <div class="pt-5 max-w-[72ch] whitespace-pre-line text-base leading-8 text-[#111827]"
-                        dir="auto"><?= htmlspecialchars((string) ($discussion['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
-
+                    <?php
+                        $contentSegments = $discussion['content_segments'] ?? [
+                            [
+                                'type' => 'text',
+                                'content' => ($discussion['content'] ?? ''),
+                            ],
+                        ];
+                    ?>
+                    <div class="grid gap-4 pt-5 text-base leading-7 text-[#111827]">
+                        <?php foreach ($contentSegments as $contentSegment): ?>
+                        <?php
+                            $segmentType = ($contentSegment['type'] ?? 'text');
+                            $rawSegmentContent = ($contentSegment['content'] ?? '');
+                            $segmentContent = is_scalar($rawSegmentContent) ? $rawSegmentContent . '' : '';
+                        ?>
+                        <?php if (trim((string) $segmentContent) !== ''): ?>
+                        <?php if ($segmentType === 'code'): ?>
+                        <pre class="overflow-x-auto rounded-xl bg-[#0F172A] px-4 py-3 text-sm leading-6 text-[#E5E7EB]"><code><?= htmlspecialchars($segmentContent, ENT_QUOTES, 'UTF-8') ?></code></pre>
+                        <?php else: ?>
+                        <p><?= htmlspecialchars($segmentContent, ENT_QUOTES, 'UTF-8') ?></p>
+                        <?php endif; ?>
+                        <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
                     <?php if (!empty($attachments)): ?>
-                    <section class="mt-8 border-t border-[#E5E7EB] pt-6"
-                        aria-labelledby="discussion-attachments-heading">
-                        <h2 id="discussion-attachments-heading" class="text-base font-semibold text-[#0F172A]">
-                            Attachments</h2>
+                    <section class="" aria-labelledby="discussion-attachments-heading">
+                        <!-- <h2 id="discussion-attachments-heading" class="text-base font-semibold text-[#0F172A]">
+                                        Attachments</h2> -->
                         <div class="mt-4 grid gap-4">
                             <?php foreach ($attachments as $attachment): ?>
                             <?php
-                                    $attachmentType = (string) ($attachment['type'] ?? 'document');
-                                    $attachmentUrl = (string) ($attachment['url'] ?? '#');
-                                    $attachmentName = (string) ($attachment['name'] ?? 'Attachment');
+                                    $attachmentType = ($attachment['type'] ?? 'document');
+                                    $attachmentUrl = ($attachment['url'] ?? '#');
+                                    $attachmentName = ($attachment['name'] ?? 'Attachment');
                                     ?>
 
                             <?php if ($attachmentType === 'image'): ?>
@@ -203,28 +213,28 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                                 <img src="<?= htmlspecialchars($attachmentUrl, ENT_QUOTES, 'UTF-8') ?>"
                                     alt="<?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>"
                                     class="max-h-[520px] w-full object-contain">
-                                <figcaption
-                                    class="border-t border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-5 text-[#4B5563] [overflow-wrap:anywhere]">
+                                <!-- <figcaption
+                                    class="border-t border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-5 text-[#4B5563] ">
                                     <?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>
                                     <?php if (!empty($attachment['size'])): ?>
                                     <span class="ml-1">&middot;
-                                        <?= htmlspecialchars((string) $attachment['size'], ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?= htmlspecialchars($attachment['size'], ENT_QUOTES, 'UTF-8') ?></span>
                                     <?php endif; ?>
-                                </figcaption>
+                                </figcaption> -->
                             </figure>
                             <?php elseif ($attachmentType === 'video'): ?>
                             <figure class="overflow-hidden rounded-2xl bg-black ring-1 ring-[#E5E7EB]">
                                 <video controls preload="metadata" class="max-h-[520px] w-full">
                                     <source src="<?= htmlspecialchars($attachmentUrl, ENT_QUOTES, 'UTF-8') ?>"
-                                        type="<?= htmlspecialchars((string) ($attachment['mime_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                        type="<?= htmlspecialchars(($attachment['mime_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                                     Your browser cannot play this video.
                                 </video>
                                 <figcaption
-                                    class="border-t border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-5 text-[#4B5563] [overflow-wrap:anywhere]">
+                                    class="border-t border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-5 text-[#4B5563] ">
                                     <?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>
                                     <?php if (!empty($attachment['size'])): ?>
                                     <span class="ml-1">&middot;
-                                        <?= htmlspecialchars((string) $attachment['size'], ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?= htmlspecialchars($attachment['size'], ENT_QUOTES, 'UTF-8') ?></span>
                                     <?php endif; ?>
                                 </figcaption>
                             </figure>
@@ -233,12 +243,11 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                                 class="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#F7F8FB] px-4 py-3 ring-1 ring-[#E5E7EB] transition duration-200 hover:ring-[#2563EB] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
                                 target="_blank" rel="noopener">
                                 <span class="min-w-0">
-                                    <span
-                                        class="block text-sm font-semibold leading-5 text-[#111827] [overflow-wrap:anywhere]">
+                                    <span class="block text-sm font-semibold leading-5 text-[#111827] ">
                                         <?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                     <span class="mt-1 block text-xs leading-4 text-[#4B5563]">
-                                        <?= htmlspecialchars((string) ($attachment['size'] ?? 'Document'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars(($attachment['size'] ?? 'Document'), ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </span>
                                 <span class="shrink-0 text-sm font-semibold text-[#1E3A8A]">Open file</span>
@@ -251,7 +260,19 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                 </article>
 
                 <?php if ($acceptedReply !== null): ?>
-                <section id="reply-<?= htmlspecialchars((string) ($acceptedReply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
+                <?php
+                    $acceptedReplyId = (int) ($acceptedReply['id'] ?? 0);
+                    $acceptedReplyDomId = htmlspecialchars($acceptedReplyId, ENT_QUOTES, 'UTF-8');
+                    $canEditAcceptedReply = !empty($acceptedReply['can_edit']);
+                    $canDeleteAcceptedReply = !empty($acceptedReply['can_delete']);
+                    $acceptedReplyParentUsername = trim((string) ($acceptedReply['parent_author_username'] ?? ''));
+                    $acceptedReplyTargetUsername = trim((string) ($acceptedReply['author_username'] ?? ''));
+
+                    if ($acceptedReplyTargetUsername === '') {
+                        $acceptedReplyTargetUsername = ltrim(trim((string) ($acceptedReply['author_handle'] ?? 'student')), '@');
+                    }
+                ?>
+                <section id="reply-<?= htmlspecialchars(($acceptedReply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
                     class="rounded-xl bg-[#F0FDF4] p-5 ring-1 ring-[#BBF7D0] sm:p-6"
                     aria-labelledby="accepted-answer-heading">
                     <div class="flex items-start gap-4">
@@ -265,140 +286,304 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         </span>
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-start justify-between gap-3">
-                                <h2 id="accepted-answer-heading" class="text-lg font-semibold text-[#14532D]">Accepted
+                                <h2 id="accepted-answer-heading" class="text-lg font-semibold text-[#14532D]">
+                                    Accepted
                                     answer</h2>
-                                <?php
-                                $replyAction = $acceptedReply;
-                                $replyActionTone = 'accepted';
-                                include __DIR__ . '/reply_actions.php';
-                                ?>
+                                <?php if ($canEditAcceptedReply || $canDeleteAcceptedReply): ?>
+                                <div class="relative" data-action-menu>
+                                    <button type="button"
+                                        class="inline-flex size-8 items-center justify-center rounded-full text-[#14532D] transition duration-150 hover:bg-white/80 hover:text-[#166534] aria-expanded:-translate-y-0.5 aria-expanded:bg-white aria-expanded:text-[#166534] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#166534]"
+                                        aria-label="Open reply actions" aria-haspopup="menu" aria-expanded="false"
+                                        data-action-menu-button>
+                                        <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
+                                            <path d="M5.2 10h.01M10 10h.01M14.8 10h.01" stroke="currentColor"
+                                                stroke-width="2.4" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+
+                                    <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
+                                        role="menu" data-action-menu-dropdown data-open="false">
+                                        <?php if ($canEditAcceptedReply): ?>
+                                        <a href="<?= htmlspecialchars(($acceptedReply['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                            data-open-modal="reply-edit-modal-<?= $acceptedReplyDomId ?>"
+                                            class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#14532D] transition duration-150 hover:bg-[#F0FDF4] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#166534]"
+                                            role="menuitem">
+                                            <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none"
+                                                aria-hidden="true">
+                                                <path
+                                                    d="M4.5 14.7 5.3 11l7.8-7.8a1.8 1.8 0 0 1 2.5 2.5L7.8 13.5l-3.3 1.2Z"
+                                                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                                <path d="m11.8 4.5 3.1 3.1" stroke="currentColor" stroke-width="1.6"
+                                                    stroke-linecap="round" />
+                                            </svg>
+                                            <span>Edit</span>
+                                        </a>
+                                        <?php endif; ?>
+
+                                        <?php if ($canDeleteAcceptedReply): ?>
+                                        <div
+                                            class="<?= $canEditAcceptedReply ? 'mt-1 border-t border-[#E5E7EB] pt-1' : '' ?>">
+                                            <a href="<?= htmlspecialchars(($acceptedReply['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                                data-open-modal="reply-delete-modal-<?= $acceptedReplyDomId ?>"
+                                                class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#B91C1C] transition duration-150 hover:bg-[#FEF2F2] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#B91C1C]"
+                                                role="menuitem">
+                                                <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none"
+                                                    aria-hidden="true">
+                                                    <path d="M4.5 6h11" stroke="currentColor" stroke-width="1.6"
+                                                        stroke-linecap="round" />
+                                                    <path
+                                                        d="M8.2 4h3.6M6 6l.6 9.2A1.8 1.8 0 0 0 8.4 17h3.2a1.8 1.8 0 0 0 1.8-1.8L14 6"
+                                                        stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                                <span>Delete</span>
+                                            </a>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                             </div>
-                            <p class="mt-2 whitespace-pre-line text-base leading-7 text-[#14532D] [overflow-wrap:anywhere]"
-                                dir="auto"><?= htmlspecialchars((string) ($acceptedReply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <?php if ($acceptedReplyParentUsername !== ''): ?>
+                            <p class="mb-2 text-xs font-semibold text-[#64748B]">
+                                Replying to @<?= htmlspecialchars($acceptedReplyParentUsername, ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+                            <?php endif; ?>
+                            <p class="mt-2 text-base text-[#14532D] " dir="auto">
+                                <?= htmlspecialchars(($acceptedReply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+                            <?php if ($isLoggedIn && $acceptedReplyId > 0 && $acceptedReplyTargetUsername !== ''): ?>
+                            <button type="button"
+                                class="mt-3 inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-semibold text-[#166534] transition duration-150 hover:bg-white/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#166534]"
+                                data-reply-target
+                                data-reply-id="<?= htmlspecialchars($acceptedReplyId, ENT_QUOTES, 'UTF-8') ?>"
+                                data-reply-username="<?= htmlspecialchars($acceptedReplyTargetUsername, ENT_QUOTES, 'UTF-8') ?>">
+                                Reply
+                            </button>
+                            <?php endif; ?>
                             <p class="mt-4 text-sm font-medium text-[#166534]">
-                                <?= htmlspecialchars((string) ($acceptedReply['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars(($acceptedReply['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
                                 &middot;
-                                <?= htmlspecialchars((string) ($acceptedReply['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars(($acceptedReply['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
                             </p>
                         </div>
                     </div>
                 </section>
                 <?php endif; ?>
 
+                <!-- REPLY -->
+
                 <section class="flex flex-col gap-4" id="replies" aria-labelledby="replies-heading">
                     <div class="flex items-center justify-between gap-3">
                         <h2 id="replies-heading" class="text-xl font-semibold text-[#0F172A]">Replies</h2>
                         <span
-                            class="text-sm font-medium text-[#4B5563]"><?= htmlspecialchars((string) $replyCount, ENT_QUOTES, 'UTF-8') ?>
+                            class="text-sm font-medium text-[#4B5563]"><?= htmlspecialchars($replyCount, ENT_QUOTES, 'UTF-8') ?>
                             total</span>
                     </div>
 
+                    <section id="reply-editor" class="rounded-2xl border border-[#e6e8ec] bg-white p-5 sm:p-6"
+                        aria-labelledby="reply-editor-heading">
+                        <?php if ($isLoggedIn): ?>
+                        <h2 id="reply-editor-heading" class="text-lg font-semibold text-[#0F172A]">Add a reply</h2>
+
+                        <?php if (!empty($replyErrors['general'])): ?>
+                        <div class="mt-4 rounded-2xl border border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]"
+                            role="alert">
+                            <?= htmlspecialchars($replyErrors['general'], ENT_QUOTES, 'UTF-8') ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <form action="<?= BASE_URL ?>/discussions/reply" method="post" class="mt-4 grid gap-3">
+                            <input type="hidden" name="_csrf_token"
+                                value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="post_id"
+                                value="<?= htmlspecialchars(($discussion['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>">
+                            <input id="reply-parent-id" type="hidden" name="parent_reply_id" value="">
+                            <input type="hidden" name="slug"
+                                value="<?= htmlspecialchars(($discussion['slug'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                            <div id="reply-parent-preview"
+                                class="hidden items-center justify-between gap-3 rounded-lg bg-[#EEF2FF] px-4 py-3 text-sm text-[#1E3A8A]"
+                                data-reply-parent-preview>
+                                <span class="font-semibold">Replying to @<span data-replying-to-username></span></span>
+                                <button type="button"
+                                    class="inline-flex min-h-8 items-center rounded-md px-2 text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                                    data-clear-reply-target>
+                                    Cancel
+                                </button>
+                            </div>
+                            <div>
+                                <label for="reply-content" class="sr-only">Reply content</label>
+                                <textarea id="reply-content" name="content" rows="6" maxlength="5000" required
+                                    aria-describedby="reply-content-error"
+                                    aria-invalid="<?= !empty($replyErrors['content']) ? 'true' : 'false' ?>"
+                                    class="min-h-24 w-full resize-y rounded-lg border-0 bg-[#F7F8FB] px-4 py-3 text-base leading-7 text-[#111827] outline-none ring-1 <?= !empty($replyErrors['content']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 focus:ring-2"
+                                    placeholder="Share a clear explanation, useful resource, or next step."><?= htmlspecialchars(($replyOld['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                                <p id="reply-content-error"
+                                    class="mt-2 <?= empty($replyErrors['content']) ? 'hidden' : 'block' ?> text-sm leading-5 text-[#B91C1C]"
+                                    aria-live="polite">
+                                    <?= htmlspecialchars(($replyErrors['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                </p>
+                            </div>
+                            <button type="submit"
+                                class="inline-flex items-center min-h-12 w-fit rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
+                                Post reply
+                            </button>
+                        </form>
+                        <?php else: ?>
+                        <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                            <div>
+                                <h2 id="reply-editor-heading" class="text-xl font-semibold text-[#0F172A]">Log in to
+                                    join
+                                    the discussion.</h2>
+                                <p class="mt-2 text-sm leading-6 text-[#4B5563]">Use your Greenwich account to reply,
+                                    follow
+                                    activity, and keep your coursework conversations organized.</p>
+                            </div>
+                            <a href="<?= BASE_URL ?>/login"
+                                class="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
+                                Log in
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                    </section>
+
                     <?php if (!empty($threadReplies)): ?>
                     <?php foreach ($threadReplies as $reply): ?>
-                    <article id="reply-<?= htmlspecialchars((string) ($reply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
-                        class="grid gap-3 border-t border-[#e6e8ec] bg-white p-5 sm:grid-cols-[44px_minmax(0,1fr)] sm:p-6">
+                    <?php
+                        $replyId = (int) ($reply['id'] ?? 0);
+                        $replyDomId = htmlspecialchars($replyId, ENT_QUOTES, 'UTF-8');
+                        $canEditReply = !empty($reply['can_edit']);
+                        $canDeleteReply = !empty($reply['can_delete']);
+                        $parentReplyUsername = trim((string) ($reply['parent_author_username'] ?? ''));
+                        $replyTargetUsername = trim((string) ($reply['author_username'] ?? ''));
+
+                        if ($replyTargetUsername === '') {
+                            $replyTargetUsername = ltrim(trim((string) ($reply['author_handle'] ?? 'student')), '@');
+                        }
+                    ?>
+                    <article id="reply-<?= htmlspecialchars(($reply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
+                        class="flex gap-3 rounded-2xl border border-[#e6e8ec] bg-white p-5 sm:p-6">
                         <span
                             class="flex size-11 items-center justify-center rounded-full bg-[#DBEAFE] text-sm font-semibold text-[#1E3A8A]"
                             aria-hidden="true">
-                            <?= htmlspecialchars((string) ($reply['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars(($reply['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
                         </span>
-                        <div class="min-w-0">
+                        <div class="w-full">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                    <h3 class="font-semibold text-[#111827] [overflow-wrap:anywhere]" dir="auto">
-                                        <?= htmlspecialchars((string) ($reply['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                                    <h3 class="font-semibold text-[#111827] " dir="auto">
+                                        <?= htmlspecialchars(($reply['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
                                     </h3>
                                     <span
                                         class="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs font-semibold text-[#374151]">
-                                        <?= htmlspecialchars((string) ($reply['role'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars(($reply['role'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                     <span class="text-sm text-[#6B7280]">
-                                        <?= htmlspecialchars((string) ($reply['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars(($reply['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </div>
-                                <?php
-                                $replyAction = $reply;
-                                $replyActionTone = 'default';
-                                include __DIR__ . '/reply_actions.php';
-                                ?>
+                                <?php if ($canEditReply || $canDeleteReply): ?>
+                                <div class="relative" data-action-menu>
+                                    <button type="button"
+                                        class="inline-flex size-8 items-center justify-center rounded-full text-[#111827] transition duration-150 hover:bg-[#F3F4F6] hover:text-[#1E3A8A] aria-expanded:-translate-y-0.5 aria-expanded:bg-[#F3F4F6] aria-expanded:text-[#1E3A8A] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                                        aria-label="Open reply actions" aria-haspopup="menu" aria-expanded="false"
+                                        data-action-menu-button>
+                                        <svg viewBox="0 0 20 20" class="size-4" fill="none" aria-hidden="true">
+                                            <path d="M5.2 10h.01M10 10h.01M14.8 10h.01" stroke="currentColor"
+                                                stroke-width="2.4" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+
+                                    <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
+                                        role="menu" data-action-menu-dropdown data-open="false">
+                                        <?php if ($canEditReply): ?>
+                                        <a href="<?= htmlspecialchars(($reply['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                            data-open-modal="reply-edit-modal-<?= $replyDomId ?>"
+                                            class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1E3A8A]"
+                                            role="menuitem">
+                                            <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none"
+                                                aria-hidden="true">
+                                                <path
+                                                    d="M4.5 14.7 5.3 11l7.8-7.8a1.8 1.8 0 0 1 2.5 2.5L7.8 13.5l-3.3 1.2Z"
+                                                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                                <path d="m11.8 4.5 3.1 3.1" stroke="currentColor" stroke-width="1.6"
+                                                    stroke-linecap="round" />
+                                            </svg>
+                                            <span>Edit</span>
+                                        </a>
+                                        <?php endif; ?>
+
+                                        <?php if ($canDeleteReply): ?>
+                                        <div class="<?= $canEditReply ? 'mt-1 border-t border-[#E5E7EB] pt-1' : '' ?>">
+                                            <a href="<?= htmlspecialchars(($reply['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                                data-open-modal="reply-delete-modal-<?= $replyDomId ?>"
+                                                class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#B91C1C] transition duration-150 hover:bg-[#FEF2F2] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#B91C1C]"
+                                                role="menuitem">
+                                                <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none"
+                                                    aria-hidden="true">
+                                                    <path d="M4.5 6h11" stroke="currentColor" stroke-width="1.6"
+                                                        stroke-linecap="round" />
+                                                    <path
+                                                        d="M8.2 4h3.6M6 6l.6 9.2A1.8 1.8 0 0 0 8.4 17h3.2a1.8 1.8 0 0 0 1.8-1.8L14 6"
+                                                        stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                                <span>Delete</span>
+                                            </a>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                             </div>
-                            <p class="mt-2 whitespace-pre-line text-base leading-7 text-[#111827] [overflow-wrap:anywhere]"
-                                dir="auto"><?= htmlspecialchars((string) ($reply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <?php if ($parentReplyUsername !== ''): ?>
+                            <p class="mb-2 text-xs font-semibold text-[#64748B]">
+                                Replying to @<?= htmlspecialchars($parentReplyUsername, ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+                            <?php endif; ?>
+                            <p class="text-base text-[#111827] " dir="auto">
+                                <?= htmlspecialchars(($reply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <?php if ($isLoggedIn && $replyId > 0 && $replyTargetUsername !== ''): ?>
+                            <button type="button"
+                                class="inline-flex min-h-9 items-center rounded-lg text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                                data-reply-target data-reply-id="<?= htmlspecialchars($replyId, ENT_QUOTES, 'UTF-8') ?>"
+                                data-reply-username="<?= htmlspecialchars($replyTargetUsername, ENT_QUOTES, 'UTF-8') ?>">
+                                <svg class="mr-2" fill="currentColor" height="16" icon-name="comment"
+                                    viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M10 1a9 9 0 00-9 9c0 1.947.79 3.58 1.935 4.957L.231 17.661A.784.784 0 00.785 19H10a9 9 0 009-9 9 9 0 00-9-9zm0 16.2H6.162c-.994.004-1.907.053-3.045.144l-.076-.188a36.981 36.981 0 002.328-2.087l-1.05-1.263C3.297 12.576 2.8 11.331 2.8 10c0-3.97 3.23-7.2 7.2-7.2s7.2 3.23 7.2 7.2-3.23 7.2-7.2 7.2z">
+                                    </path>
+                                </svg>
+                                Reply
+                            </button>
+                            <?php endif; ?>
                         </div>
                     </article>
                     <?php endforeach; ?>
                     <?php else: ?>
-                    <div class="border-y border-dashed border-[#CBD5E1] bg-white py-6">
+                    <div class="rounded-2xl border  border-dashed border-[#CBD5E1] bg-white p-5">
                         <h3 class="font-semibold text-[#0F172A]">No replies yet</h3>
-                        <p class="mt-2 text-sm leading-6 text-[#4B5563]">Be the first to share a useful direction or resource.</p>
+                        <p class="mt-2 text-sm leading-6 text-[#4B5563]">Be the first to share a useful direction or
+                            resource.</p>
                     </div>
                     <?php endif; ?>
                 </section>
 
-                <section id="reply-editor" class="border-y border-[#e6e8ec] bg-white p-5 sm:p-6"
-                    aria-labelledby="reply-editor-heading">
-                    <?php if ($isLoggedIn): ?>
-                    <h2 id="reply-editor-heading" class="text-lg font-semibold text-[#0F172A]">Add a reply</h2>
 
-                    <?php if (!empty($replyErrors['general'])): ?>
-                    <div class="mt-4 border-y border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]"
-                        role="alert">
-                        <?= htmlspecialchars((string) $replyErrors['general'], ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                    <?php endif; ?>
-
-                    <form action="<?= BASE_URL ?>/discussions/reply" method="post" class="mt-4 grid gap-3">
-                        <input type="hidden" name="_csrf_token"
-                            value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-                        <input type="hidden" name="post_id"
-                            value="<?= htmlspecialchars((string) ($discussion['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>">
-                        <input type="hidden" name="slug"
-                            value="<?= htmlspecialchars((string) ($discussion['slug'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-                        <div>
-                            <label for="reply-content" class="sr-only">Reply content</label>
-                            <textarea id="reply-content" name="content" rows="6" maxlength="5000" required
-                                aria-describedby="reply-content-error"
-                                aria-invalid="<?= !empty($replyErrors['content']) ? 'true' : 'false' ?>"
-                                class="min-h-36 w-full resize-y rounded-lg border-0 bg-[#F7F8FB] px-4 py-3 text-base leading-7 text-[#111827] outline-none ring-1 <?= !empty($replyErrors['content']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 focus:ring-2"
-                                placeholder="Share a clear explanation, useful resource, or next step."><?= htmlspecialchars((string) ($replyOld['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                            <p id="reply-content-error"
-                                class="mt-2 <?= empty($replyErrors['content']) ? 'hidden' : 'block' ?> text-sm leading-5 text-[#B91C1C]"
-                                aria-live="polite">
-                                <?= htmlspecialchars((string) ($replyErrors['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
-                            </p>
-                        </div>
-                        <button type="submit"
-                            class="inline-flex min-h-12 w-fit items-center justify-center rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
-                            Post reply
-                        </button>
-                    </form>
-                    <?php else: ?>
-                    <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                        <div>
-                            <h2 id="reply-editor-heading" class="text-xl font-semibold text-[#0F172A]">Log in to join
-                                the discussion.</h2>
-                            <p class="mt-2 text-sm leading-6 text-[#4B5563]">Use your Greenwich account to reply, follow
-                                activity, and keep your coursework conversations organized.</p>
-                        </div>
-                        <a href="<?= BASE_URL ?>/login"
-                            class="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
-                            Log in
-                        </a>
-                    </div>
-                    <?php endif; ?>
-                </section>
             </div>
 
-            <aside class="flex flex-col border-[#e6e8ec] lg:sticky lg:top-28 lg:self-start lg:border-l lg:pl-8" aria-label="Discussion sidebar">
-                <section class="border-b border-[#e6e8ec] pb-5"
-                    aria-labelledby="about-discussion-heading">
+            <aside class="flex flex-col border-[#e6e8ec] lg:sticky lg:top-28 lg:self-start lg:border-l lg:pl-8"
+                aria-label="Discussion sidebar">
+                <section class="border-b border-[#e6e8ec] pb-5" aria-labelledby="about-discussion-heading">
                     <h2 id="about-discussion-heading" class="text-base font-semibold text-[#0F172A]">About this
                         discussion</h2>
                     <dl class="mt-4 grid gap-3 text-sm leading-6">
                         <div>
                             <dt class="font-medium text-[#4B5563]">Module</dt>
-                            <dd class="mt-1 font-semibold text-[#111827] [overflow-wrap:anywhere]">
-                                <?= htmlspecialchars((string) ($discussion['module_name'] ?? 'Module discussion'), ENT_QUOTES, 'UTF-8') ?>
+                            <dd class="mt-1 font-semibold text-[#111827] ">
+                                <?= htmlspecialchars(($discussion['module_name'] ?? 'Module discussion'), ENT_QUOTES, 'UTF-8') ?>
                             </dd>
                         </div>
                         <div>
@@ -408,33 +593,33 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                         <div>
                             <dt class="font-medium text-[#4B5563]">Last activity</dt>
                             <dd class="mt-1 font-semibold text-[#111827]">
-                                <?= htmlspecialchars((string) ($discussion['updated_at'] ?? $discussion['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars(($discussion['updated_at'] ?? $discussion['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
                             </dd>
                         </div>
                     </dl>
                 </section>
 
-                <section class="pt-5"
-                    aria-labelledby="related-discussions-heading">
+                <section class="pt-5" aria-labelledby="related-discussions-heading">
                     <h2 id="related-discussions-heading" class="text-base font-semibold text-[#0F172A]">Related
                         discussions</h2>
                     <div class="mt-4 grid gap-4">
                         <?php if (!empty($relatedDiscussions)): ?>
                         <?php foreach ($relatedDiscussions as $related): ?>
-                        <a href="<?= htmlspecialchars((string) ($related['url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                        <a href="<?= htmlspecialchars(($related['url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                             class="block rounded-md transition duration-200 hover:text-[#1E3A8A] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
-                            <span class="block text-sm font-semibold leading-5 text-[#111827] [overflow-wrap:anywhere]"
-                                dir="auto">
-                                <?= htmlspecialchars((string) ($related['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
+                            <span class="block text-sm font-semibold leading-5 text-[#111827] " dir="auto">
+                                <?= htmlspecialchars(($related['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
                             </span>
                             <span class="mt-1 block text-xs font-medium text-[#4B5563]">
-                                <?= htmlspecialchars((string) ($related['replies'] ?? 0), ENT_QUOTES, 'UTF-8') ?>
-                                <?= ((int) ($related['replies'] ?? 0)) === 1 ? 'reply' : 'replies' ?>
+                                <?= htmlspecialchars(($related['replies'] ?? 0), ENT_QUOTES, 'UTF-8') ?>
+                                <?= (($related['replies'] ?? 0)) === 1 ? 'reply' : 'replies' ?>
                             </span>
                         </a>
                         <?php endforeach; ?>
                         <?php else: ?>
-                        <p class="text-sm leading-6 text-[#4B5563]">Similar questions will appear as more discussions become active.</p>
+                        <p class="text-sm leading-6 text-[#4B5563]">Similar questions will appear as more
+                            discussions
+                            become active.</p>
                         <?php endif; ?>
                     </div>
                 </section>
@@ -442,7 +627,8 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
         </div>
 
         <?php if (!empty($discussion['can_edit'])): ?>
-        <dialog id="discussion-edit-modal" data-modal <?= $openModalId === 'discussion-edit-modal' ? 'data-initial-open="true"' : '' ?>
+        <dialog id="discussion-edit-modal" data-modal
+            <?= $openModalId === 'discussion-edit-modal' ? 'data-initial-open="true"' : '' ?>
             class="m-auto w-[min(680px,calc(100vw-32px))] rounded-[20px] bg-white p-0 text-[#111827] ring-1 ring-[#E5E7EB] shadow-[0_24px_64px_rgba(15,23,42,0.2)] backdrop:bg-[#0F172A]/45">
             <div class="max-h-[min(760px,calc(100vh-48px))] overflow-y-auto p-5 sm:p-6">
                 <div class="flex items-start justify-between gap-4">
@@ -467,17 +653,18 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                 <?php if (!empty($discussionEditErrors['general'])): ?>
                 <div class="mt-4 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]"
                     role="alert">
-                    <?= htmlspecialchars((string) $discussionEditErrors['general'], ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($discussionEditErrors['general'], ENT_QUOTES, 'UTF-8') ?>
                 </div>
                 <?php endif; ?>
 
-                <form action="<?= htmlspecialchars((string) ($discussion['update_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars(($discussion['update_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-5 grid gap-4" novalidate>
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
 
                     <div>
-                        <label for="discussion-edit-title" class="block text-sm font-semibold text-[#111827]">Title</label>
+                        <label for="discussion-edit-title"
+                            class="block text-sm font-semibold text-[#111827]">Title</label>
                         <input id="discussion-edit-title" name="title" type="text"
                             value="<?= htmlspecialchars($discussionEditTitle, ENT_QUOTES, 'UTF-8') ?>"
                             aria-describedby="discussion-edit-title-error"
@@ -491,7 +678,8 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     </div>
 
                     <div>
-                        <label for="discussion-edit-module" class="block text-sm font-semibold text-[#111827]">Module</label>
+                        <label for="discussion-edit-module"
+                            class="block text-sm font-semibold text-[#111827]">Module</label>
                         <select id="discussion-edit-module" name="module_id"
                             aria-describedby="discussion-edit-module-error"
                             aria-invalid="<?= $fieldError($discussionEditErrors, 'module_id') !== '' ? 'true' : 'false' ?>"
@@ -499,11 +687,12 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                             <option value="">Select module</option>
                             <?php foreach ($modules as $module): ?>
                             <?php
-                                $moduleId = (string) ($module['id'] ?? '');
-                                $moduleCode = (string) ($module['code'] ?? 'MODULE');
-                                $moduleName = (string) ($module['name'] ?? 'Module');
-                                ?>
-                            <option value="<?= htmlspecialchars($moduleId, ENT_QUOTES, 'UTF-8') ?>" <?= $discussionEditModuleId === $moduleId ? 'selected' : '' ?>>
+                                    $moduleId = (string) ($module['id'] ?? '');
+                                    $moduleCode = (string) ($module['code'] ?? 'MODULE');
+                                    $moduleName = (string) ($module['name'] ?? 'Module');
+                                    ?>
+                            <option value="<?= htmlspecialchars($moduleId, ENT_QUOTES, 'UTF-8') ?>"
+                                <?= $discussionEditModuleId === $moduleId ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($moduleCode . ' - ' . $moduleName, ENT_QUOTES, 'UTF-8') ?>
                             </option>
                             <?php endforeach; ?>
@@ -545,7 +734,8 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
         <?php endif; ?>
 
         <?php if (!empty($discussion['can_delete'])): ?>
-        <dialog id="discussion-delete-modal" data-modal <?= $openModalId === 'discussion-delete-modal' ? 'data-initial-open="true"' : '' ?>
+        <dialog id="discussion-delete-modal" data-modal
+            <?= $openModalId === 'discussion-delete-modal' ? 'data-initial-open="true"' : '' ?>
             class="m-auto w-[min(560px,calc(100vw-32px))] rounded-[20px] bg-white p-0 text-[#111827] ring-1 ring-[#E5E7EB] shadow-[0_24px_64px_rgba(15,23,42,0.2)] backdrop:bg-[#0F172A]/45">
             <div class="p-5 sm:p-6">
                 <div class="flex items-start justify-between gap-4">
@@ -567,15 +757,15 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     </button>
                 </div>
 
-                <div class="mt-5 rounded-2xl bg-[#F7F8FB] p-4 text-sm leading-6 text-[#111827] ring-1 ring-[#E5E7EB] [overflow-wrap:anywhere]"
+                <div class="mt-5 rounded-2xl bg-[#F7F8FB] p-4 text-sm leading-6 text-[#111827] ring-1 ring-[#E5E7EB] "
                     dir="auto">
-                    <?= htmlspecialchars((string) ($discussion['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars(($discussion['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
                 </div>
 
-                <form action="<?= htmlspecialchars((string) ($discussion['destroy_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars(($discussion['destroy_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-6 flex flex-wrap justify-end gap-3">
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                     <button type="button" data-close-modal
                         class="inline-flex min-h-10 items-center justify-center rounded-2xl bg-[#EEF2FF] px-4 text-sm font-semibold text-[#1E3A8A] transition duration-200 hover:bg-[#DBEAFE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                         Cancel
@@ -592,17 +782,23 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
         <?php foreach ($modalReplies as $replyModal): ?>
         <?php
             $replyModalId = (int) ($replyModal['id'] ?? 0);
+            $replyModalDomId = htmlspecialchars($replyModalId, ENT_QUOTES, 'UTF-8');
             $isActiveReplyEdit = $activeReplyEditId === $replyModalId;
             $currentReplyErrors = $isActiveReplyEdit ? $replyEditErrors : [];
-            $currentReplyContent = (string) (($isActiveReplyEdit ? ($replyEditOld['content'] ?? null) : null) ?? ($replyModal['content'] ?? ''));
+            $currentReplyContent = (string) ($replyModal['content'] ?? '');
+
+            if ($isActiveReplyEdit && array_key_exists('content', $replyEditOld)) {
+                $currentReplyContent = (string) $replyEditOld['content'];
+            }
             ?>
         <?php if (!empty($replyModal['can_edit'])): ?>
-        <dialog id="reply-edit-modal-<?= $replyModalId ?>" data-modal <?= $openModalId === 'reply-edit-modal-' . $replyModalId ? 'data-initial-open="true"' : '' ?>
+        <dialog id="reply-edit-modal-<?= $replyModalDomId ?>" data-modal
+            <?= $openModalId === 'reply-edit-modal-' . $replyModalId ? 'data-initial-open="true"' : '' ?>
             class="m-auto w-[min(640px,calc(100vw-32px))] rounded-[20px] bg-white p-0 text-[#111827] ring-1 ring-[#E5E7EB] shadow-[0_24px_64px_rgba(15,23,42,0.2)] backdrop:bg-[#0F172A]/45">
             <div class="p-5 sm:p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <h2 id="reply-edit-modal-title-<?= $replyModalId ?>"
+                        <h2 id="reply-edit-modal-title-<?= $replyModalDomId ?>"
                             class="text-xl font-semibold leading-7 text-[#0F172A]">Edit reply</h2>
                         <p class="mt-1 text-sm leading-6 text-[#4B5563]">
                             Refine your reply while staying in the discussion context.
@@ -621,21 +817,23 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                 <?php if (!empty($currentReplyErrors['general'])): ?>
                 <div class="mt-4 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]"
                     role="alert">
-                    <?= htmlspecialchars((string) $currentReplyErrors['general'], ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($currentReplyErrors['general'], ENT_QUOTES, 'UTF-8') ?>
                 </div>
                 <?php endif; ?>
 
-                <form action="<?= htmlspecialchars((string) ($replyModal['update_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars(($replyModal['update_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-5 grid gap-4">
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                     <div>
-                        <label for="reply-edit-content-<?= $replyModalId ?>" class="sr-only">Reply content</label>
-                        <textarea id="reply-edit-content-<?= $replyModalId ?>" name="content" rows="8" maxlength="5000"
-                            required aria-describedby="reply-edit-content-error-<?= $replyModalId ?>"
+                        <label for="reply-edit-content-<?= $replyModalDomId ?>" class="sr-only">Reply
+                            content</label>
+                        <textarea id="reply-edit-content-<?= $replyModalDomId ?>" name="content" rows="8"
+                            maxlength="5000" required
+                            aria-describedby="reply-edit-content-error-<?= $replyModalDomId ?>"
                             aria-invalid="<?= $fieldError($currentReplyErrors, 'content') !== '' ? 'true' : 'false' ?>"
                             class="min-h-36 w-full resize-y rounded-2xl border-0 bg-[#F7F8FB] px-4 py-3 text-base leading-7 text-[#111827] outline-none ring-1 <?= $fieldRing($currentReplyErrors, 'content') ?> transition duration-200 focus:ring-2"><?= htmlspecialchars($currentReplyContent, ENT_QUOTES, 'UTF-8') ?></textarea>
-                        <p id="reply-edit-content-error-<?= $replyModalId ?>"
+                        <p id="reply-edit-content-error-<?= $replyModalDomId ?>"
                             class="mt-2 <?= $fieldError($currentReplyErrors, 'content') === '' ? 'hidden' : 'block' ?> text-sm leading-5 text-[#B91C1C]"
                             aria-live="polite">
                             <?= htmlspecialchars($fieldError($currentReplyErrors, 'content'), ENT_QUOTES, 'UTF-8') ?>
@@ -658,15 +856,17 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
         <?php endif; ?>
 
         <?php if (!empty($replyModal['can_delete'])): ?>
-        <dialog id="reply-delete-modal-<?= $replyModalId ?>" data-modal <?= $openModalId === 'reply-delete-modal-' . $replyModalId ? 'data-initial-open="true"' : '' ?>
+        <dialog id="reply-delete-modal-<?= $replyModalDomId ?>" data-modal
+            <?= $openModalId === 'reply-delete-modal-' . $replyModalId ? 'data-initial-open="true"' : '' ?>
             class="m-auto w-[min(560px,calc(100vw-32px))] rounded-[20px] bg-white p-0 text-[#111827] ring-1 ring-[#E5E7EB] shadow-[0_24px_64px_rgba(15,23,42,0.2)] backdrop:bg-[#0F172A]/45">
             <div class="p-5 sm:p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <h2 id="reply-delete-modal-title-<?= $replyModalId ?>"
+                        <h2 id="reply-delete-modal-title-<?= $replyModalDomId ?>"
                             class="text-xl font-semibold leading-7 text-[#0F172A]">Delete reply</h2>
                         <p class="mt-2 text-sm leading-6 text-[#4B5563]">
-                            This reply will be removed from the discussion and related notifications will be cleared.
+                            This reply will be removed from the discussion and related notifications will be
+                            cleared.
                         </p>
                     </div>
                     <button type="button" data-close-modal
@@ -679,15 +879,15 @@ $discussionEditContent = (string) ($discussionEditOld['content'] ?? $discussion[
                     </button>
                 </div>
 
-                <div class="mt-5 rounded-2xl bg-[#F7F8FB] p-4 text-sm leading-6 text-[#111827] ring-1 ring-[#E5E7EB] [overflow-wrap:anywhere]"
+                <div class="mt-5 rounded-2xl bg-[#F7F8FB] p-4 text-sm leading-6 text-[#111827] ring-1 ring-[#E5E7EB] "
                     dir="auto">
-                    <?= htmlspecialchars((string) ($replyModal['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars(($replyModal['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                 </div>
 
-                <form action="<?= htmlspecialchars((string) ($replyModal['destroy_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars(($replyModal['destroy_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-6 flex flex-wrap justify-end gap-3">
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars((string) ($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                     <button type="button" data-close-modal
                         class="inline-flex min-h-10 items-center justify-center rounded-2xl bg-[#EEF2FF] px-4 text-sm font-semibold text-[#1E3A8A] transition duration-200 hover:bg-[#DBEAFE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                         Cancel

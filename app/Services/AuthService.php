@@ -13,7 +13,7 @@ class AuthService
         $this->userModel = $userModel ?? new User();
     }
 
-    public function login(array $data): array
+    public function login(array $data)
     {
         $errors = $this->validateLogin($data);
 
@@ -44,7 +44,7 @@ class AuthService
         ];
     }
 
-    public function register(array $data, ?array $avatar): array
+    public function register(array $data, ?array $avatar)
     {
         $errors = $this->validateRegister($data);
         $avatarPath = null;
@@ -82,7 +82,7 @@ class AuthService
         ];
     }
 
-    private function validateLogin(array $data): array
+    private function validateLogin(array $data)
     {
         $errors = [];
 
@@ -99,7 +99,7 @@ class AuthService
         return $errors;
     }
 
-    private function validateRegister(array $data): array
+    private function validateRegister(array $data)
     {
         $errors = [];
         $firstName = trim((string) ($data['first_name'] ?? ''));
@@ -149,4 +149,5 @@ class AuthService
 
         return $errors;
     }
+
 }

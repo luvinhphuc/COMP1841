@@ -1,3 +1,10 @@
+<?php
+/**
+ * Variables passed from App\Core\Controller::notFound()
+ *
+ * No controller variables are required by this view.
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 

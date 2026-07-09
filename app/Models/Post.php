@@ -4,11 +4,14 @@ namespace App\Models;
 
 use App\Core\Database;
 use PDO;
+use Throwable;
 
 class Post
 {
     private PDO $db;
     private ?array $userColumns = null;
+    private array $columnExistsCache = [];
+    private array $tableExistsCache = [];
 
     public function __construct()
     {
@@ -29,6 +32,148 @@ class Post
         return $stmt->fetchAll();
     }
 
+    private function baseSelectSql(string $extraSelect = '')
+    {
+        $extraSelect = $extraSelect !== '' ? ', ' . $extraSelect : '';
+        $userNameSelect = $this->userNameSelectSql();
+        $viewCountSelect = $this->viewCountSelectSql();
+        $mediaPathSelect = $this->mediaPathSelectSql();
+        $mediaTypeSelect = $this->mediaTypeSelectSql();
+
+        return '
+            SELECT
+                p.id,
+                p.title,
+                p.slug,
+                p.content,
+                p.status,
+                p.user_id,
+                p.module_id,
+                p.created_at,
+                p.updated_at,
+                m.module_code,
+                m.module_name,
+                u.username,
+                ' . $userNameSelect . ' AS full_name,
+                u.avatar,
+                (
+                    SELECT COUNT(*)
+                    FROM replies r
+                    WHERE r.post_id = p.id AND r.deleted_at IS NULL
+                ) AS reply_count,
+                ' . $viewCountSelect . ' AS view_count,
+                ' . $mediaPathSelect . ' AS media_path,
+                ' . $mediaTypeSelect . ' AS media_type
+                ' . $extraSelect . '
+            FROM posts p
+            INNER JOIN modules m ON m.id = p.module_id
+            INNER JOIN users u ON u.id = p.user_id
+            WHERE p.deleted_at IS NULL
+        ';
+    }
+
+    private function userNameSelectSql()
+    {
+        if ($this->userHasColumn('full_name')) {
+            return 'u.full_name';
+        }
+
+        if ($this->userHasColumn('first_name') && $this->userHasColumn('last_name')) {
+            return "TRIM(CONCAT_WS(' ', u.first_name, u.last_name))";
+        }
+
+        return 'u.username';
+    }
+
+    private function userHasColumn(string $column)
+    {
+        if ($this->userColumns === null) {
+            $stmt = $this->db->prepare('SHOW COLUMNS FROM users');
+            $stmt->execute();
+            $this->userColumns = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'Field');
+        }
+
+        return in_array($column, $this->userColumns, true);
+    }
+
+    private function viewCountSelectSql()
+    {
+        if ($this->columnExists('posts', 'view_count')) {
+            return 'p.view_count';
+        }
+
+        if (!$this->tableExists('post_views')) {
+            return '0';
+        }
+
+        return '(
+            SELECT COUNT(*)
+            FROM post_views pv
+            WHERE pv.post_id = p.id
+        )';
+    }
+
+    private function columnExists(string $table, string $column)
+    {
+        $cacheKey = $table . '.' . $column;
+
+        if (!array_key_exists($cacheKey, $this->columnExistsCache)) {
+            $stmt = $this->db->prepare('SELECT COUNT(*)
+                 FROM information_schema.columns
+                 WHERE table_schema = DATABASE()
+                   AND table_name = :table
+                   AND column_name = :column');
+            $stmt->execute(['table' => $table, 'column' => $column,]);
+            $this->columnExistsCache[$cacheKey] = $stmt->fetchColumn() > 0;
+        }
+
+        return $this->columnExistsCache[$cacheKey];
+    }
+
+    private function tableExists(string $table)
+    {
+        if (!array_key_exists($table, $this->tableExistsCache)) {
+            $stmt = $this->db->prepare('SELECT COUNT(*)
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = :table');
+            $stmt->execute(['table' => $table]);
+            $this->tableExistsCache[$table] = $stmt->fetchColumn() > 0;
+        }
+
+        return $this->tableExistsCache[$table];
+    }
+
+    private function mediaPathSelectSql()
+    {
+        if (!$this->tableExists('media')) {
+            return 'NULL';
+        }
+
+        return '(
+            SELECT path
+            FROM media media_item
+            WHERE media_item.post_id = p.id
+            ORDER BY media_item.created_at ASC
+            LIMIT 1
+        )';
+    }
+
+    private function mediaTypeSelectSql()
+    {
+        if (!$this->tableExists('media')) {
+            return 'NULL';
+        }
+
+        return '(
+            SELECT type
+            FROM media media_item
+            WHERE media_item.post_id = p.id
+            ORDER BY media_item.created_at ASC
+            LIMIT 1
+        )';
+    }
+
     public function getLatest(int $limit = 10)
     {
         $stmt = $this->db->prepare($this->baseSelectSql() . '
@@ -36,6 +181,21 @@ class Post
             LIMIT :limit
         ');
 
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function getByUserId(int $userId, int $limit = 10)
+    {
+        $stmt = $this->db->prepare($this->baseSelectSql() . '
+            AND p.user_id = :user_id
+            ORDER BY p.created_at DESC
+            LIMIT :limit
+        ');
+
+        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
         $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -58,6 +218,71 @@ class Post
         return $stmt->fetchAll();
     }
 
+    public function getDiscussionCount(array $filters)
+    {
+        $params = [];
+        $sql = '
+            SELECT COUNT(*)
+            FROM posts p
+            INNER JOIN modules m ON m.id = p.module_id
+            WHERE p.deleted_at IS NULL
+        ' . $this->discussionFilterSql($filters, $params);
+
+        $stmt = $this->db->prepare($sql);
+        $this->bindDiscussionParams($stmt, $params);
+        $stmt->execute();
+
+        return $stmt->fetchColumn();
+    }
+
+    private function discussionFilterSql(array $filters, array &$params)
+    {
+        $sql = '';
+        $query = trim((string) ($filters['q'] ?? ''));
+        $status = trim((string) ($filters['status'] ?? ''));
+        $module = trim((string) ($filters['module'] ?? ''));
+
+        if ($query !== '') {
+            $sql .= '
+                AND (
+                    p.title LIKE :query_title
+                    OR p.content LIKE :query_content
+                    OR m.module_code LIKE :query_module_code
+                    OR m.module_name LIKE :query_module_name
+                )
+            ';
+            $queryValue = '%' . $query . '%';
+            $params['query_title'] = $queryValue;
+            $params['query_content'] = $queryValue;
+            $params['query_module_code'] = $queryValue;
+            $params['query_module_name'] = $queryValue;
+        }
+
+        if (in_array($status, ['open', 'solved'], true)) {
+            $sql .= ' AND p.status = :status';
+            $params['status'] = $status;
+        }
+
+        if ($module !== '') {
+            $sql .= ' AND m.module_code = :module';
+            $params['module'] = $module;
+        }
+
+        return $sql;
+    }
+
+    private function bindDiscussionParams($stmt, array $params)
+    {
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+    }
+
+    public function getPopularDiscussions(int $limit = 5)
+    {
+        return $this->getDiscussionList(['sort' => 'popular'], $limit, 0);
+    }
+
     public function getDiscussionList(array $filters, int $limit = 20, int $offset = 0)
     {
         $params = [];
@@ -74,26 +299,17 @@ class Post
         return $stmt->fetchAll();
     }
 
-    public function getDiscussionCount(array $filters)
+    private function discussionOrderSql(array $filters)
     {
-        $params = [];
-        $sql = '
-            SELECT COUNT(*)
-            FROM posts p
-            INNER JOIN modules m ON m.id = p.module_id
-            WHERE p.deleted_at IS NULL
-        ' . $this->discussionFilterSql($filters, $params);
+        if (($filters['sort'] ?? '') === 'popular') {
+            return '
+                ORDER BY reply_count DESC, view_count DESC, p.created_at DESC
+            ';
+        }
 
-        $stmt = $this->db->prepare($sql);
-        $this->bindDiscussionParams($stmt, $params);
-        $stmt->execute();
-
-        return (int) $stmt->fetchColumn();
-    }
-
-    public function getPopularDiscussions(int $limit = 5)
-    {
-        return $this->getDiscussionList(['sort' => 'popular'], $limit, 0);
+        return '
+            ORDER BY p.created_at DESC
+        ';
     }
 
     public function find(int $id)
@@ -135,21 +351,56 @@ class Post
             return 0;
         }
 
-        $stmt = $this->db->prepare(
-            'INSERT INTO posts (title, slug, content, status, user_id, module_id)
-             VALUES (:title, :slug, :content, :status, :user_id, :module_id)'
-        );
+        $stmt = $this->db->prepare('INSERT INTO posts (title, slug, content, status, user_id, module_id)
+             VALUES (:title, :slug, :content, :status, :user_id, :module_id)');
 
-        $stmt->execute([
-            'title' => $title,
-            'slug' => $this->uniqueSlug($slug !== '' ? $slug : $title),
-            'content' => $content,
-            'status' => $status,
-            'user_id' => $userId,
-            'module_id' => $moduleId,
-        ]);
+        $stmt->execute(['title' => $title, 'slug' => $this->uniqueSlug($slug !== '' ? $slug : $title), 'content' => $content, 'status' => $status, 'user_id' => $userId, 'module_id' => $moduleId,]);
 
         return (int) $this->db->lastInsertId();
+    }
+
+    private function normaliseStatus(string $status)
+    {
+        return in_array($status, ['open', 'solved'], true) ? $status : 'open';
+    }
+
+    private function uniqueSlug(string $value, ?int $ignoreId = null)
+    {
+        $baseSlug = $this->slugify($value);
+        $slug = $baseSlug;
+        $counter = 2;
+
+        while ($this->slugExists($slug, $ignoreId)) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    private function slugify(string $value)
+    {
+        $slug = strtolower(trim($value));
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug) ?: '';
+        $slug = trim($slug, '-');
+
+        return $slug !== '' ? $slug : 'post';
+    }
+
+    private function slugExists(string $slug, ?int $ignoreId = null)
+    {
+        $sql = 'SELECT COUNT(*) FROM posts WHERE slug = :slug';
+        $params = ['slug' => $slug];
+
+        if ($ignoreId !== null) {
+            $sql .= ' AND id != :id';
+            $params['id'] = $ignoreId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchColumn() > 0;
     }
 
     public function update(int $id, array $data)
@@ -221,34 +472,25 @@ class Post
         try {
             $this->db->beginTransaction();
 
-            $this->db->prepare(
-                'DELETE FROM notifications
+            $this->db->prepare('DELETE FROM notifications
                  WHERE post_id = :post_id
                     OR reply_id IN (
                         SELECT id FROM replies WHERE post_id = :reply_post_id
-                    )'
-            )->execute([
-                'post_id' => $id,
-                'reply_post_id' => $id,
-            ]);
+                    )')->execute(['post_id' => $id, 'reply_post_id' => $id,]);
 
-            $this->db->prepare('DELETE FROM post_views WHERE post_id = :post_id')
-                ->execute(['post_id' => $id]);
+            if ($this->tableExists('post_views')) {
+                $this->db->prepare('DELETE FROM post_views WHERE post_id = :post_id')->execute(['post_id' => $id]);
+            }
 
-            $this->db->prepare('DELETE FROM media WHERE post_id = :post_id')
-                ->execute(['post_id' => $id]);
+            $this->db->prepare('DELETE FROM media WHERE post_id = :post_id')->execute(['post_id' => $id]);
 
-            $this->db->prepare(
-                'UPDATE replies
+            $this->db->prepare('UPDATE replies
                  SET deleted_at = NOW(), is_accepted = 0, updated_at = NOW()
-                 WHERE post_id = :post_id AND deleted_at IS NULL'
-            )->execute(['post_id' => $id]);
+                 WHERE post_id = :post_id AND deleted_at IS NULL')->execute(['post_id' => $id]);
 
-            $stmt = $this->db->prepare(
-                'UPDATE posts
+            $stmt = $this->db->prepare('UPDATE posts
                  SET deleted_at = NOW(), status = "open", updated_at = NOW()
-                 WHERE id = :id AND deleted_at IS NULL'
-            );
+                 WHERE id = :id AND deleted_at IS NULL');
 
             $stmt->execute(['id' => $id]);
             $deleted = $stmt->rowCount() > 0;
@@ -256,7 +498,7 @@ class Post
             $this->db->commit();
 
             return $deleted;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
@@ -267,55 +509,36 @@ class Post
 
     public function setStatus(int $id, string $status)
     {
-        $stmt = $this->db->prepare(
-            'UPDATE posts
+        $stmt = $this->db->prepare('UPDATE posts
              SET status = :status, updated_at = NOW()
-             WHERE id = :id AND deleted_at IS NULL'
-        );
+             WHERE id = :id AND deleted_at IS NULL');
 
-        return $stmt->execute([
-            'id' => $id,
-            'status' => $this->normaliseStatus($status),
-        ]);
+        return $stmt->execute(['id' => $id, 'status' => $this->normaliseStatus($status),]);
     }
 
     public function recordView(int $postId, ?int $userId = null)
     {
-        $stmt = $this->db->prepare(
-            'INSERT INTO post_views (post_id, user_id)
-             VALUES (:post_id, :user_id)'
-        );
+        if ($postId <= 0) {
+            return false;
+        }
 
-        return $stmt->execute([
-            'post_id' => $postId,
-            'user_id' => $userId,
-        ]);
-    }
+        $stmt = $this->db->prepare('UPDATE posts
+                 SET view_count = view_count + 1
+                 WHERE id = :post_id AND deleted_at IS NULL');
+        $stmt->execute(['post_id' => $postId]);
 
-    public function getTrendingModules(int $limit = 5)
-    {
-        $stmt = $this->db->prepare(
-            'SELECT
-                m.id,
-                m.module_code AS code,
-                m.module_name AS name,
-                COUNT(p.id) AS post_count
-             FROM modules m
-             INNER JOIN posts p ON p.module_id = m.id AND p.deleted_at IS NULL
-             GROUP BY m.id, m.module_code, m.module_name
-             ORDER BY post_count DESC, m.module_code ASC
-             LIMIT :limit'
-        );
-
-        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
+        return $stmt->rowCount() > 0;
     }
 
     public function getRecentViews(?int $userId = null, int $limit = 5)
     {
+        if (!$this->tableExists('post_views')) {
+            return [];
+        }
+
         $userNameSelect = $this->userNameSelectSql();
+        $mediaPathSelect = $this->mediaPathSelectSql();
+        $mediaTypeSelect = $this->mediaTypeSelectSql();
         $sql = '
             SELECT
                 p.id,
@@ -343,13 +566,8 @@ class Post
                     FROM post_views post_view_count
                     WHERE post_view_count.post_id = p.id
                 ) AS view_count,
-                (
-                    SELECT path
-                    FROM media media_item
-                    WHERE media_item.post_id = p.id
-                    ORDER BY media_item.created_at ASC
-                    LIMIT 1
-                ) AS media_path
+                ' . $mediaPathSelect . ' AS media_path,
+                ' . $mediaTypeSelect . ' AS media_type
             FROM post_views pv
             INNER JOIN posts p ON p.id = pv.post_id
             INNER JOIN modules m ON m.id = p.module_id
@@ -380,60 +598,13 @@ class Post
         return $stmt->fetchAll();
     }
 
-    private function baseSelectSql(string $extraSelect = '')
-    {
-        $extraSelect = $extraSelect !== '' ? ', ' . $extraSelect : '';
-        $userNameSelect = $this->userNameSelectSql();
-
-        return '
-            SELECT
-                p.id,
-                p.title,
-                p.slug,
-                p.content,
-                p.status,
-                p.user_id,
-                p.module_id,
-                p.created_at,
-                p.updated_at,
-                m.module_code,
-                m.module_name,
-                u.username,
-                ' . $userNameSelect . ' AS full_name,
-                u.avatar,
-                (
-                    SELECT COUNT(*)
-                    FROM replies r
-                    WHERE r.post_id = p.id AND r.deleted_at IS NULL
-                ) AS reply_count,
-                (
-                    SELECT COUNT(*)
-                    FROM post_views pv
-                    WHERE pv.post_id = p.id
-                ) AS view_count,
-                (
-                    SELECT path
-                    FROM media media_item
-                    WHERE media_item.post_id = p.id
-                    ORDER BY media_item.created_at ASC
-                    LIMIT 1
-                ) AS media_path
-                ' . $extraSelect . '
-            FROM posts p
-            INNER JOIN modules m ON m.id = p.module_id
-            INNER JOIN users u ON u.id = p.user_id
-            WHERE p.deleted_at IS NULL
-        ';
-    }
-
     public function refreshActivityTimestamp(int $postId)
     {
         if ($postId <= 0) {
             return false;
         }
 
-        $stmt = $this->db->prepare(
-            'SELECT COALESCE(
+        $stmt = $this->db->prepare('SELECT COALESCE(
                 (
                     SELECT MAX(COALESCE(r.updated_at, r.created_at))
                     FROM replies r
@@ -443,13 +614,9 @@ class Post
              ) AS last_activity
              FROM posts p
              WHERE p.id = :post_id AND p.deleted_at IS NULL
-             LIMIT 1'
-        );
+             LIMIT 1');
 
-        $stmt->execute([
-            'reply_post_id' => $postId,
-            'post_id' => $postId,
-        ]);
+        $stmt->execute(['reply_post_id' => $postId, 'post_id' => $postId,]);
 
         $lastActivity = $stmt->fetchColumn();
 
@@ -457,135 +624,10 @@ class Post
             return false;
         }
 
-        $update = $this->db->prepare(
-            'UPDATE posts
+        $update = $this->db->prepare('UPDATE posts
              SET updated_at = :last_activity
-             WHERE id = :post_id AND deleted_at IS NULL'
-        );
+             WHERE id = :post_id AND deleted_at IS NULL');
 
-        return $update->execute([
-            'last_activity' => $lastActivity,
-            'post_id' => $postId,
-        ]);
-    }
-
-    private function discussionFilterSql(array $filters, array &$params)
-    {
-        $sql = '';
-        $query = trim((string) ($filters['q'] ?? ''));
-        $status = trim((string) ($filters['status'] ?? ''));
-        $module = trim((string) ($filters['module'] ?? ''));
-
-        if ($query !== '') {
-            $sql .= '
-                AND (
-                    p.title LIKE :query
-                    OR p.content LIKE :query
-                    OR m.module_code LIKE :query
-                    OR m.module_name LIKE :query
-                )
-            ';
-            $params['query'] = '%' . $query . '%';
-        }
-
-        if (in_array($status, ['open', 'solved'], true)) {
-            $sql .= ' AND p.status = :status';
-            $params['status'] = $status;
-        }
-
-        if ($module !== '') {
-            $sql .= ' AND m.module_code = :module';
-            $params['module'] = $module;
-        }
-
-        return $sql;
-    }
-
-    private function discussionOrderSql(array $filters)
-    {
-        if (($filters['sort'] ?? '') === 'popular') {
-            return '
-                ORDER BY reply_count DESC, view_count DESC, p.created_at DESC
-            ';
-        }
-
-        return '
-            ORDER BY p.created_at DESC
-        ';
-    }
-
-    private function bindDiscussionParams($stmt, array $params)
-    {
-        foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value);
-        }
-    }
-
-    private function userNameSelectSql()
-    {
-        if ($this->userHasColumn('full_name')) {
-            return 'u.full_name';
-        }
-
-        if ($this->userHasColumn('first_name') && $this->userHasColumn('last_name')) {
-            return "TRIM(CONCAT_WS(' ', u.first_name, u.last_name))";
-        }
-
-        return 'u.username';
-    }
-
-    private function userHasColumn(string $column)
-    {
-        if ($this->userColumns === null) {
-            $stmt = $this->db->prepare('SHOW COLUMNS FROM users');
-            $stmt->execute();
-            $this->userColumns = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'Field');
-        }
-
-        return in_array($column, $this->userColumns, true);
-    }
-
-    private function normaliseStatus(string $status)
-    {
-        return in_array($status, ['open', 'solved'], true) ? $status : 'open';
-    }
-
-    private function uniqueSlug(string $value, ?int $ignoreId = null)
-    {
-        $baseSlug = $this->slugify($value);
-        $slug = $baseSlug;
-        $counter = 2;
-
-        while ($this->slugExists($slug, $ignoreId)) {
-            $slug = $baseSlug . '-' . $counter;
-            $counter++;
-        }
-
-        return $slug;
-    }
-
-    private function slugExists(string $slug, ?int $ignoreId = null)
-    {
-        $sql = 'SELECT COUNT(*) FROM posts WHERE slug = :slug';
-        $params = ['slug' => $slug];
-
-        if ($ignoreId !== null) {
-            $sql .= ' AND id != :id';
-            $params['id'] = $ignoreId;
-        }
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-
-        return (int) $stmt->fetchColumn() > 0;
-    }
-
-    private function slugify(string $value)
-    {
-        $slug = strtolower(trim($value));
-        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug) ?: '';
-        $slug = trim($slug, '-');
-
-        return $slug !== '' ? $slug : 'post';
+        return $update->execute(['last_activity' => $lastActivity, 'post_id' => $postId,]);
     }
 }

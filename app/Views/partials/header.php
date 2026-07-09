@@ -1,3 +1,13 @@
+<?php
+/**
+ * Variables passed from App\Core\Controller::view()
+ *
+ * @var bool $isLoggedIn
+ * @var string $authName
+ * @var string $authUsername
+ * @var string $authAvatarUrl
+ */
+?>
 <!doctype html>
 <html lang="en">
     <head>
@@ -26,7 +36,7 @@
                         </svg>
                     </button>
 
-                    <a id="site-logo" href="<?= BASE_URL ?: '/' ?>" class="block w-[168px] shrink-0 sm:w-[190px]"
+                    <a id="site-logo" href="<?= $isLoggedIn ? BASE_URL . '/dashboard' : (BASE_URL ?: '/') ?>" class="block w-[168px] shrink-0 sm:w-[190px]"
                        aria-label="University of Greenwich home">
                         <img src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png" alt="University of Greenwich"
                              class="h-auto w-full object-contain">
@@ -69,13 +79,17 @@
                                         </p>
                                     <?php endif; ?>
                                 </div>
-                                <a href="<?= BASE_URL ?>/profile"
+                                <a href="<?= BASE_URL ?>/dashboard"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
-                                    Profile
+                                    Dashboard
                                 </a>
                                 <a href="<?= BASE_URL ?>/modules"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
-                                    My Modules
+                                    Modules
+                                </a>
+                                <a href="<?= BASE_URL ?>/discussions/create"
+                                   class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
+                                    Ask Question
                                 </a>
                                 <a href="<?= BASE_URL ?>/logout"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#ba1a1a] transition hover:bg-[#ba1a1a]/5">

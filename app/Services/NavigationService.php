@@ -7,7 +7,7 @@ use Throwable;
 
 class NavigationService
 {
-    public function moduleLinks(int $limit = 3): array
+    public function moduleLinks(int $limit = 3)
     {
         $links = [
             ['label' => 'View all modules', 'href' => BASE_URL . '/modules'],
@@ -31,7 +31,7 @@ class NavigationService
 
             $links[] = [
                 'label' => $moduleName !== '' ? $moduleCode . ': ' . $moduleName : $moduleCode,
-                'href' => BASE_URL . '/modules/' . rawurlencode(strtolower($moduleCode)),
+                'href' => BASE_URL . '/discussions?module=' . rawurlencode($moduleCode),
             ];
 
             $shownModules++;
@@ -44,14 +44,14 @@ class NavigationService
         return $links;
     }
 
-    public function authUser(): ?array
+    public function authUser()
     {
         $authUser = $_SESSION['user'] ?? $_SESSION['auth_user'] ?? null;
 
         return is_array($authUser) ? $authUser : null;
     }
 
-    public function authDisplay(?array $authUser): array
+    public function authDisplay(?array $authUser)
     {
         $authName = trim((string) ($authUser['full_name'] ?? $authUser['name'] ?? $authUser['username'] ?? 'Student'));
         $authUsername = trim((string) ($authUser['username'] ?? ''));

@@ -21,11 +21,14 @@ class Reply
             return [];
         }
 
-        $userNameSelect = $this->userNameSelectSql();
+        $userNameSelect = $this->userNameSelectSql('u');
+        $parentNameSelect = $this->userNameSelectSql('parent_u');
+
         $stmt = $this->db->prepare(
             'SELECT
                 r.id,
                 r.post_id,
+                r.parent_reply_id,
                 r.user_id,
                 r.content,
                 r.is_accepted,
@@ -35,12 +38,16 @@ class Reply
                 u.username,
                 u.role,
                 u.avatar,
-                ' . $userNameSelect . ' AS full_name
-             FROM replies r
-             INNER JOIN posts p ON p.id = r.post_id AND p.deleted_at IS NULL
-             INNER JOIN users u ON u.id = r.user_id
-             WHERE r.post_id = :post_id AND r.deleted_at IS NULL
-             ORDER BY r.is_accepted DESC, r.created_at ASC'
+                ' . $userNameSelect . ' AS full_name,
+                parent_u.username AS parent_author_username,
+                ' . $parentNameSelect . ' AS parent_author_name
+            FROM replies r
+            INNER JOIN posts p ON p.id = r.post_id AND p.deleted_at IS NULL
+            INNER JOIN users u ON u.id = r.user_id
+            LEFT JOIN replies parent_r ON parent_r.id = r.parent_reply_id AND parent_r.deleted_at IS NULL
+            LEFT JOIN users parent_u ON parent_u.id = parent_r.user_id
+            WHERE r.post_id = :post_id AND r.deleted_at IS NULL
+            ORDER BY r.is_accepted DESC, r.created_at ASC'
         );
 
         $stmt->execute(['post_id' => $postId]);
@@ -53,18 +60,24 @@ class Reply
         $postId = (int) ($data['post_id'] ?? 0);
         $userId = (int) ($data['user_id'] ?? 0);
         $content = trim((string) ($data['content'] ?? ''));
+        $parentReplyId = (int) ($data['parent_reply_id'] ?? 0);
 
         if ($postId <= 0 || $userId <= 0 || $content === '') {
             return 0;
         }
 
+        if ($parentReplyId > 0 && !$this->parentReplyBelongsToPost($parentReplyId, $postId)) {
+            $parentReplyId = 0;
+        }
+
         $stmt = $this->db->prepare(
-            'INSERT INTO replies (post_id, user_id, content)
-             VALUES (:post_id, :user_id, :content)'
+            'INSERT INTO replies (post_id, parent_reply_id, user_id, content)
+                    VALUES (:post_id, :parent_reply_id, :user_id, :content)'
         );
 
         $stmt->execute([
             'post_id' => $postId,
+            'parent_reply_id' => $parentReplyId > 0 ? $parentReplyId : null,
             'user_id' => $userId,
             'content' => $content,
         ]);
@@ -74,6 +87,23 @@ class Reply
         $this->touchPost($postId);
 
         return $replyId;
+    }
+
+    private function parentReplyBelongsToPost(int $parentReplyId, int $postId)
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id
+             FROM replies
+             WHERE id = :id AND post_id = :post_id AND deleted_at IS NULL
+             LIMIT 1'
+        );
+
+        $stmt->execute([
+            'id' => $parentReplyId,
+            'post_id' => $postId,
+        ]);
+
+        return $stmt->fetchColumn() !== false;
     }
 
     public function find(int $id)
@@ -198,7 +228,7 @@ class Reply
         }
     }
 
-    private function touchPost(int $postId): void
+    private function touchPost(int $postId)
     {
         if ($postId <= 0) {
             return;
@@ -213,17 +243,17 @@ class Reply
         $stmt->execute(['post_id' => $postId]);
     }
 
-    private function userNameSelectSql()
+    private function userNameSelectSql(string $alias = 'u')
     {
         if ($this->userHasColumn('full_name')) {
-            return 'u.full_name';
+            return $alias . '.full_name';
         }
 
         if ($this->userHasColumn('first_name') && $this->userHasColumn('last_name')) {
-            return "TRIM(CONCAT_WS(' ', u.first_name, u.last_name))";
+            return "TRIM(CONCAT_WS(' ', " . $alias . ".first_name, " . $alias . ".last_name))";
         }
 
-        return 'u.username';
+        return $alias . '.username';
     }
 
     private function userHasColumn(string $column)
@@ -236,4 +266,5 @@ class Reply
 
         return in_array($column, $this->userColumns, true);
     }
+
 }

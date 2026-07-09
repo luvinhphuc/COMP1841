@@ -52,7 +52,7 @@ class App
             return [];
         }
 
-        return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
+        return explode('/', filter_var(rtrim((string) $_GET['url'], '/'), FILTER_SANITIZE_URL));
     }
 
     private function mapRoutes($url)
@@ -73,16 +73,40 @@ class App
             return ['auth', 'logout'];
         }
 
-        if ($url[0] === 'discussions' && isset($url[1])) {
+        if ($url[0] === 'discussions') {
+            if (!isset($url[1]) && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                return ['post', 'store'];
+            }
+
             $discussionActionMap = [
-                'reply-edit' => 'replyEdit',
-                'reply-update' => 'replyUpdate',
-                'reply-delete' => 'replyDelete',
-                'reply-destroy' => 'replyDestroy',
+                'create' => ['post', 'create'],
+                'store' => ['post', 'store'],
+                'edit' => ['post', 'edit'],
+                'update' => ['post', 'update'],
+                'delete' => ['post', 'delete'],
+                'destroy' => ['post', 'destroy'],
+                'reply' => ['reply', 'store'],
+                'reply-edit' => ['reply', 'edit'],
+                'reply-update' => ['reply', 'update'],
+                'reply-delete' => ['reply', 'delete'],
+                'reply-destroy' => ['reply', 'destroy'],
             ];
 
-            if (isset($discussionActionMap[$url[1]])) {
-                return ['discussions', $discussionActionMap[$url[1]], $url[2] ?? null];
+            if (isset($url[1], $discussionActionMap[$url[1]])) {
+                $mappedRoute = [
+                    $discussionActionMap[$url[1]][0],
+                    $discussionActionMap[$url[1]][1],
+                ];
+
+                if (isset($url[2])) {
+                    $mappedRoute[] = $url[2];
+                }
+
+                return $mappedRoute;
+            }
+
+            if (!isset($url[1])) {
+                return $url;
             }
 
             $reservedDiscussionActions = [

@@ -17,7 +17,7 @@
     const userMenuDropdown = document.querySelector('[data-user-menu-dropdown]');
     const gsap = window.gsap;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const initialMenuKey = primaryItems.find((item) => item.dataset.active === 'true')?.dataset.menuKey ?? 'home';
+    const initialMenuKey = primaryItems.find((item) => item.dataset.active === 'true')?.dataset.menuKey ?? 'dashboard';
     let menuAnimation;
     let isTransitioning = false;
 

@@ -17,7 +17,7 @@ class AuthController extends Controller
             'old' => $_SESSION['login_old'] ?? [],
             'success' => $_SESSION['login_success'] ?? null,
             'hasFieldErrors' => $this->hasLoginFieldErrors($errors),
-            'pageScripts' => ['login.js'],
+            'pageScripts' => ['form-utils.js', 'login.js'],
         ]);
 
         unset($_SESSION['login_errors'], $_SESSION['login_old'], $_SESSION['login_success']);
@@ -31,8 +31,8 @@ class AuthController extends Controller
         }
 
         $data = [
-            'username' => trim($_POST['username'] ?? ''),
-            'password' => $_POST['password'] ?? '',
+            'username' => trim((string) ($_POST['username'] ?? '')),
+            'password' => (string) ($_POST['password'] ?? ''),
         ];
 
         try {
@@ -62,7 +62,7 @@ class AuthController extends Controller
             'errors' => $errors,
             'old' => $_SESSION['register_old'] ?? [],
             'hasFieldErrors' => $this->hasRegisterFieldErrors($errors),
-            'pageScripts' => ['register.js'],
+            'pageScripts' => ['form-utils.js', 'register.js'],
         ]);
 
         unset($_SESSION['register_errors'], $_SESSION['register_old']);
@@ -75,16 +75,16 @@ class AuthController extends Controller
             exit;
         }
 
-        $firstName = trim($_POST['first_name'] ?? '');
-        $lastName = trim($_POST['last_name'] ?? '');
+        $firstName = trim((string) ($_POST['first_name'] ?? ''));
+        $lastName = trim((string) ($_POST['last_name'] ?? ''));
 
         $data = [
             'first_name' => $firstName,
             'last_name' => $lastName,
-            'username' => trim($_POST['username'] ?? ''),
-            'email' => trim($_POST['email'] ?? ''),
-            'password' => $_POST['password'] ?? '',
-            'confirm_password' => $_POST['confirm_password'] ?? '',
+            'username' => trim((string) ($_POST['username'] ?? '')),
+            'email' => trim((string) ($_POST['email'] ?? '')),
+            'password' => (string) ($_POST['password'] ?? ''),
+            'confirm_password' => (string) ($_POST['confirm_password'] ?? ''),
         ];
 
         try {
@@ -114,7 +114,7 @@ class AuthController extends Controller
         exit;
     }
 
-    private function redirectBackWithErrors($errors, array $old = [])
+    private function redirectBackWithErrors($errors, $old = [])
     {
         unset($old['password'], $old['confirm_password']);
 
@@ -125,7 +125,7 @@ class AuthController extends Controller
         exit;
     }
 
-    private function hasRegisterFieldErrors(array $errors): bool
+    private function hasRegisterFieldErrors($errors)
     {
         foreach (['first_name', 'last_name', 'username', 'email', 'password', 'confirm_password'] as $field) {
             if (trim((string) ($errors[$field] ?? '')) !== '') {
@@ -136,7 +136,7 @@ class AuthController extends Controller
         return false;
     }
 
-    private function hasLoginFieldErrors(array $errors): bool
+    private function hasLoginFieldErrors($errors)
     {
         foreach (['username', 'password'] as $field) {
             if (trim((string) ($errors[$field] ?? '')) !== '') {

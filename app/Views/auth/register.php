@@ -1,7 +1,11 @@
 <?php
-$errors = $errors ?? [];
-$old = $old ?? [];
-$hasFieldErrors = $hasFieldErrors ?? false;
+/**
+ * Variables passed from AuthController::register()
+ *
+ * @var array $errors
+ * @var array $old
+ * @var bool $hasFieldErrors
+ */
 ?>
 
 <section class="min-h-screen bg-[#F7F8FB] px-4 py-8 [font-family:Inter,ui-sans-serif,system-ui,sans-serif] text-[#111827] sm:px-6 lg:px-10 lg:py-10">
@@ -20,7 +24,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
 
                 <?php if (!empty($errors['general'])): ?>
                     <div class="mb-5 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]" role="alert">
-                        <?= htmlspecialchars((string) $errors['general'], ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars($errors['general'], ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 <?php endif; ?>
 

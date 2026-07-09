@@ -1,8 +1,12 @@
 <?php
-$errors = $errors ?? [];
-$old = $old ?? [];
-$success = $success ?? null;
-$hasFieldErrors = $hasFieldErrors ?? false;
+/**
+ * Variables passed from AuthController::login()
+ *
+ * @var array $errors
+ * @var array $old
+ * @var string|null $success
+ * @var bool $hasFieldErrors
+ */
 ?>
 
 <section class="min-h-screen bg-[#F7F8FB] px-4 py-8 font-sans text-[#111827] sm:px-6 lg:px-10 lg:py-10">
@@ -26,7 +30,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
                 <?php endif; ?>
 
                 <?php if (!empty($errors['general'])): ?>
-                    <div class="mb-5 border-y border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]" role="alert">
+                    <div class="mb-5 rounded-2xl bg-[#FEF2F2] p-4 text-sm leading-6 text-[#991B1B] ring-1 ring-[#FECACA]" role="alert">
                         <?= htmlspecialchars($errors['general'], ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 <?php endif; ?>
@@ -34,7 +38,7 @@ $hasFieldErrors = $hasFieldErrors ?? false;
                 <p id="login-error-summary"
                    class="<?= $hasFieldErrors ? 'mb-5 border-y border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]' : 'sr-only' ?>"
                    <?= $hasFieldErrors ? 'role="alert" tabindex="-1"' : '' ?>>
-                    <?= $hasFieldErrors ? 'Please fix the highlighted fields and try again.' : '' ?>
+                    <?= $hasFieldErrors ? 'Please fill the highlighted fields up and try again.' : '' ?>
                 </p>
 
                 <form id="login-form" action="<?= BASE_URL ?>/login/authenticate" method="post" class="grid gap-5" novalidate>

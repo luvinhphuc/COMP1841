@@ -1,9 +1,18 @@
+<?php
+/**
+ * Variables passed from App\Core\Controller::view()
+ *
+ * @var array|null $flashToast
+ * @var string $navbarScriptUrl
+ * @var array $pageScriptUrls
+ */
+?>
 </main>
 
-<?php $flashToast = is_array($flashToast ?? null) ? $flashToast : null; ?>
 <?php if ($flashToast !== null): ?>
     <?php
-        $toastType = (string) ($flashToast['type'] ?? 'info');
+        $toastType = trim((string) ($flashToast['type'] ?? 'info'));
+        $toastType = $toastType !== '' ? $toastType : 'info';
         $toastTitle = trim((string) ($flashToast['title'] ?? ''));
         $toastMessage = trim((string) ($flashToast['message'] ?? ''));
         $isErrorToast = $toastType === 'error';
@@ -55,7 +64,7 @@
 <footer class="flex w-full flex-col items-center gap-4 border-t border-[#222] pt-[25px] pb-6">
     <div class="flex flex-col items-start gap-1">
         <img
-            src="<?= BASE_URL?>/assets/images/shared/greenwich-logo.png"
+            src="<?= BASE_URL ?>/assets/images/shared/greenwich-logo.png"
             alt="University of Greenwich"
             class="h-[74px] w-[202px] object-contain"
         >
