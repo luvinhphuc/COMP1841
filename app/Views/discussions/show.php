@@ -6,22 +6,18 @@
  * @var array $replies
  * @var array|null $acceptedReply
  * @var array $modalReplies
- * @var array $attachments
  * @var array $relatedDiscussions
  * @var array $replyErrors
  * @var array $replyOld
  * @var array $modules
  * @var array $discussionEditErrors
- * @var array $discussionEditOld
  * @var string $discussionEditTitle
- * @var int|string $discussionEditModuleId
+ * @var string $discussionEditModuleId
  * @var string $discussionEditContent
  * @var array $replyEditErrors
  * @var array $replyEditOld
  * @var int $activeReplyEditId
  * @var string $openModalId
- * @var string $statusTone
- * @var int $replyCount
  * @var bool $isLoggedIn
  * @var string $csrfToken
  */
@@ -40,7 +36,7 @@ $fieldRing = static function (array $errors, string $field) {
 <section class="box-border min-h-screen bg-[#F7F8FB] px-4 py-8 font-sans text-[#111827] sm:px-6 lg:px-10 lg:py-10">
     <div class="mx-auto flex max-w-[1180px] flex-col gap-8">
         <header class="max-w-4xl">
-            <a href="<?= htmlspecialchars(($discussion['back_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
+            <a href="<?= htmlspecialchars($discussion['back_url'], ENT_QUOTES, 'UTF-8') ?>"
                 class="inline-flex min-h-10 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-[#1E3A8A] ring-1 ring-[#E5E7EB] transition duration-200 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                 <svg viewBox="0 0 20 20" class="size-4 shrink-0" fill="none" aria-hidden="true">
                     <path d="M12.5 5 7.5 10l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
@@ -50,25 +46,25 @@ $fieldRing = static function (array $errors, string $field) {
             </a>
 
             <div class="mt-6 flex flex-wrap gap-2">
-                <a href="<?= htmlspecialchars(($discussion['module_url'] ?? BASE_URL . '/discussions'), ENT_QUOTES, 'UTF-8') ?>"
+                <a href="<?= htmlspecialchars($discussion['module_url'], ENT_QUOTES, 'UTF-8') ?>"
                     class="inline-flex max-w-full items-center rounded-full bg-[#EEF2FF] px-3 py-1 font-mono text-xs font-semibold text-[#1E3A8A] transition duration-200 hover:bg-[#DBEAFE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                     <span
-                        class="truncate"><?= htmlspecialchars(($discussion['module'] ?? 'MODULE'), ENT_QUOTES, 'UTF-8') ?></span>
+                        class="truncate"><?= htmlspecialchars($discussion['module'], ENT_QUOTES, 'UTF-8') ?></span>
                 </a>
                 <span
-                    class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold <?= $statusTone === 'green' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F3F4F6] text-[#374151]' ?>">
-                    <?php if ($statusTone === 'green'): ?>
+                    class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold <?= $discussion['status_tone'] === 'green' ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#F3F4F6] text-[#374151]' ?>">
+                    <?php if ($discussion['status_tone'] === 'green'): ?>
                     <svg viewBox="0 0 16 16" class="size-3.5 shrink-0" fill="none" aria-hidden="true">
                         <path d="m4 8.2 2.4 2.4L12 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
                     <?php endif; ?>
-                    <?= htmlspecialchars(($discussion['status'] ?? 'Open'), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($discussion['status'], ENT_QUOTES, 'UTF-8') ?>
                 </span>
             </div>
 
             <h1 class="mt-4 text-3xl font-semibold text-[#0F172A] sm:text-5xl" dir="auto">
-                <?= htmlspecialchars(($discussion['title'] ?? 'Untitled question'), ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($discussion['title'], ENT_QUOTES, 'UTF-8') ?>
             </h1>
 
             <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#4B5563]">
@@ -76,11 +72,11 @@ $fieldRing = static function (array $errors, string $field) {
                     <span
                         class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-semibold text-white"
                         aria-hidden="true">
-                        <?= htmlspecialchars(($discussion['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars($discussion['avatar'], ENT_QUOTES, 'UTF-8') ?>
                     </span>
                     <span class="min-w-0 ">
                         <span class="font-semibold text-[#111827]">
-                            <?= htmlspecialchars(($discussion['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars($discussion['author'], ENT_QUOTES, 'UTF-8') ?>
                         </span>
                         <?php if (!empty($discussion['author_handle'])): ?>
                         <span
@@ -88,12 +84,13 @@ $fieldRing = static function (array $errors, string $field) {
                         <?php endif; ?>
                     </span>
                 </span>
-                <span><?= htmlspecialchars(($discussion['created_at'] ?? 'Nơ'), ENT_QUOTES, 'UTF-8') ?></span>
+                <span><?= htmlspecialchars($discussion['created_at'], ENT_QUOTES, 'UTF-8') ?></span>
             </div>
         </header>
 
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="flex min-w-0 flex-col gap-6">
+                <!-- Discussion content and actions -->
                 <article class="bg-white p-5 rounded-2xl sm:p-7 border border-gray-200"
                     aria-labelledby="question-content-heading">
                     <div class="flex justify-between pb-5 border-b border-gray-200">
@@ -112,7 +109,7 @@ $fieldRing = static function (array $errors, string $field) {
                             <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
                                 role="menu" data-action-menu-dropdown data-open="false">
                                 <?php if (!empty($discussion['can_edit'])): ?>
-                                <a href="<?= htmlspecialchars(($discussion['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                <a href="<?= htmlspecialchars($discussion['edit_url'], ENT_QUOTES, 'UTF-8') ?>"
                                     data-open-modal="discussion-edit-modal"
                                     class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1E3A8A]"
                                     role="menuitem">
@@ -127,7 +124,7 @@ $fieldRing = static function (array $errors, string $field) {
                                 </a>
                                 <?php endif; ?>
                                 <?php if (!empty($discussion['can_delete'])): ?>
-                                <a href="<?= htmlspecialchars(($discussion['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                <a href="<?= htmlspecialchars($discussion['delete_url'], ENT_QUOTES, 'UTF-8') ?>"
                                     data-open-modal="discussion-delete-modal"
                                     class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#B91C1C] transition duration-150 hover:bg-[#FEF2F2] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#B91C1C]"
                                     role="menuitem">
@@ -172,20 +169,11 @@ $fieldRing = static function (array $errors, string $field) {
                         </div>
                     </div>
 
-                    <?php
-                        $contentSegments = $discussion['content_segments'] ?? [
-                            [
-                                'type' => 'text',
-                                'content' => ($discussion['content'] ?? ''),
-                            ],
-                        ];
-                    ?>
                     <div class="grid gap-4 pt-5 text-base leading-7 text-[#111827]">
-                        <?php foreach ($contentSegments as $contentSegment): ?>
+                        <?php foreach ($discussion['content_segments'] as $contentSegment): ?>
                         <?php
-                            $segmentType = ($contentSegment['type'] ?? 'text');
-                            $rawSegmentContent = ($contentSegment['content'] ?? '');
-                            $segmentContent = is_scalar($rawSegmentContent) ? $rawSegmentContent . '' : '';
+                            $segmentType = $contentSegment['type'];
+                            $segmentContent = $contentSegment['content'];
                         ?>
                         <?php if (trim((string) $segmentContent) !== ''): ?>
                         <?php if ($segmentType === 'code'): ?>
@@ -196,16 +184,15 @@ $fieldRing = static function (array $errors, string $field) {
                         <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
-                    <?php if (!empty($attachments)): ?>
-                    <section class="" aria-labelledby="discussion-attachments-heading">
-                        <!-- <h2 id="discussion-attachments-heading" class="text-base font-semibold text-[#0F172A]">
-                                        Attachments</h2> -->
+                    <?php if (!empty($discussion['attachments'])): ?>
+                    <section aria-labelledby="discussion-attachments-heading">
+                        <h2 id="discussion-attachments-heading" class="sr-only">Discussion attachments</h2>
                         <div class="mt-4 grid gap-4">
-                            <?php foreach ($attachments as $attachment): ?>
+                            <?php foreach ($discussion['attachments'] as $attachment): ?>
                             <?php
-                                    $attachmentType = ($attachment['type'] ?? 'document');
-                                    $attachmentUrl = ($attachment['url'] ?? '#');
-                                    $attachmentName = ($attachment['name'] ?? 'Attachment');
+                                    $attachmentType = $attachment['type'];
+                                    $attachmentUrl = $attachment['url'];
+                                    $attachmentName = $attachment['name'];
                                     ?>
 
                             <?php if ($attachmentType === 'image'): ?>
@@ -213,20 +200,12 @@ $fieldRing = static function (array $errors, string $field) {
                                 <img src="<?= htmlspecialchars($attachmentUrl, ENT_QUOTES, 'UTF-8') ?>"
                                     alt="<?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>"
                                     class="max-h-[520px] w-full object-contain">
-                                <!-- <figcaption
-                                    class="border-t border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-5 text-[#4B5563] ">
-                                    <?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>
-                                    <?php if (!empty($attachment['size'])): ?>
-                                    <span class="ml-1">&middot;
-                                        <?= htmlspecialchars($attachment['size'], ENT_QUOTES, 'UTF-8') ?></span>
-                                    <?php endif; ?>
-                                </figcaption> -->
                             </figure>
                             <?php elseif ($attachmentType === 'video'): ?>
                             <figure class="overflow-hidden rounded-2xl bg-black ring-1 ring-[#E5E7EB]">
                                 <video controls preload="metadata" class="max-h-[520px] w-full">
                                     <source src="<?= htmlspecialchars($attachmentUrl, ENT_QUOTES, 'UTF-8') ?>"
-                                        type="<?= htmlspecialchars(($attachment['mime_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                        type="<?= htmlspecialchars($attachment['mime_type'], ENT_QUOTES, 'UTF-8') ?>">
                                     Your browser cannot play this video.
                                 </video>
                                 <figcaption
@@ -247,7 +226,7 @@ $fieldRing = static function (array $errors, string $field) {
                                         <?= htmlspecialchars($attachmentName, ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                     <span class="mt-1 block text-xs leading-4 text-[#4B5563]">
-                                        <?= htmlspecialchars(($attachment['size'] ?? 'Document'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars($attachment['size'], ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </span>
                                 <span class="shrink-0 text-sm font-semibold text-[#1E3A8A]">Open file</span>
@@ -259,20 +238,21 @@ $fieldRing = static function (array $errors, string $field) {
                     <?php endif; ?>
                 </article>
 
+                <!-- Accepted reply -->
                 <?php if ($acceptedReply !== null): ?>
                 <?php
-                    $acceptedReplyId = (int) ($acceptedReply['id'] ?? 0);
+                    $acceptedReplyId = (int) $acceptedReply['id'];
                     $acceptedReplyDomId = htmlspecialchars($acceptedReplyId, ENT_QUOTES, 'UTF-8');
                     $canEditAcceptedReply = !empty($acceptedReply['can_edit']);
                     $canDeleteAcceptedReply = !empty($acceptedReply['can_delete']);
-                    $acceptedReplyParentUsername = trim((string) ($acceptedReply['parent_author_username'] ?? ''));
-                    $acceptedReplyTargetUsername = trim((string) ($acceptedReply['author_username'] ?? ''));
+                    $acceptedReplyParentUsername = trim((string) $acceptedReply['parent_author_username']);
+                    $acceptedReplyTargetUsername = trim((string) $acceptedReply['author_username']);
 
                     if ($acceptedReplyTargetUsername === '') {
-                        $acceptedReplyTargetUsername = ltrim(trim((string) ($acceptedReply['author_handle'] ?? 'student')), '@');
+                        $acceptedReplyTargetUsername = ltrim(trim((string) $acceptedReply['author_handle']), '@');
                     }
                 ?>
-                <section id="reply-<?= htmlspecialchars(($acceptedReply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
+                <section id="reply-<?= htmlspecialchars($acceptedReply['id'], ENT_QUOTES, 'UTF-8') ?>"
                     class="rounded-xl bg-[#F0FDF4] p-5 ring-1 ring-[#BBF7D0] sm:p-6"
                     aria-labelledby="accepted-answer-heading">
                     <div class="flex items-start gap-4">
@@ -304,7 +284,7 @@ $fieldRing = static function (array $errors, string $field) {
                                     <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
                                         role="menu" data-action-menu-dropdown data-open="false">
                                         <?php if ($canEditAcceptedReply): ?>
-                                        <a href="<?= htmlspecialchars(($acceptedReply['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                        <a href="<?= htmlspecialchars($acceptedReply['edit_url'], ENT_QUOTES, 'UTF-8') ?>"
                                             data-open-modal="reply-edit-modal-<?= $acceptedReplyDomId ?>"
                                             class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#14532D] transition duration-150 hover:bg-[#F0FDF4] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#166534]"
                                             role="menuitem">
@@ -324,7 +304,7 @@ $fieldRing = static function (array $errors, string $field) {
                                         <?php if ($canDeleteAcceptedReply): ?>
                                         <div
                                             class="<?= $canEditAcceptedReply ? 'mt-1 border-t border-[#E5E7EB] pt-1' : '' ?>">
-                                            <a href="<?= htmlspecialchars(($acceptedReply['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                            <a href="<?= htmlspecialchars($acceptedReply['delete_url'], ENT_QUOTES, 'UTF-8') ?>"
                                                 data-open-modal="reply-delete-modal-<?= $acceptedReplyDomId ?>"
                                                 class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#B91C1C] transition duration-150 hover:bg-[#FEF2F2] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#B91C1C]"
                                                 role="menuitem">
@@ -351,13 +331,13 @@ $fieldRing = static function (array $errors, string $field) {
                             </p>
                             <?php endif; ?>
                             <p class="mt-2 text-base text-[#14532D] " dir="auto">
-                                <?= htmlspecialchars(($acceptedReply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($acceptedReply['content'], ENT_QUOTES, 'UTF-8') ?>
                             </p>
-                            <?php foreach (($acceptedReply['attachments'] ?? []) as $attachment): ?>
+                            <?php foreach ($acceptedReply['attachments'] as $attachment): ?>
                             <figure class="mt-4 overflow-hidden rounded-2xl bg-white/80 ring-1 ring-[#BBF7D0]">
                                 <img
-                                    src="<?= htmlspecialchars(($attachment['url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                    alt="<?= htmlspecialchars(($attachment['name'] ?? 'Comment image'), ENT_QUOTES, 'UTF-8') ?>"
+                                    src="<?= htmlspecialchars($attachment['url'], ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="<?= htmlspecialchars($attachment['name'], ENT_QUOTES, 'UTF-8') ?>"
                                     class="max-h-[420px] w-full object-contain"
                                 >
                             </figure>
@@ -372,22 +352,22 @@ $fieldRing = static function (array $errors, string $field) {
                             </button>
                             <?php endif; ?>
                             <p class="mt-4 text-sm font-medium text-[#166534]">
-                                <?= htmlspecialchars(($acceptedReply['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($acceptedReply['author'], ENT_QUOTES, 'UTF-8') ?>
                                 &middot;
-                                <?= htmlspecialchars(($acceptedReply['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($acceptedReply['created_at'], ENT_QUOTES, 'UTF-8') ?>
                             </p>
                         </div>
                     </div>
                 </section>
                 <?php endif; ?>
 
-                <!-- REPLY -->
+                <!-- Replies -->
 
                 <section class="flex flex-col gap-4" id="replies" aria-labelledby="replies-heading">
                     <div class="flex items-center justify-between gap-3">
                         <h2 id="replies-heading" class="text-xl font-semibold text-[#0F172A]">Comments</h2>
                         <span
-                            class="text-sm font-medium text-[#4B5563]"><?= htmlspecialchars($replyCount, ENT_QUOTES, 'UTF-8') ?>
+                            class="text-sm font-medium text-[#4B5563]"><?= htmlspecialchars($discussion['replies'], ENT_QUOTES, 'UTF-8') ?>
                             total</span>
                     </div>
 
@@ -406,12 +386,12 @@ $fieldRing = static function (array $errors, string $field) {
                         <form action="<?= BASE_URL ?>/discussions/reply" method="post" enctype="multipart/form-data"
                             class="mt-4 grid gap-3">
                             <input type="hidden" name="_csrf_token"
-                                value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="post_id"
-                                value="<?= htmlspecialchars(($discussion['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>">
+                                value="<?= htmlspecialchars($discussion['id'], ENT_QUOTES, 'UTF-8') ?>">
                             <input id="reply-parent-id" type="hidden" name="parent_reply_id" value="">
                             <input type="hidden" name="slug"
-                                value="<?= htmlspecialchars(($discussion['slug'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                                value="<?= htmlspecialchars($discussion['slug'], ENT_QUOTES, 'UTF-8') ?>">
                             <div id="reply-parent-preview"
                                 class="hidden items-center justify-between gap-3 rounded-lg bg-[#EEF2FF] px-4 py-3 text-sm text-[#1E3A8A]"
                                 data-reply-parent-preview>
@@ -450,36 +430,36 @@ $fieldRing = static function (array $errors, string $field) {
                     <?php if (!empty($replies)): ?>
                     <?php foreach ($replies as $reply): ?>
                     <?php
-                        $replyId = (int) ($reply['id'] ?? 0);
+                        $replyId = (int) $reply['id'];
                         $replyDomId = htmlspecialchars($replyId, ENT_QUOTES, 'UTF-8');
                         $canEditReply = !empty($reply['can_edit']);
                         $canDeleteReply = !empty($reply['can_delete']);
-                        $parentReplyUsername = trim((string) ($reply['parent_author_username'] ?? ''));
-                        $replyTargetUsername = trim((string) ($reply['author_username'] ?? ''));
+                        $parentReplyUsername = trim((string) $reply['parent_author_username']);
+                        $replyTargetUsername = trim((string) $reply['author_username']);
 
                         if ($replyTargetUsername === '') {
-                            $replyTargetUsername = ltrim(trim((string) ($reply['author_handle'] ?? 'student')), '@');
+                            $replyTargetUsername = ltrim(trim((string) $reply['author_handle']), '@');
                         }
                     ?>
-                    <article id="reply-<?= htmlspecialchars(($reply['id'] ?? 0), ENT_QUOTES, 'UTF-8') ?>"
+                    <article id="reply-<?= htmlspecialchars($reply['id'], ENT_QUOTES, 'UTF-8') ?>"
                         class="flex gap-3 rounded-2xl border border-[#e6e8ec] bg-white p-5 sm:p-6">
                         <span
                             class="flex size-11 items-center justify-center rounded-full bg-[#DBEAFE] text-sm font-semibold text-[#1E3A8A]"
                             aria-hidden="true">
-                            <?= htmlspecialchars(($reply['avatar'] ?? 'S'), ENT_QUOTES, 'UTF-8') ?>
+                            <?= htmlspecialchars($reply['avatar'], ENT_QUOTES, 'UTF-8') ?>
                         </span>
                         <div class="w-full">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                     <h3 class="font-semibold text-[#111827] " dir="auto">
-                                        <?= htmlspecialchars(($reply['author'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars($reply['author'], ENT_QUOTES, 'UTF-8') ?>
                                     </h3>
                                     <span
                                         class="rounded-full bg-[#F3F4F6] px-2 py-0.5 text-xs font-semibold text-[#374151]">
-                                        <?= htmlspecialchars(($reply['role'] ?? 'Student'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars($reply['role'], ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                     <span class="text-sm text-[#6B7280]">
-                                        <?= htmlspecialchars(($reply['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars($reply['created_at'], ENT_QUOTES, 'UTF-8') ?>
                                     </span>
                                 </div>
                                 <?php if ($canEditReply || $canDeleteReply): ?>
@@ -497,7 +477,7 @@ $fieldRing = static function (array $errors, string $field) {
                                     <div class="invisible absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-lg bg-white p-2 opacity-0 ring-1 ring-[#D1D5DB] shadow-[0_18px_38px_rgba(25,28,31,0.12)] transition duration-150 data-[open=true]:visible data-[open=true]:opacity-100"
                                         role="menu" data-action-menu-dropdown data-open="false">
                                         <?php if ($canEditReply): ?>
-                                        <a href="<?= htmlspecialchars(($reply['edit_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                        <a href="<?= htmlspecialchars($reply['edit_url'], ENT_QUOTES, 'UTF-8') ?>"
                                             data-open-modal="reply-edit-modal-<?= $replyDomId ?>"
                                             class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#1E3A8A]"
                                             role="menuitem">
@@ -516,7 +496,7 @@ $fieldRing = static function (array $errors, string $field) {
 
                                         <?php if ($canDeleteReply): ?>
                                         <div class="<?= $canEditReply ? 'mt-1 border-t border-[#E5E7EB] pt-1' : '' ?>">
-                                            <a href="<?= htmlspecialchars(($reply['delete_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                                            <a href="<?= htmlspecialchars($reply['delete_url'], ENT_QUOTES, 'UTF-8') ?>"
                                                 data-open-modal="reply-delete-modal-<?= $replyDomId ?>"
                                                 class="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-[#B91C1C] transition duration-150 hover:bg-[#FEF2F2] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#B91C1C]"
                                                 role="menuitem">
@@ -543,12 +523,12 @@ $fieldRing = static function (array $errors, string $field) {
                             </p>
                             <?php endif; ?>
                             <p class="text-base text-[#111827] " dir="auto">
-                                <?= htmlspecialchars(($reply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
-                            <?php foreach (($reply['attachments'] ?? []) as $attachment): ?>
+                                <?= htmlspecialchars($reply['content'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <?php foreach ($reply['attachments'] as $attachment): ?>
                             <figure class="mt-4 overflow-hidden rounded-2xl bg-[#F7F8FB] ring-1 ring-[#E5E7EB]">
                                 <img
-                                    src="<?= htmlspecialchars(($attachment['url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                    alt="<?= htmlspecialchars(($attachment['name'] ?? 'Comment image'), ENT_QUOTES, 'UTF-8') ?>"
+                                    src="<?= htmlspecialchars($attachment['url'], ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="<?= htmlspecialchars($attachment['name'], ENT_QUOTES, 'UTF-8') ?>"
                                     class="max-h-[420px] w-full object-contain"
                                 >
                             </figure>
@@ -582,6 +562,7 @@ $fieldRing = static function (array $errors, string $field) {
 
             </div>
 
+            <!-- Discussion metadata and related discussions -->
             <aside class="flex flex-col border-[#e6e8ec] lg:sticky lg:top-28 lg:self-start lg:border-l lg:pl-8"
                 aria-label="Discussion sidebar">
                 <section class="border-b border-[#e6e8ec] pb-5" aria-labelledby="about-discussion-heading">
@@ -591,7 +572,7 @@ $fieldRing = static function (array $errors, string $field) {
                         <div>
                             <dt class="font-medium text-[#4B5563]">Module</dt>
                             <dd class="mt-1 font-semibold text-[#111827] ">
-                                <?= htmlspecialchars(($discussion['module_name'] ?? 'Module discussion'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($discussion['module_name'], ENT_QUOTES, 'UTF-8') ?>
                             </dd>
                         </div>
                         <div>
@@ -601,7 +582,7 @@ $fieldRing = static function (array $errors, string $field) {
                         <div>
                             <dt class="font-medium text-[#4B5563]">Last activity</dt>
                             <dd class="mt-1 font-semibold text-[#111827]">
-                                <?= htmlspecialchars(($discussion['updated_at'] ?? $discussion['created_at'] ?? 'Recently'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($discussion['updated_at'], ENT_QUOTES, 'UTF-8') ?>
                             </dd>
                         </div>
                     </dl>
@@ -613,14 +594,14 @@ $fieldRing = static function (array $errors, string $field) {
                     <div class="mt-4 grid gap-4">
                         <?php if (!empty($relatedDiscussions)): ?>
                         <?php foreach ($relatedDiscussions as $related): ?>
-                        <a href="<?= htmlspecialchars(($related['url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                        <a href="<?= htmlspecialchars($related['url'], ENT_QUOTES, 'UTF-8') ?>"
                             class="block rounded-md transition duration-200 hover:text-[#1E3A8A] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                             <span class="block text-sm font-semibold leading-5 text-[#111827] " dir="auto">
-                                <?= htmlspecialchars(($related['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
+                                <?= htmlspecialchars($related['title'], ENT_QUOTES, 'UTF-8') ?>
                             </span>
                             <span class="mt-1 block text-xs font-medium text-[#4B5563]">
-                                <?= htmlspecialchars(($related['replies'] ?? 0), ENT_QUOTES, 'UTF-8') ?>
-                                <?= (($related['replies'] ?? 0)) === 1 ? 'reply' : 'replies' ?>
+                                <?= htmlspecialchars($related['replies'], ENT_QUOTES, 'UTF-8') ?>
+                                <?= $related['replies'] === 1 ? 'reply' : 'replies' ?>
                             </span>
                         </a>
                         <?php endforeach; ?>
@@ -634,6 +615,7 @@ $fieldRing = static function (array $errors, string $field) {
             </aside>
         </div>
 
+        <!-- Discussion edit modal -->
         <?php if (!empty($discussion['can_edit'])): ?>
         <dialog id="discussion-edit-modal" data-modal
             <?= $openModalId === 'discussion-edit-modal' ? 'data-initial-open="true"' : '' ?>
@@ -665,10 +647,10 @@ $fieldRing = static function (array $errors, string $field) {
                 </div>
                 <?php endif; ?>
 
-                <form action="<?= htmlspecialchars(($discussion['update_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars($discussion['update_url'], ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-5 grid gap-4" novalidate>
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
 
                     <div>
                         <label for="discussion-edit-title"
@@ -741,6 +723,7 @@ $fieldRing = static function (array $errors, string $field) {
         </dialog>
         <?php endif; ?>
 
+        <!-- Discussion delete modal -->
         <?php if (!empty($discussion['can_delete'])): ?>
         <dialog id="discussion-delete-modal" data-modal
             <?= $openModalId === 'discussion-delete-modal' ? 'data-initial-open="true"' : '' ?>
@@ -767,13 +750,13 @@ $fieldRing = static function (array $errors, string $field) {
 
                 <div class="mt-5 rounded-2xl bg-[#F7F8FB] p-4 text-sm leading-6 text-[#111827] ring-1 ring-[#E5E7EB] "
                     dir="auto">
-                    <?= htmlspecialchars(($discussion['title'] ?? 'Untitled discussion'), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($discussion['title'], ENT_QUOTES, 'UTF-8') ?>
                 </div>
 
-                <form action="<?= htmlspecialchars(($discussion['destroy_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars($discussion['destroy_url'], ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-6 flex flex-wrap justify-end gap-3">
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                     <button type="button" data-close-modal
                         class="inline-flex min-h-10 items-center justify-center rounded-2xl bg-[#EEF2FF] px-4 text-sm font-semibold text-[#1E3A8A] transition duration-200 hover:bg-[#DBEAFE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                         Cancel
@@ -787,13 +770,14 @@ $fieldRing = static function (array $errors, string $field) {
         </dialog>
         <?php endif; ?>
 
+        <!-- Reply edit and delete modals -->
         <?php foreach ($modalReplies as $replyModal): ?>
         <?php
-            $replyModalId = (int) ($replyModal['id'] ?? 0);
+            $replyModalId = (int) $replyModal['id'];
             $replyModalDomId = htmlspecialchars($replyModalId, ENT_QUOTES, 'UTF-8');
             $isActiveReplyEdit = $activeReplyEditId === $replyModalId;
             $currentReplyErrors = $isActiveReplyEdit ? $replyEditErrors : [];
-            $currentReplyContent = (string) ($replyModal['content'] ?? '');
+            $currentReplyContent = (string) $replyModal['content'];
 
             if ($isActiveReplyEdit && array_key_exists('content', $replyEditOld)) {
                 $currentReplyContent = (string) $replyEditOld['content'];
@@ -829,10 +813,10 @@ $fieldRing = static function (array $errors, string $field) {
                 </div>
                 <?php endif; ?>
 
-                <form action="<?= htmlspecialchars(($replyModal['update_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars($replyModal['update_url'], ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-5 grid gap-4">
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                     <div>
                         <label for="reply-edit-content-<?= $replyModalDomId ?>" class="sr-only">Reply
                             content</label>
@@ -889,13 +873,13 @@ $fieldRing = static function (array $errors, string $field) {
 
                 <div class="mt-5 rounded-2xl bg-[#F7F8FB] p-4 text-sm leading-6 text-[#111827] ring-1 ring-[#E5E7EB] "
                     dir="auto">
-                    <?= htmlspecialchars(($replyModal['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars($replyModal['content'], ENT_QUOTES, 'UTF-8') ?>
                 </div>
 
-                <form action="<?= htmlspecialchars(($replyModal['destroy_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
+                <form action="<?= htmlspecialchars($replyModal['destroy_url'], ENT_QUOTES, 'UTF-8') ?>"
                     method="post" class="mt-6 flex flex-wrap justify-end gap-3">
                     <input type="hidden" name="_csrf_token"
-                        value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                     <button type="button" data-close-modal
                         class="inline-flex min-h-10 items-center justify-center rounded-2xl bg-[#EEF2FF] px-4 text-sm font-semibold text-[#1E3A8A] transition duration-200 hover:bg-[#DBEAFE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
                         Cancel

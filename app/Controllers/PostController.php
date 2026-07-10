@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Database;
+use App\Helpers\FormatHelper;
 use App\Helpers\PermissionHelper;
 use App\Models\Media;
 use App\Models\Module;
@@ -122,8 +123,7 @@ class PostController extends Controller
             $post = $postModel->find($postId);
             $slug = trim((string) ($post['slug'] ?? ''));
 
-            header('Location: ' . BASE_URL . '/discussions/' . rawurlencode($slug !== '' ? $slug : $postId));
-            exit;
+            $this->redirectTo(FormatHelper::discussionDetailUrl($slug, $postId));
         } catch (Throwable) {
             if (isset($db) && $db->inTransaction()) {
                 $db->rollBack();
@@ -201,8 +201,7 @@ class PostController extends Controller
         $updated = $this->findPostById((int) ($post['id'] ?? 0)) ?? $post;
         $slug = trim((string) ($updated['slug'] ?? $post['slug'] ?? $post['id'] ?? ''));
 
-        header('Location: ' . BASE_URL . '/discussions/' . rawurlencode($slug));
-        exit;
+        $this->redirectTo(FormatHelper::discussionDetailUrl($slug));
     }
 
     public function delete($id = 0)
@@ -237,12 +236,10 @@ class PostController extends Controller
         try {
             (new Post())->delete((int) ($post['id'] ?? 0));
         } catch (Throwable) {
-            header('Location: ' . BASE_URL . '/discussions/' . rawurlencode((string) ($post['slug'] ?? $post['id'] ?? '')));
-            exit;
+            $this->redirectTo(FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? ''));
         }
 
-        header('Location: ' . BASE_URL . '/discussions');
-        exit;
+        $this->redirectTo(BASE_URL . '/discussions');
     }
 
     private function validateDiscussionCreate(array $data, Module $moduleModel)
@@ -253,7 +250,7 @@ class PostController extends Controller
 
         if ($title === '') {
             $errors['title'] = 'Please enter a discussion title.';
-        } elseif ($this->textLength($title) > 255) {
+        } elseif (FormatHelper::textLength($title) > 255) {
             $errors['title'] = 'Title must be 255 characters or fewer.';
         }
 
@@ -279,8 +276,7 @@ class PostController extends Controller
         $_SESSION['discussion_create_errors'] = $errors;
         $_SESSION['discussion_create_old'] = $old;
 
-        header('Location: ' . BASE_URL . '/discussions/create');
-        exit;
+        $this->redirectTo(BASE_URL . '/discussions/create');
     }
 
     private function redirectDiscussionEditWithErrors(array $post, array $old, array $errors)
@@ -291,8 +287,7 @@ class PostController extends Controller
             'errors' => $errors,
         ];
 
-        header('Location: ' . $this->postUrl($post) . '#question-content-heading');
-        exit;
+        $this->redirectTo($this->postUrl($post) . '#question-content-heading');
     }
 
     private function redirectModal(int $postId, string $modalId, string $redirectUrl)
@@ -302,8 +297,7 @@ class PostController extends Controller
             'modal_id' => $modalId,
         ];
 
-        header('Location: ' . $redirectUrl);
-        exit;
+        $this->redirectTo($redirectUrl);
     }
 
     private function findPostById(int $id)
@@ -331,30 +325,6 @@ class PostController extends Controller
 
     private function postUrl(array $post)
     {
-        $target = trim((string) ($post['slug'] ?? ''));
-
-        if ($target === '') {
-            $target = (string) ($post['id'] ?? '');
-        }
-
-        return BASE_URL . '/discussions/' . rawurlencode($target);
-    }
-
-    private function forbidden(string $redirectUrl = '')
-    {
-        $this->redirectWithToast($redirectUrl !== '' ? $redirectUrl : BASE_URL . '/discussions', [
-            'type' => 'error',
-            'title' => 'Permission denied',
-            'message' => 'Only owners and admins can make this change.',
-        ]);
-    }
-
-    private function textLength(string $value)
-    {
-        if (function_exists('mb_strlen')) {
-            return mb_strlen($value);
-        }
-
-        return strlen($value);
+        return FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? '');
     }
 }

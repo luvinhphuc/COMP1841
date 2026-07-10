@@ -118,7 +118,7 @@ class AttachmentService
         }
     }
 
-    public function attachmentType(string $extension, string $mimeType)
+    private function attachmentType(string $extension, string $mimeType)
     {
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $videoExtensions = ['mp4', 'webm', 'mov'];
@@ -159,7 +159,7 @@ class AttachmentService
         return '';
     }
 
-    public function attachmentMaxSize(string $type)
+    private function attachmentMaxSize(string $type)
     {
         if ($type === 'image') {
             return self::IMAGE_MAX_SIZE;
@@ -172,7 +172,7 @@ class AttachmentService
         return self::DOCUMENT_MAX_SIZE;
     }
 
-    public function storageExtension(string $extension, string $type)
+    private function storageExtension(string $extension, string $type)
     {
         $codeExtensions = ['php', 'js', 'css', 'html', 'htm', 'json', 'xml', 'sql', 'py', 'java', 'c', 'cpp', 'cs', 'md'];
 
@@ -183,7 +183,7 @@ class AttachmentService
         return $extension !== '' ? $extension : 'bin';
     }
 
-    public function detectedMimeType(string $tmpName, string $fallback)
+    private function detectedMimeType(string $tmpName, string $fallback)
     {
         if ($tmpName !== '' && is_file($tmpName) && function_exists('finfo_open')) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -201,7 +201,7 @@ class AttachmentService
         return trim((string) $fallback) !== '' ? trim((string) $fallback) : 'application/octet-stream';
     }
 
-    public function uploadErrorMessage(int $error)
+    private function uploadErrorMessage(int $error)
     {
         if (in_array($error, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
             return 'The attachment is larger than the server allows.';

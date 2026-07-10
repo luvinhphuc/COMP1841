@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Database;
+use App\Helpers\FormatHelper;
 use App\Helpers\PermissionHelper;
 use App\Models\Media;
 use App\Models\Reply;
@@ -116,8 +117,7 @@ class ReplyController extends Controller
             ], $redirectUrl);
         }
 
-        header('Location: ' . $redirectUrl);
-        exit;
+        $this->redirectTo($redirectUrl);
     }
 
     public function edit($id = 0)
@@ -168,8 +168,7 @@ class ReplyController extends Controller
             ]);
         }
 
-        header('Location: ' . $this->postUrlFromReply($reply) . '#reply-' . (int) ($reply['id'] ?? 0));
-        exit;
+        $this->redirectTo($this->postUrlFromReply($reply) . '#reply-' . (int) ($reply['id'] ?? 0));
     }
 
     public function delete($id = 0)
@@ -217,12 +216,10 @@ class ReplyController extends Controller
                 }
             }
         } catch (Throwable) {
-            header('Location: ' . $this->postUrlFromReply($reply));
-            exit;
+            $this->redirectTo($this->postUrlFromReply($reply));
         }
 
-        header('Location: ' . $this->postUrlFromReply($reply) . '#replies');
-        exit;
+        $this->redirectTo($this->postUrlFromReply($reply) . '#replies');
     }
 
     private function validateReply(string $content)
@@ -231,7 +228,7 @@ class ReplyController extends Controller
 
         if ($content === '') {
             $errors['content'] = 'Please write a reply before posting.';
-        } elseif ($this->textLength($content) > 5000) {
+        } elseif (FormatHelper::textLength($content) > 5000) {
             $errors['content'] = 'Reply must be 5000 characters or fewer.';
         }
 
@@ -246,8 +243,7 @@ class ReplyController extends Controller
             'errors' => $errors,
         ];
 
-        header('Location: ' . $redirectUrl);
-        exit;
+        $this->redirectTo($redirectUrl);
     }
 
     private function redirectReplyEditWithErrors(array $reply, string $content, array $errors)
@@ -259,8 +255,7 @@ class ReplyController extends Controller
             'errors' => $errors,
         ];
 
-        header('Location: ' . $this->postUrlFromReply($reply) . '#reply-' . (int) ($reply['id'] ?? 0));
-        exit;
+        $this->redirectTo($this->postUrlFromReply($reply) . '#reply-' . (int) ($reply['id'] ?? 0));
     }
 
     private function redirectModal(int $postId, string $modalId, string $redirectUrl)
@@ -270,8 +265,7 @@ class ReplyController extends Controller
             'modal_id' => $modalId,
         ];
 
-        header('Location: ' . $redirectUrl);
-        exit;
+        $this->redirectTo($redirectUrl);
     }
 
     private function replyRedirectUrl(string $slug, int $postId)
@@ -282,7 +276,7 @@ class ReplyController extends Controller
 
         $target = $slug !== '' ? $slug : $postId;
 
-        return BASE_URL . '/discussions/' . rawurlencode($target) . '#reply-editor';
+        return FormatHelper::discussionDetailUrl($target) . '#reply-editor';
     }
 
     private function findReplyById(int $id)
@@ -310,30 +304,9 @@ class ReplyController extends Controller
 
     private function postUrlFromReply(array $reply)
     {
-        $target = trim((string) ($reply['post_slug'] ?? ''));
-
-        if ($target === '') {
-            $target = (string) ($reply['post_id'] ?? '');
-        }
-
-        return BASE_URL . '/discussions/' . rawurlencode($target);
-    }
-
-    private function forbidden(string $redirectUrl = '')
-    {
-        $this->redirectWithToast($redirectUrl !== '' ? $redirectUrl : BASE_URL . '/discussions', [
-            'type' => 'error',
-            'title' => 'Permission denied',
-            'message' => 'Only owners and admins can make this change.',
-        ]);
-    }
-
-    private function textLength(string $value)
-    {
-        if (function_exists('mb_strlen')) {
-            return mb_strlen($value);
-        }
-
-        return strlen($value);
+        return FormatHelper::discussionDetailUrl(
+            $reply['post_slug'] ?? '',
+            $reply['post_id'] ?? ''
+        );
     }
 }

@@ -25,10 +25,7 @@ class AuthController extends Controller
 
     public function authenticate()
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . '/login');
-            exit;
-        }
+        $this->requirePost(BASE_URL . '/login');
 
         $data = [
             'username' => trim((string) ($_POST['username'] ?? '')),
@@ -45,8 +42,7 @@ class AuthController extends Controller
             session_regenerate_id(true);
             $_SESSION['auth_user'] = $result['user'];
 
-            header('Location: ' . BASE_URL . '/');
-            exit;
+            $this->redirectTo(BASE_URL . '/');
         } catch (Throwable) {
             $this->redirectLoginWithErrors([
                 'general' => 'Unable to sign in right now. Please try again.',
@@ -70,10 +66,7 @@ class AuthController extends Controller
 
     public function store()
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . '/register');
-            exit;
-        }
+        $this->requirePost(BASE_URL . '/register');
 
         $firstName = trim((string) ($_POST['first_name'] ?? ''));
         $lastName = trim((string) ($_POST['last_name'] ?? ''));
@@ -96,8 +89,7 @@ class AuthController extends Controller
 
             $_SESSION['login_success'] = 'Account created. Please sign in with your username.';
 
-            header('Location: ' . BASE_URL . '/login');
-            exit;
+            $this->redirectTo(BASE_URL . '/login');
         } catch (Throwable) {
             $this->redirectBackWithErrors([
                 'general' => 'Unable to create your account right now. Please try again.',
@@ -110,8 +102,7 @@ class AuthController extends Controller
         unset($_SESSION['auth_user'], $_SESSION['user']);
         session_regenerate_id(true);
 
-        header('Location: ' . BASE_URL . '/login');
-        exit;
+        $this->redirectTo(BASE_URL . '/login');
     }
 
     private function redirectBackWithErrors($errors, $old = [])
@@ -121,8 +112,7 @@ class AuthController extends Controller
         $_SESSION['register_errors'] = $errors;
         $_SESSION['register_old'] = $old;
 
-        header('Location: ' . BASE_URL . '/register');
-        exit;
+        $this->redirectTo(BASE_URL . '/register');
     }
 
     private function hasRegisterFieldErrors($errors)
@@ -154,7 +144,6 @@ class AuthController extends Controller
         $_SESSION['login_errors'] = $errors;
         $_SESSION['login_old'] = $old;
 
-        header('Location: ' . BASE_URL . '/login');
-        exit;
+        $this->redirectTo(BASE_URL . '/login');
     }
 }

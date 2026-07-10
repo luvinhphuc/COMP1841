@@ -20,6 +20,15 @@ class FormatHelper
         return substr($value, 0, $length);
     }
 
+    public static function textLength(string $value)
+    {
+        if (function_exists('mb_strlen')) {
+            return mb_strlen($value);
+        }
+
+        return strlen($value);
+    }
+
     public static function compactNumber(int $number)
     {
         if ($number >= 1000) {
@@ -57,6 +66,17 @@ class FormatHelper
         $queryString = http_build_query($query);
 
         return BASE_URL . '/discussions' . ($queryString !== '' ? '?' . $queryString : '');
+    }
+
+    public static function discussionDetailUrl(mixed $slug, mixed $fallbackId = '')
+    {
+        $target = trim((string) $slug);
+
+        if ($target === '') {
+            $target = trim((string) $fallbackId);
+        }
+
+        return BASE_URL . '/discussions/' . rawurlencode($target);
     }
 
     public static function authorHandle(array $user)
@@ -107,6 +127,7 @@ class FormatHelper
         }
         return $days . ' days ago';
     }
+
     public static function formatFileSize(int $bytes)
     {
         if ($bytes <= 0) {

@@ -3,6 +3,7 @@
 namespace App\Core;
 
 use App\Services\NavigationService;
+use RuntimeException;
 
 class Controller
 {
@@ -35,7 +36,7 @@ class Controller
         $mainViewFile = ROOT_PATH . '/app/Views/' . $viewPath . '.php';
 
         if (!file_exists($mainViewFile)) {
-            die('Lỗi: Không tìm thấy file View tại: ' . $mainViewFile);
+            throw new RuntimeException('View not found: ' . $viewPath);
         }
 
         require ROOT_PATH . '/app/Views/partials/header.php';
@@ -115,6 +116,15 @@ class Controller
         ];
 
         $this->redirectTo($url);
+    }
+
+    protected function forbidden(string $redirectUrl = '')
+    {
+        $this->redirectWithToast($redirectUrl !== '' ? $redirectUrl : BASE_URL . '/discussions', [
+            'type' => 'error',
+            'title' => 'Permission denied',
+            'message' => 'Only owners and admins can make this change.',
+        ]);
     }
 
     private function flashToast()

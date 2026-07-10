@@ -4,6 +4,41 @@ namespace App\Core;
 
 class App
 {
+    private const AUTH_ROUTES = [
+        'register' => [
+            'default_action' => 'register',
+            'accepts_child_action' => true,
+        ],
+        'login' => [
+            'default_action' => 'login',
+            'accepts_child_action' => true,
+        ],
+        'logout' => [
+            'default_action' => 'logout',
+            'accepts_child_action' => false,
+        ],
+    ];
+
+    private const DISCUSSION_ACTION_ROUTES = [
+        'create' => ['post', 'create'],
+        'store' => ['post', 'store'],
+        'edit' => ['post', 'edit'],
+        'update' => ['post', 'update'],
+        'delete' => ['post', 'delete'],
+        'destroy' => ['post', 'destroy'],
+        'reply' => ['reply', 'store'],
+        'reply-edit' => ['reply', 'edit'],
+        'reply-update' => ['reply', 'update'],
+        'reply-delete' => ['reply', 'delete'],
+        'reply-destroy' => ['reply', 'destroy'],
+    ];
+
+    private const RESERVED_DISCUSSION_ACTIONS = [
+        'index',
+        'unsolved',
+        'show',
+    ];
+
     protected $controller = 'HomeController';
     protected $action = 'index';
     protected $params = [];
@@ -61,16 +96,15 @@ class App
             return $url;
         }
 
-        if ($url[0] === 'register') {
-            return ['auth', $url[1] ?? 'register'];
-        }
+        if (isset(self::AUTH_ROUTES[$url[0]])) {
+            $route = self::AUTH_ROUTES[$url[0]];
+            $action = $route['default_action'];
 
-        if ($url[0] === 'login') {
-            return ['auth', $url[1] ?? 'login'];
-        }
+            if ($route['accepts_child_action'] && isset($url[1])) {
+                $action = $url[1];
+            }
 
-        if ($url[0] === 'logout') {
-            return ['auth', 'logout'];
+            return ['auth', $action];
         }
 
         if ($url[0] === 'discussions') {
@@ -78,25 +112,8 @@ class App
                 return ['post', 'store'];
             }
 
-            $discussionActionMap = [
-                'create' => ['post', 'create'],
-                'store' => ['post', 'store'],
-                'edit' => ['post', 'edit'],
-                'update' => ['post', 'update'],
-                'delete' => ['post', 'delete'],
-                'destroy' => ['post', 'destroy'],
-                'reply' => ['reply', 'store'],
-                'reply-edit' => ['reply', 'edit'],
-                'reply-update' => ['reply', 'update'],
-                'reply-delete' => ['reply', 'delete'],
-                'reply-destroy' => ['reply', 'destroy'],
-            ];
-
-            if (isset($url[1], $discussionActionMap[$url[1]])) {
-                $mappedRoute = [
-                    $discussionActionMap[$url[1]][0],
-                    $discussionActionMap[$url[1]][1],
-                ];
+            if (isset($url[1], self::DISCUSSION_ACTION_ROUTES[$url[1]])) {
+                $mappedRoute = self::DISCUSSION_ACTION_ROUTES[$url[1]];
 
                 if (isset($url[2])) {
                     $mappedRoute[] = $url[2];
@@ -109,24 +126,7 @@ class App
                 return $url;
             }
 
-            $reservedDiscussionActions = [
-                'index',
-                'create',
-                'store',
-                'edit',
-                'update',
-                'delete',
-                'destroy',
-                'reply',
-                'reply-edit',
-                'reply-update',
-                'reply-delete',
-                'reply-destroy',
-                'unsolved',
-                'show',
-            ];
-
-            if (!in_array($url[1], $reservedDiscussionActions, true)) {
+            if (!in_array($url[1], self::RESERVED_DISCUSSION_ACTIONS, true)) {
                 return ['discussions', 'show', $url[1]];
             }
         }

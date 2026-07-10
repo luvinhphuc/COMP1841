@@ -57,15 +57,21 @@ class DiscussionsController extends Controller
         }
 
         $this->view('discussions/index', [
-            'discussions' => array_map(fn (array $post) => $this->formatDiscussion($post), $posts),
+            'discussions' => array_map(fn (array $post) => ViewHelper::formatPostCard($post), $posts),
             'totalDiscussions' => $totalDiscussions,
             'filters' => $filters,
             'statusFilters' => $this->statusFilters($filters),
             'moduleChips' => ViewHelper::moduleChips($modules, $filters),
             'matchedModules' => ViewHelper::matchedModules($modules, $filters),
             'trendingModules' => ViewHelper::formatTrendingModules($trendingModules),
-            'recentViewedDiscussions' => array_map(fn (array $post) => $this->formatRecentView($post), $recentViews),
-            'popularDiscussions' => array_map(fn (array $post) => $this->formatSidebarDiscussion($post), $popularDiscussions),
+            'recentViewedDiscussions' => array_map(
+                fn (array $post) => ViewHelper::formatRecentView($post),
+                $recentViews
+            ),
+            'popularDiscussions' => array_map(
+                fn (array $post) => ViewHelper::formatSidebarDiscussion($post),
+                $popularDiscussions
+            ),
             'pagination' => $this->pagination($filters, $totalDiscussions, $currentPage),
         ]);
     }
@@ -79,68 +85,74 @@ class DiscussionsController extends Controller
         }
 
         $postModel = new Post();
-        $post = $this->findDiscussion($postModel, $slug);
+        $discussionRecord = $this->findDiscussion($postModel, $slug);
 
-        if ($post === null) {
+        if ($discussionRecord === null) {
             $this->notFound();
         }
 
-        $postId = (int) ($post['id'] ?? 0);
-        $this->recordViewOncePerSession($postModel, $postId);
+        $discussionId = (int) ($discussionRecord['id'] ?? 0);
+        $this->recordDiscussionViewOncePerSession($postModel, $discussionId);
 
+        // Optional page sections fall back independently when one query fails.
         try {
-            $mediaItems = (new Media())->getByPostId($postId);
+            $discussionMediaItems = (new Media())->getByPostId($discussionId);
         } catch (Throwable) {
-            $mediaItems = [];
+            $discussionMediaItems = [];
         }
 
         try {
-            $replies = (new Reply())->getByPostId($postId);
+            $replyRecords = (new Reply())->getByPostId($discussionId);
         } catch (Throwable) {
-            $replies = [];
+            $replyRecords = [];
         }
 
         try {
-            $replyMediaItems = (new Media())->getReplyMediaByPostId($postId);
+            $replyMediaRecords = (new Media())->getReplyMediaByPostId($discussionId);
         } catch (Throwable) {
-            $replyMediaItems = [];
+            $replyMediaRecords = [];
         }
 
         try {
-            $relatedDiscussions = $postModel->getPopularDiscussions(4);
+            $relatedDiscussionRecords = $postModel->getPopularDiscussions(4);
         } catch (Throwable) {
-            $relatedDiscussions = [];
+            $relatedDiscussionRecords = [];
         }
 
-        $replyState = $_SESSION['discussion_reply_state'] ?? [];
-        $hasReplyState = (int) ($replyState['post_id'] ?? 0) === $postId;
+        // Flash form state must belong to this discussion before it is restored.
+        $replyFormState = $_SESSION['discussion_reply_state'] ?? [];
+        $hasReplyFormState = (int) ($replyFormState['post_id'] ?? 0) === $discussionId;
 
-        $discussionEditState = $_SESSION['discussion_edit_state'] ?? [];
-        $hasDiscussionEditState = (int) ($discussionEditState['post_id'] ?? 0) === $postId;
+        $discussionEditFormState = $_SESSION['discussion_edit_state'] ?? [];
+        $hasDiscussionEditFormState = (int) ($discussionEditFormState['post_id'] ?? 0) === $discussionId;
 
-        $replyEditState = $_SESSION['discussion_reply_edit_state'] ?? [];
-        $hasReplyEditState = (int) ($replyEditState['post_id'] ?? 0) === $postId;
+        $replyEditFormState = $_SESSION['discussion_reply_edit_state'] ?? [];
+        $hasReplyEditFormState = (int) ($replyEditFormState['post_id'] ?? 0) === $discussionId;
 
-        $modalState = $_SESSION['discussion_modal_state'] ?? [];
-        $hasModalState = (int) ($modalState['post_id'] ?? 0) === $postId;
+        $requestedModalState = $_SESSION['discussion_modal_state'] ?? [];
+        $hasRequestedModalState = (int) ($requestedModalState['post_id'] ?? 0) === $discussionId;
 
-        $replyErrors = $hasReplyState ? ($replyState['errors'] ?? []) : [];
+        $replyErrors = $hasReplyFormState ? ($replyFormState['errors'] ?? []) : [];
         $replyOld = array_merge([
             'content' => '',
             'parent_reply_id' => '',
-        ], $hasReplyState ? ($replyState['old'] ?? []) : []);
+        ], $hasReplyFormState ? ($replyFormState['old'] ?? []) : []);
 
-        $discussionEditErrors = $hasDiscussionEditState ? ($discussionEditState['errors'] ?? []) : [];
-        $replyEditErrors = $hasReplyEditState ? ($replyEditState['errors'] ?? []) : [];
-        $replyEditOld = $hasReplyEditState ? ($replyEditState['old'] ?? []) : [];
-        $activeReplyEditId = $hasReplyEditState ? (int) ($replyEditState['reply_id'] ?? 0) : 0;
+        $discussionEditErrors = $hasDiscussionEditFormState
+            ? ($discussionEditFormState['errors'] ?? [])
+            : [];
+        $replyEditErrors = $hasReplyEditFormState ? ($replyEditFormState['errors'] ?? []) : [];
+        $replyEditOld = $hasReplyEditFormState ? ($replyEditFormState['old'] ?? []) : [];
+        $activeReplyEditId = $hasReplyEditFormState
+            ? (int) ($replyEditFormState['reply_id'] ?? 0)
+            : 0;
 
         try {
-            $modules = (new Module())->getAll();
+            $availableModules = (new Module())->getAll();
         } catch (Throwable) {
-            $modules = [];
+            $availableModules = [];
 
-            if ($hasDiscussionEditState) {
+            if ($hasDiscussionEditFormState) {
                 $discussionEditErrors['general'] = $discussionEditErrors['general']
                     ?? 'Modules could not be loaded. Please try again.';
             }
@@ -148,17 +160,17 @@ class DiscussionsController extends Controller
 
         $openModalId = '';
 
-        if ($hasDiscussionEditState) {
+        if ($hasDiscussionEditFormState) {
             $openModalId = 'discussion-edit-modal';
-        } elseif ($hasReplyEditState) {
+        } elseif ($hasReplyEditFormState) {
             $openModalId = 'reply-edit-modal-' . $activeReplyEditId;
-        } elseif ($hasModalState) {
-            $openModalId = (string) ($modalState['modal_id'] ?? '');
+        } elseif ($hasRequestedModalState) {
+            $openModalId = (string) ($requestedModalState['modal_id'] ?? '');
         }
 
         $replyMediaByReplyId = [];
 
-        foreach ($replyMediaItems as $replyMedia) {
+        foreach ($replyMediaRecords as $replyMedia) {
             $replyId = (int) ($replyMedia['reply_id'] ?? 0);
 
             if ($replyId > 0) {
@@ -166,20 +178,21 @@ class DiscussionsController extends Controller
             }
         }
 
-        $discussion = $this->formatDiscussionDetail($post, $mediaItems);
-        $formattedReplies = array_map(
+        // Database records are normalized once before the template receives them.
+        $discussionView = $this->formatDiscussionDetail($discussionRecord, $discussionMediaItems);
+        $replyViews = array_map(
             fn (array $reply) => $this->formatReply(
                 $reply,
                 $replyMediaByReplyId[(int) ($reply['id'] ?? 0)] ?? []
             ),
-            $replies
+            $replyRecords
         );
 
         $acceptedReply = null;
         $threadReplies = [];
         $modalReplies = [];
 
-        foreach ($formattedReplies as $reply) {
+        foreach ($replyViews as $reply) {
             $modalReplies[] = $reply;
 
             if (!empty($reply['is_accepted']) && $acceptedReply === null) {
@@ -191,67 +204,53 @@ class DiscussionsController extends Controller
         }
 
         $discussionEditOld = array_merge([
-            'title' => $discussion['title'] ?? '',
-            'module_id' => $discussion['module_id'] ?? '',
-            'content' => $discussion['content'] ?? '',
-        ], $hasDiscussionEditState ? ($discussionEditState['old'] ?? []) : []);
+            'title' => $discussionView['title'],
+            'module_id' => $discussionView['module_id'],
+            'content' => $discussionView['content'],
+        ], $hasDiscussionEditFormState ? ($discussionEditFormState['old'] ?? []) : []);
 
-        $discussionEditTitle = (string) ($discussionEditOld['title'] ?? '');
-        $discussionEditModuleId = (string) ($discussionEditOld['module_id'] ?? '');
-        $discussionEditContent = (string) ($discussionEditOld['content'] ?? '');
+        $discussionEditTitle = (string) $discussionEditOld['title'];
+        $discussionEditModuleId = (string) $discussionEditOld['module_id'];
+        $discussionEditContent = (string) $discussionEditOld['content'];
 
         $this->view('discussions/show', [
-            'discussion' => $discussion,
-
-            // Main reply list after moving accepted reply out.
+            'discussion' => $discussionView,
             'replies' => $threadReplies,
-
-            // Reply data for accepted block and modals.
             'acceptedReply' => $acceptedReply,
             'modalReplies' => $modalReplies,
-
             'relatedDiscussions' => array_map(
-                fn (array $relatedPost) => $this->formatSidebarDiscussion($relatedPost),
-                $relatedDiscussions
+                fn (array $relatedPost) => ViewHelper::formatSidebarDiscussion($relatedPost),
+                $relatedDiscussionRecords
             ),
-
             'replyErrors' => $replyErrors,
             'replyOld' => $replyOld,
-
-            'statusTone' => $discussion['status_tone'] ?? 'neutral',
-            'replyCount' => (int) ($discussion['replies'] ?? count($formattedReplies)),
-            'attachments' => $discussion['attachments'] ?? [],
             'isLoggedIn' => $this->currentUser() !== null,
-
-            'modules' => $modules,
-
+            'modules' => $availableModules,
             'discussionEditErrors' => $discussionEditErrors,
-            'discussionEditOld' => $discussionEditOld,
             'discussionEditTitle' => $discussionEditTitle,
             'discussionEditModuleId' => $discussionEditModuleId,
             'discussionEditContent' => $discussionEditContent,
-
             'replyEditErrors' => $replyEditErrors,
             'replyEditOld' => $replyEditOld,
             'activeReplyEditId' => $activeReplyEditId,
-
             'openModalId' => $openModalId,
             'pageScripts' => ['discussion-detail.js', 'content-input.js'],
         ]);
 
-        if ($hasReplyState) {
+        // Consume only the flash state restored on this request.
+        if ($hasReplyFormState) {
             unset($_SESSION['discussion_reply_state']);
         }
 
-        if ($hasDiscussionEditState) {
+        if ($hasDiscussionEditFormState) {
             unset($_SESSION['discussion_edit_state']);
         }
 
-        if ($hasReplyEditState) {
+        if ($hasReplyEditFormState) {
             unset($_SESSION['discussion_reply_edit_state']);
         }
 
-        if ($hasModalState) {
+        if ($hasRequestedModalState) {
             unset($_SESSION['discussion_modal_state']);
         }
     }
@@ -313,50 +312,6 @@ class DiscussionsController extends Controller
     }
 
     // View data formatters
-    private function formatDiscussion(array $post)
-    {
-        $status = (string) ($post['status'] ?? 'open');
-        $title = FormatHelper::textOr($post['title'] ?? '', 'Untitled question');
-
-        return [
-            'module' => FormatHelper::textOr($post['module_code'] ?? '', 'MODULE'),
-            'module_name' => FormatHelper::textOr($post['module_name'] ?? '', 'Module discussion'),
-            'status' => $status === 'solved' ? 'Solved' : 'Open',
-            'status_tone' => $status === 'solved' ? 'green' : 'neutral',
-            'created_at' => FormatHelper::textOr(FormatHelper::relativeTime((string) ($post['created_at'] ?? '')), 'Recently'),
-            'title' => $title,
-            'excerpt' => FormatHelper::textOr($this->excerpt((string) ($post['content'] ?? ''), 180), 'No preview is available yet.'),
-            'author' => $this->authorName($post),
-            'author_handle' => FormatHelper::authorHandle($post),
-            'avatar' => FormatHelper::authorInitial($post),
-            'replies' => (int) ($post['reply_count'] ?? 0),
-            'views' => FormatHelper::compactNumber((int) ($post['view_count'] ?? 0)),
-            'image' => FormatHelper::mediaUrl($post['media_path'] ?? null),
-            'media_type' => trim((string) ($post['media_type'] ?? '')),
-            'preview_alt' => 'Preview for ' . $title,
-            'url' => BASE_URL . '/discussions/' . rawurlencode((string) ($post['slug'] ?? $post['id'] ?? '')),
-        ];
-    }
-
-    private function formatRecentView(array $post)
-    {
-        return [
-            'title' => FormatHelper::textOr($post['title'] ?? '', 'Untitled question'),
-            'module' => FormatHelper::textOr($post['module_code'] ?? '', 'MODULE'),
-            'time' => FormatHelper::textOr(FormatHelper::relativeTime((string) ($post['viewed_at'] ?? '')), 'Recently'),
-            'url' => BASE_URL . '/discussions/' . rawurlencode((string) ($post['slug'] ?? $post['id'] ?? '')),
-        ];
-    }
-
-    private function formatSidebarDiscussion(array $post)
-    {
-        return [
-            'title' => FormatHelper::textOr($post['title'] ?? '', 'Untitled question'),
-            'replies' => (int) ($post['reply_count'] ?? 0),
-            'url' => BASE_URL . '/discussions/' . rawurlencode((string) ($post['slug'] ?? $post['id'] ?? '')),
-        ];
-    }
-
     private function formatDiscussionDetail(array $post, array $mediaItems = [])
     {
         $status = (string) ($post['status'] ?? 'open');
@@ -471,7 +426,7 @@ class DiscussionsController extends Controller
         return [
             'type' => in_array($type, ['image', 'video', 'document'], true) ? $type : 'document',
             'name' => $originalName,
-            'url' => FormatHelper::mediaUrl($path),
+            'url' => FormatHelper::mediaUrl($path) ?? '',
             'mime_type' => trim((string) ($media['mime_type'] ?? '')),
             'size' => FormatHelper::formatFileSize((int) ($media['file_size'] ?? 0)),
         ];
@@ -510,20 +465,9 @@ class DiscussionsController extends Controller
         return FormatHelper::textOr($post['full_name'] ?? $post['username'] ?? '', 'Student');
     }
 
-    private function excerpt(string $content, int $limit)
+    private function recordDiscussionViewOncePerSession(Post $postModel, int $discussionId)
     {
-        $content = trim(strip_tags($content));
-
-        if (strlen($content) <= $limit) {
-            return $content;
-        }
-
-        return rtrim(substr($content, 0, $limit - 3)) . '...';
-    }
-
-    private function recordViewOncePerSession(Post $postModel, int $postId)
-    {
-        if ($postId <= 0) {
+        if ($discussionId <= 0) {
             return;
         }
 
@@ -536,13 +480,13 @@ class DiscussionsController extends Controller
             $_SESSION['viewed_posts']
         )));
 
-        if (in_array($postId, $_SESSION['viewed_posts'], true)) {
+        if (in_array($discussionId, $_SESSION['viewed_posts'], true)) {
             return;
         }
 
         try {
-            $postModel->recordView($postId, $this->currentUserId());
-            $_SESSION['viewed_posts'][] = $postId;
+            $postModel->recordView($discussionId, $this->currentUserId());
+            $_SESSION['viewed_posts'][] = $discussionId;
         } catch (Throwable) {
             return;
         }
