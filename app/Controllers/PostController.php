@@ -38,7 +38,7 @@ class PostController extends Controller
             'submitLabel' => 'Post',
             'cancelUrl' => BASE_URL . '/discussions',
             'showAttachmentField' => true,
-            'pageScripts' => ['post-create.js'],
+            'pageScripts' => ['content-input.js'],
         ]);
 
         unset($_SESSION['discussion_create_errors'], $_SESSION['discussion_create_old']);

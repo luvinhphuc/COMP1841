@@ -101,6 +101,12 @@ class DiscussionsController extends Controller
         }
 
         try {
+            $replyMediaItems = (new Media())->getReplyMediaByPostId($postId);
+        } catch (Throwable) {
+            $replyMediaItems = [];
+        }
+
+        try {
             $relatedDiscussions = $postModel->getPopularDiscussions(4);
         } catch (Throwable) {
             $relatedDiscussions = [];
@@ -150,8 +156,24 @@ class DiscussionsController extends Controller
             $openModalId = (string) ($modalState['modal_id'] ?? '');
         }
 
+        $replyMediaByReplyId = [];
+
+        foreach ($replyMediaItems as $replyMedia) {
+            $replyId = (int) ($replyMedia['reply_id'] ?? 0);
+
+            if ($replyId > 0) {
+                $replyMediaByReplyId[$replyId][] = $replyMedia;
+            }
+        }
+
         $discussion = $this->formatDiscussionDetail($post, $mediaItems);
-        $formattedReplies = array_map(fn (array $reply) => $this->formatReply($reply), $replies);
+        $formattedReplies = array_map(
+            fn (array $reply) => $this->formatReply(
+                $reply,
+                $replyMediaByReplyId[(int) ($reply['id'] ?? 0)] ?? []
+            ),
+            $replies
+        );
 
         $acceptedReply = null;
         $threadReplies = [];
@@ -214,7 +236,7 @@ class DiscussionsController extends Controller
             'activeReplyEditId' => $activeReplyEditId,
 
             'openModalId' => $openModalId,
-            'pageScripts' => ['discussion-detail.js'],
+            'pageScripts' => ['discussion-detail.js', 'content-input.js'],
         ]);
 
         if ($hasReplyState) {
@@ -411,7 +433,7 @@ class DiscussionsController extends Controller
         return $segments;
     }
 
-    private function formatReply(array $reply)
+    private function formatReply(array $reply, array $mediaItems = [])
     {
         $role = trim((string) ($reply['role'] ?? 'student'));
 
@@ -430,6 +452,7 @@ class DiscussionsController extends Controller
             'role' => $role !== '' ? ucfirst($role) : 'Student',
             'created_at' => FormatHelper::textOr(FormatHelper::relativeTime((string) ($reply['created_at'] ?? '')), 'Recently'),
             'is_accepted' => (int) ($reply['is_accepted'] ?? 0) === 1,
+            'attachments' => array_map(fn (array $media) => $this->formatAttachment($media), $mediaItems),
             'can_edit' => $this->canEditReply($reply),
             'can_delete' => $this->canDeleteReply($reply),
             'edit_url' => BASE_URL . '/discussions/reply-edit/' . (int) ($reply['id'] ?? 0),

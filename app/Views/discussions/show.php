@@ -353,6 +353,15 @@ $fieldRing = static function (array $errors, string $field) {
                             <p class="mt-2 text-base text-[#14532D] " dir="auto">
                                 <?= htmlspecialchars(($acceptedReply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
                             </p>
+                            <?php foreach (($acceptedReply['attachments'] ?? []) as $attachment): ?>
+                            <figure class="mt-4 overflow-hidden rounded-2xl bg-white/80 ring-1 ring-[#BBF7D0]">
+                                <img
+                                    src="<?= htmlspecialchars(($attachment['url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="<?= htmlspecialchars(($attachment['name'] ?? 'Comment image'), ENT_QUOTES, 'UTF-8') ?>"
+                                    class="max-h-[420px] w-full object-contain"
+                                >
+                            </figure>
+                            <?php endforeach; ?>
                             <?php if ($isLoggedIn && $acceptedReplyId > 0 && $acceptedReplyTargetUsername !== ''): ?>
                             <button type="button"
                                 class="mt-3 inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-semibold text-[#166534] transition duration-150 hover:bg-white/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#166534]"
@@ -376,7 +385,7 @@ $fieldRing = static function (array $errors, string $field) {
 
                 <section class="flex flex-col gap-4" id="replies" aria-labelledby="replies-heading">
                     <div class="flex items-center justify-between gap-3">
-                        <h2 id="replies-heading" class="text-xl font-semibold text-[#0F172A]">Replies</h2>
+                        <h2 id="replies-heading" class="text-xl font-semibold text-[#0F172A]">Comments</h2>
                         <span
                             class="text-sm font-medium text-[#4B5563]"><?= htmlspecialchars($replyCount, ENT_QUOTES, 'UTF-8') ?>
                             total</span>
@@ -385,7 +394,7 @@ $fieldRing = static function (array $errors, string $field) {
                     <section id="reply-editor" class="rounded-2xl border border-[#e6e8ec] bg-white p-5 sm:p-6"
                         aria-labelledby="reply-editor-heading">
                         <?php if ($isLoggedIn): ?>
-                        <h2 id="reply-editor-heading" class="text-lg font-semibold text-[#0F172A]">Add a reply</h2>
+                        <h2 id="reply-editor-heading" class="text-lg font-semibold text-[#0F172A]">Add a comment</h2>
 
                         <?php if (!empty($replyErrors['general'])): ?>
                         <div class="mt-4 rounded-2xl border border-[#FECACA] bg-[#FEF2F2] py-3 text-sm leading-6 text-[#991B1B]"
@@ -394,7 +403,8 @@ $fieldRing = static function (array $errors, string $field) {
                         </div>
                         <?php endif; ?>
 
-                        <form action="<?= BASE_URL ?>/discussions/reply" method="post" class="mt-4 grid gap-3">
+                        <form action="<?= BASE_URL ?>/discussions/reply" method="post" enctype="multipart/form-data"
+                            class="mt-4 grid gap-3">
                             <input type="hidden" name="_csrf_token"
                                 value="<?= htmlspecialchars(($csrfToken ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="post_id"
@@ -412,23 +422,12 @@ $fieldRing = static function (array $errors, string $field) {
                                     Cancel
                                 </button>
                             </div>
-                            <div>
-                                <label for="reply-content" class="sr-only">Reply content</label>
-                                <textarea id="reply-content" name="content" rows="6" maxlength="5000" required
-                                    aria-describedby="reply-content-error"
-                                    aria-invalid="<?= !empty($replyErrors['content']) ? 'true' : 'false' ?>"
-                                    class="min-h-24 w-full resize-y rounded-lg border-0 bg-[#F7F8FB] px-4 py-3 text-base leading-7 text-[#111827] outline-none ring-1 <?= !empty($replyErrors['content']) ? 'ring-[#DC2626] focus:ring-[#DC2626]/40' : 'ring-[#E5E7EB] focus:ring-[#2563EB]/30' ?> transition duration-200 focus:ring-2"
-                                    placeholder="Share a clear explanation, useful resource, or next step."><?= htmlspecialchars(($replyOld['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
-                                <p id="reply-content-error"
-                                    class="mt-2 <?= empty($replyErrors['content']) ? 'hidden' : 'block' ?> text-sm leading-5 text-[#B91C1C]"
-                                    aria-live="polite">
-                                    <?= htmlspecialchars(($replyErrors['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
-                                </p>
-                            </div>
-                            <button type="submit"
-                                class="inline-flex items-center min-h-12 w-fit rounded-lg bg-[#1E3A8A] px-5 text-sm font-semibold text-white transition duration-200 hover:bg-[#172E70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]">
-                                Post reply
-                            </button>
+                            <?php
+                                $contentInputType = 'comment';
+                                $contentInputValue = (string) ($replyOld['content'] ?? '');
+                                $contentInputErrors = $replyErrors;
+                                require ROOT_PATH . '/app/Views/partials/content_input.php';
+                            ?>
                         </form>
                         <?php else: ?>
                         <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -448,8 +447,8 @@ $fieldRing = static function (array $errors, string $field) {
                         <?php endif; ?>
                     </section>
 
-                    <?php if (!empty($threadReplies)): ?>
-                    <?php foreach ($threadReplies as $reply): ?>
+                    <?php if (!empty($replies)): ?>
+                    <?php foreach ($replies as $reply): ?>
                     <?php
                         $replyId = (int) ($reply['id'] ?? 0);
                         $replyDomId = htmlspecialchars($replyId, ENT_QUOTES, 'UTF-8');
@@ -545,9 +544,18 @@ $fieldRing = static function (array $errors, string $field) {
                             <?php endif; ?>
                             <p class="text-base text-[#111827] " dir="auto">
                                 <?= htmlspecialchars(($reply['content'] ?? ''), ENT_QUOTES, 'UTF-8') ?></p>
+                            <?php foreach (($reply['attachments'] ?? []) as $attachment): ?>
+                            <figure class="mt-4 overflow-hidden rounded-2xl bg-[#F7F8FB] ring-1 ring-[#E5E7EB]">
+                                <img
+                                    src="<?= htmlspecialchars(($attachment['url'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="<?= htmlspecialchars(($attachment['name'] ?? 'Comment image'), ENT_QUOTES, 'UTF-8') ?>"
+                                    class="max-h-[420px] w-full object-contain"
+                                >
+                            </figure>
+                            <?php endforeach; ?>
                             <?php if ($isLoggedIn && $replyId > 0 && $replyTargetUsername !== ''): ?>
                             <button type="button"
-                                class="inline-flex min-h-9 items-center rounded-lg text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
+                                class="mt-3 inline-flex min-h-9 items-center rounded-lg text-sm font-semibold text-[#1E3A8A] transition duration-150 hover:bg-[#EEF2FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1E3A8A]"
                                 data-reply-target data-reply-id="<?= htmlspecialchars($replyId, ENT_QUOTES, 'UTF-8') ?>"
                                 data-reply-username="<?= htmlspecialchars($replyTargetUsername, ENT_QUOTES, 'UTF-8') ?>">
                                 <svg class="mr-2" fill="currentColor" height="16" icon-name="comment"
@@ -564,7 +572,7 @@ $fieldRing = static function (array $errors, string $field) {
                     <?php endforeach; ?>
                     <?php else: ?>
                     <div class="rounded-2xl border  border-dashed border-[#CBD5E1] bg-white p-5">
-                        <h3 class="font-semibold text-[#0F172A]">No replies yet</h3>
+                        <h3 class="font-semibold text-[#0F172A]">No comments yet</h3>
                         <p class="mt-2 text-sm leading-6 text-[#4B5563]">Be the first to share a useful direction or
                             resource.</p>
                     </div>

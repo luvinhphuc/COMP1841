@@ -3,8 +3,11 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Database;
 use App\Helpers\PermissionHelper;
+use App\Models\Media;
 use App\Models\Reply;
+use App\Services\AttachmentService;
 use Throwable;
 
 class ReplyController extends Controller
@@ -31,7 +34,23 @@ class ReplyController extends Controller
             $this->redirectTo(BASE_URL . '/login');
         }
 
+        $attachmentService = new AttachmentService();
         $errors = $this->validateReply($content);
+
+        try {
+            $attachment = $attachmentService->validatedAttachment($_FILES['attachment'] ?? null);
+        } catch (Throwable) {
+            $attachment = [
+                'has_file' => true,
+                'error' => 'The image could not be checked. Please choose another image.',
+            ];
+        }
+
+        if (($attachment['error'] ?? '') !== '') {
+            $errors['attachment'] = $attachment['error'];
+        } elseif (!empty($attachment['has_file']) && ($attachment['type'] ?? '') !== 'image') {
+            $errors['attachment'] = 'Comments only support JPEG, PNG, GIF, or WebP images.';
+        }
 
         if ($postId <= 0) {
             $errors['general'] = 'This discussion could not be found. Please reopen it and try again.';
@@ -42,6 +61,11 @@ class ReplyController extends Controller
         }
 
         try {
+            $db = Database::connect();
+            $storedAttachment = null;
+
+            $db->beginTransaction();
+
             $replyId = (new Reply())->create([
                 'post_id' => $postId,
                 'parent_reply_id' => $parentReplyId > 0 ? $parentReplyId : null,
@@ -50,11 +74,43 @@ class ReplyController extends Controller
             ]);
 
             if ($replyId <= 0) {
+                $db->rollBack();
                 $this->redirectReplyWithErrors($postId, $content, [
                     'general' => 'Unable to post your reply. Please try again.',
                 ], $redirectUrl);
             }
+
+            if (!empty($attachment['has_file'])) {
+                $storedAttachment = $attachmentService->storeAttachment($attachment);
+
+                if ($storedAttachment === null) {
+                    $db->rollBack();
+                    $this->redirectReplyWithErrors($postId, $content, [
+                        'attachment' => 'The image could not be saved. Please choose another image.',
+                    ], $redirectUrl);
+                }
+
+                $storedAttachment['reply_id'] = $replyId;
+
+                if (!(new Media())->create($storedAttachment)) {
+                    $attachmentService->removeStoredAttachment($storedAttachment);
+                    $db->rollBack();
+                    $this->redirectReplyWithErrors($postId, $content, [
+                        'attachment' => 'The image could not be saved. Please choose another image.',
+                    ], $redirectUrl);
+                }
+            }
+
+            $db->commit();
         } catch (Throwable) {
+            if (isset($db) && $db->inTransaction()) {
+                $db->rollBack();
+            }
+
+            if (isset($storedAttachment) && is_array($storedAttachment)) {
+                $attachmentService->removeStoredAttachment($storedAttachment);
+            }
+
             $this->redirectReplyWithErrors($postId, $content, [
                 'general' => 'Unable to post your reply right now. Please try again.',
             ], $redirectUrl);
@@ -150,7 +206,16 @@ class ReplyController extends Controller
         }
 
         try {
-            (new Reply())->delete((int) ($reply['id'] ?? 0));
+            $replyId = (int) ($reply['id'] ?? 0);
+            $attachments = (new Media())->getByReplyId($replyId);
+
+            if ((new Reply())->delete($replyId)) {
+                $attachmentService = new AttachmentService();
+
+                foreach ($attachments as $attachment) {
+                    $attachmentService->removeStoredAttachment($attachment);
+                }
+            }
         } catch (Throwable) {
             header('Location: ' . $this->postUrlFromReply($reply));
             exit;

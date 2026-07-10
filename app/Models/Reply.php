@@ -47,7 +47,7 @@ class Reply
             LEFT JOIN replies parent_r ON parent_r.id = r.parent_reply_id AND parent_r.deleted_at IS NULL
             LEFT JOIN users parent_u ON parent_u.id = parent_r.user_id
             WHERE r.post_id = :post_id AND r.deleted_at IS NULL
-            ORDER BY r.is_accepted DESC, r.created_at ASC'
+            ORDER BY r.is_accepted DESC, r.created_at DESC, r.id DESC'
         );
 
         $stmt->execute(['post_id' => $postId]);
@@ -193,6 +193,9 @@ class Reply
             $this->db->beginTransaction();
 
             $this->db->prepare('DELETE FROM notifications WHERE reply_id = :reply_id')
+                ->execute(['reply_id' => $id]);
+
+            $this->db->prepare('DELETE FROM media WHERE reply_id = :reply_id')
                 ->execute(['reply_id' => $id]);
 
             $stmt = $this->db->prepare(

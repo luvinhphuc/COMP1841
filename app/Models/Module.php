@@ -17,7 +17,7 @@ class Module
     public function getAll()
     {
         $stmt = $this->db->query(
-            'SELECT id, module_code AS code, module_name AS name
+            'SELECT id, module_code AS code, module_name AS name, description
              FROM modules
              ORDER BY module_code'
         );
@@ -32,7 +32,7 @@ class Module
         }
 
         $stmt = $this->db->prepare(
-            'SELECT id, module_code AS code, module_name AS name
+            'SELECT id, module_code AS code, module_name AS name, description, created_at, updated_at
              FROM modules
              WHERE id = :id
              LIMIT 1'
@@ -41,6 +41,77 @@ class Module
         $module = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $module ?: null;
+    }
+
+    public function create(array $data)
+    {
+        $code = trim((string) ($data['code'] ?? $data['module_code'] ?? ''));
+        $name = trim((string) ($data['name'] ?? $data['module_name'] ?? ''));
+        $description = trim((string) ($data['description'] ?? ''));
+
+        if ($code === '' || $name === '') {
+            return 0;
+        }
+
+        $stmt = $this->db->prepare(
+            'INSERT INTO modules (module_code, module_name, description)
+             VALUES (:module_code, :module_name, :description)'
+        );
+        $stmt->execute([
+            'module_code' => $code,
+            'module_name' => $name,
+            'description' => $description !== '' ? $description : null,
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function update(int $id, array $data)
+    {
+        $code = trim((string) ($data['code'] ?? $data['module_code'] ?? ''));
+        $name = trim((string) ($data['name'] ?? $data['module_name'] ?? ''));
+        $description = trim((string) ($data['description'] ?? ''));
+
+        if ($id <= 0 || $code === '' || $name === '') {
+            return false;
+        }
+
+        $stmt = $this->db->prepare(
+            'UPDATE modules
+             SET module_code = :module_code,
+                module_name = :module_name,
+                description = :description,
+                updated_at = NOW()
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'id' => $id,
+            'module_code' => $code,
+            'module_name' => $name,
+            'description' => $description !== '' ? $description : null,
+        ]);
+    }
+
+    public function delete(int $id)
+    {
+        if ($id <= 0) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare(
+            'DELETE FROM modules
+             WHERE id = :id
+                AND NOT EXISTS (
+                    SELECT 1 FROM posts WHERE module_id = :post_module_id
+                )'
+        );
+        $stmt->execute([
+            'id' => $id,
+            'post_module_id' => $id,
+        ]);
+
+        return $stmt->rowCount() > 0;
     }
 
     public function exists(int $id)

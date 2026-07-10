@@ -64,6 +64,27 @@ class User
         return $user ?: null;
     }
 
+    public function findById(int $id)
+    {
+        if ($id <= 0) {
+            return null;
+        }
+
+        $nameSelect = $this->nameSelectSql();
+        $firstNameSelect = $this->firstNameSelectSql();
+        $stmt = $this->db->prepare(
+            'SELECT id, ' . $firstNameSelect . ' AS first_name, ' . $nameSelect . ' AS full_name,
+                username, email, password, avatar, role, created_at, updated_at
+             FROM ' . $this->table . '
+             WHERE id = :id
+             LIMIT 1'
+        );
+        $stmt->execute(['id' => $id]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $user ?: null;
+    }
+
     public function create($data)
     {
         $sql = 'INSERT INTO ' . $this->table . ' (first_name, last_name, username, email, password, avatar, role)
@@ -90,7 +111,8 @@ class User
                 email = :email,
                 password = :password,
                 avatar = :avatar,
-                role = :role
+                role = :role,
+                updated_at = NOW()
             WHERE id = :id';
         $stmt = $this->db->prepare($sql);
 
@@ -104,6 +126,31 @@ class User
             'role' => $data['role'] ?? 'student',
             'id' => $id,
         ]);
+    }
+
+    public function delete(int $id)
+    {
+        if ($id <= 0) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare(
+            'DELETE FROM ' . $this->table . '
+             WHERE id = :id
+                AND NOT EXISTS (
+                    SELECT 1 FROM posts WHERE user_id = :post_user_id
+                )
+                AND NOT EXISTS (
+                    SELECT 1 FROM replies WHERE user_id = :reply_user_id
+                )'
+        );
+        $stmt->execute([
+            'id' => $id,
+            'post_user_id' => $id,
+            'reply_user_id' => $id,
+        ]);
+
+        return $stmt->rowCount() > 0;
     }
 
     private function nameSelectSql()
