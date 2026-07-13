@@ -5,7 +5,10 @@
  * @var bool $isLoggedIn
  * @var string $authName
  * @var string $authUsername
- * @var string $authAvatarUrl
+ * @var string|null $authAvatarUrl
+ * @var string $authAvatarInitial
+ * @var bool $isAdmin
+ * @var bool $isStudent
  */
 ?>
 <!doctype html>
@@ -45,26 +48,21 @@
 
                 <div class="ml-auto hidden shrink-0 items-center gap-3 transition-opacity duration-200 group-data-[menu-open=true]:pointer-events-none group-data-[menu-open=true]:opacity-0 sm:flex">
                     <?php if ($isLoggedIn): ?>
-                        <button type="button"
-                                class="relative flex size-11 items-center justify-center rounded-full text-[#3f3f3f] hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
-                                aria-label="Notifications">
-                            <svg viewBox="0 0 29 36" class="h-8 w-7" fill="none" aria-hidden="true">
-                                <path d="M14.5 32.5a4 4 0 0 0 3.8-2.8h-7.6a4 4 0 0 0 3.8 2.8Z" fill="currentColor"/>
-                                <path
-                                        d="M5.5 25.5h18l-2.4-3.4V14a6.6 6.6 0 0 0-5-6.4V5.4a1.6 1.6 0 1 0-3.2 0v2.2A6.6 6.6 0 0 0 7.9 14v8.1l-2.4 3.4Z"
-                                        stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-                            </svg>
-                            <span class="absolute right-2 top-1.5 size-2 rounded-full bg-[#ba1a1a]"></span>
-                        </button>
-
                         <div class="relative" data-user-menu>
                             <button type="button"
                                     class="flex size-12 items-center justify-center overflow-hidden rounded-full border border-[#c4c7c7] p-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
                                     aria-label="Open user menu"
                                     aria-expanded="false"
                                     data-user-menu-button>
-                                <img src="<?= htmlspecialchars($authAvatarUrl, ENT_QUOTES, 'UTF-8') ?>" alt="User avatar"
-                                     class="size-full rounded-full object-cover">
+                                <?php if ($authAvatarUrl !== null): ?>
+                                    <img src="<?= htmlspecialchars($authAvatarUrl, ENT_QUOTES, 'UTF-8') ?>" alt="User avatar"
+                                         class="size-full rounded-full object-cover">
+                                <?php else: ?>
+                                    <span class="flex size-full items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-semibold text-white"
+                                          aria-hidden="true">
+                                        <?= htmlspecialchars($authAvatarInitial, ENT_QUOTES, 'UTF-8') ?>
+                                    </span>
+                                <?php endif; ?>
                             </button>
 
                             <div class="invisible absolute right-0 top-[calc(100%+12px)] z-[90] w-64 rounded-lg border border-[#c4c7c7] bg-white p-2 opacity-0 shadow-[0_8px_8px_rgba(15,23,42,0.06)] transition data-[open=true]:visible data-[open=true]:opacity-100"
@@ -83,14 +81,24 @@
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
                                     Dashboard
                                 </a>
-                                <a href="<?= BASE_URL ?>/modules"
+                                <a href="<?= $isStudent ? BASE_URL . '/preferences/modules' : BASE_URL . '/discussions' ?>"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
-                                    Modules
+                                    <?= $isStudent ? 'Manage Modules' : 'Discussions' ?>
                                 </a>
                                 <a href="<?= BASE_URL ?>/discussions/create"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
                                     Ask Question
                                 </a>
+                                <a href="<?= BASE_URL ?>/preferences"
+                                   class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
+                                    Preferences
+                                </a>
+                                <?php if ($isAdmin): ?>
+                                    <a href="<?= BASE_URL ?>/admin"
+                                       class="block rounded-md px-3 py-2 text-sm font-semibold text-[#315f90] transition hover:bg-[#f7f9fd]">
+                                        Admin Area
+                                    </a>
+                                <?php endif; ?>
                                 <a href="<?= BASE_URL ?>/logout"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#ba1a1a] transition hover:bg-[#ba1a1a]/5">
                                     Logout

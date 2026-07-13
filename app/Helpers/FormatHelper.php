@@ -46,7 +46,7 @@ class FormatHelper
             return null;
         }
 
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        if (preg_match('#^https?://#i', $path) === 1) {
             return $path;
         }
 
@@ -68,15 +68,21 @@ class FormatHelper
         return BASE_URL . '/discussions' . ($queryString !== '' ? '?' . $queryString : '');
     }
 
-    public static function discussionDetailUrl(mixed $slug, mixed $fallbackId = '')
+    public static function discussionDetailUrl(mixed $postId, mixed $slug = '')
     {
-        $target = trim((string) $slug);
+        $postId = filter_var($postId, FILTER_VALIDATE_INT);
 
-        if ($target === '') {
-            $target = trim((string) $fallbackId);
+        if ($postId === false || $postId <= 0) {
+            return BASE_URL . '/discussions';
         }
 
-        return BASE_URL . '/discussions/' . rawurlencode($target);
+        $slug = trim((string) $slug);
+
+        if ($slug === '') {
+            $slug = 'post';
+        }
+
+        return BASE_URL . '/discussions/' . $postId . '/' . rawurlencode($slug);
     }
 
     public static function authorHandle(array $user)
@@ -88,9 +94,17 @@ class FormatHelper
 
     public static function authorInitial(array $user)
     {
-        $name = trim((string) ($user['full_name'] ?? $user['username'] ?? 'S'));
+        $name = self::textOr(
+            $user['full_name'] ?? '',
+            self::textOr($user['name'] ?? '', self::textOr($user['username'] ?? '', 'S'))
+        );
 
         return strtoupper(self::shortText($name, 2));
+    }
+
+    public static function authorAvatarUrl(array $user)
+    {
+        return self::mediaUrl($user['avatar'] ?? null);
     }
 
     public static function relativeTime(string $dateTime)

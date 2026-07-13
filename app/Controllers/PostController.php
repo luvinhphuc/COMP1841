@@ -123,7 +123,7 @@ class PostController extends Controller
             $post = $postModel->find($postId);
             $slug = trim((string) ($post['slug'] ?? ''));
 
-            $this->redirectTo(FormatHelper::discussionDetailUrl($slug, $postId));
+            $this->redirectTo(FormatHelper::discussionDetailUrl($postId, $slug));
         } catch (Throwable) {
             if (isset($db) && $db->inTransaction()) {
                 $db->rollBack();
@@ -199,9 +199,10 @@ class PostController extends Controller
         }
 
         $updated = $this->findPostById((int) ($post['id'] ?? 0)) ?? $post;
-        $slug = trim((string) ($updated['slug'] ?? $post['slug'] ?? $post['id'] ?? ''));
+        $updatedId = (int) ($updated['id'] ?? $post['id'] ?? 0);
+        $slug = trim((string) ($updated['slug'] ?? $post['slug'] ?? ''));
 
-        $this->redirectTo(FormatHelper::discussionDetailUrl($slug));
+        $this->redirectTo(FormatHelper::discussionDetailUrl($updatedId, $slug));
     }
 
     public function delete($id = 0)
@@ -236,7 +237,10 @@ class PostController extends Controller
         try {
             (new Post())->delete((int) ($post['id'] ?? 0));
         } catch (Throwable) {
-            $this->redirectTo(FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? ''));
+            $this->redirectTo(FormatHelper::discussionDetailUrl(
+                $post['id'] ?? 0,
+                $post['slug'] ?? ''
+            ));
         }
 
         $this->redirectTo(BASE_URL . '/discussions');
@@ -325,6 +329,6 @@ class PostController extends Controller
 
     private function postUrl(array $post)
     {
-        return FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? '');
+        return FormatHelper::discussionDetailUrl($post['id'] ?? 0, $post['slug'] ?? '');
     }
 }

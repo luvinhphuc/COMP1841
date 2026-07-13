@@ -3,21 +3,18 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\Module;
-use Throwable;
 
 class ModulesController extends Controller
 {
     public function index()
     {
-        try {
-            $modules = (new Module())->getAll();
-        } catch (Throwable) {
-            $modules = [];
+        $user = $this->currentUser();
+        $role = strtolower(trim((string) ($user['role'] ?? '')));
+
+        if ($role === 'student') {
+            $this->redirectTo(BASE_URL . '/preferences/modules');
         }
 
-        $this->view('modules/index', [
-            'modules' => $modules,
-        ]);
+        $this->redirectTo(BASE_URL . '/discussions');
     }
 }

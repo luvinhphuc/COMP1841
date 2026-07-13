@@ -14,7 +14,7 @@ use Throwable;
 
 class DiscussionsController extends Controller
 {
-    private const PAGE_LIMIT = 20;
+    private const PAGE_LIMIT = 5;
 
     public function index()
     {
@@ -76,22 +76,50 @@ class DiscussionsController extends Controller
         ]);
     }
 
-    public function show($slug = '')
+    public function show($identifier = '', $slug = '')
     {
+        $identifier = trim((string) rawurldecode($identifier));
         $slug = trim((string) rawurldecode($slug));
 
-        if ($slug === '') {
+        if ($identifier === '') {
             $this->notFound();
         }
 
         $postModel = new Post();
-        $discussionRecord = $this->findDiscussion($postModel, $slug);
+
+        if ($slug === '') {
+            $discussionRecord = $this->findLegacyDiscussion($postModel, $identifier);
+
+            if ($discussionRecord === null) {
+                $this->notFound();
+            }
+
+            $this->redirectToCanonicalDiscussion($discussionRecord);
+        }
+
+        $discussionId = ctype_digit($identifier) ? (int) $identifier : 0;
+
+        if ($discussionId <= 0) {
+            $this->notFound();
+        }
+
+        try {
+            $discussionRecord = $postModel->find($discussionId);
+        } catch (Throwable) {
+            $discussionRecord = null;
+        }
 
         if ($discussionRecord === null) {
             $this->notFound();
         }
 
-        $discussionId = (int) ($discussionRecord['id'] ?? 0);
+        $canonicalSlug = trim((string) ($discussionRecord['slug'] ?? ''));
+        $canonicalSlug = $canonicalSlug !== '' ? $canonicalSlug : 'post';
+
+        if ($slug !== $canonicalSlug) {
+            $this->redirectToCanonicalDiscussion($discussionRecord);
+        }
+
         $this->recordDiscussionViewOncePerSession($postModel, $discussionId);
 
         // Optional page sections fall back independently when one query fails.
@@ -234,7 +262,7 @@ class DiscussionsController extends Controller
             'replyEditOld' => $replyEditOld,
             'activeReplyEditId' => $activeReplyEditId,
             'openModalId' => $openModalId,
-            'pageScripts' => ['discussion-detail.js', 'content-input.js'],
+            'pageScripts' => ['discussion-detail.js', 'content-input.js', 'confirm-modal.js'],
         ]);
 
         // Consume only the flash state restored on this request.
@@ -334,6 +362,7 @@ class DiscussionsController extends Controller
             'author' => $this->authorName($post),
             'author_handle' => FormatHelper::authorHandle($post),
             'avatar' => FormatHelper::authorInitial($post),
+            'avatar_url' => FormatHelper::authorAvatarUrl($post),
             'replies' => (int) ($post['reply_count'] ?? 0),
             'views' => FormatHelper::compactNumber((int) ($post['view_count'] ?? 0)),
             'back_url' => BASE_URL . '/discussions',
@@ -404,6 +433,7 @@ class DiscussionsController extends Controller
             'parent_author_username' => trim((string) ($reply['parent_author_username'] ?? '')),
             'parent_author_name' => trim((string) ($reply['parent_author_name'] ?? '')),
             'avatar' => FormatHelper::authorInitial($reply),
+            'avatar_url' => FormatHelper::authorAvatarUrl($reply),
             'role' => $role !== '' ? ucfirst($role) : 'Student',
             'created_at' => FormatHelper::textOr(FormatHelper::relativeTime((string) ($reply['created_at'] ?? '')), 'Recently'),
             'is_accepted' => (int) ($reply['is_accepted'] ?? 0) === 1,
@@ -447,17 +477,32 @@ class DiscussionsController extends Controller
         return PermissionHelper::canDeleteReply($this->currentUser(), $reply);
     }
 
-    private function findDiscussion(Post $postModel, string $slug)
+    private function findLegacyDiscussion(Post $postModel, string $identifier)
     {
         try {
-            if (ctype_digit($slug)) {
-                return $postModel->find((int) $slug);
+            $discussion = $postModel->findBySlug($identifier);
+
+            if ($discussion !== null) {
+                return $discussion;
             }
 
-            return $postModel->findBySlug($slug);
+            return ctype_digit($identifier)
+                ? $postModel->find((int) $identifier)
+                : null;
         } catch (Throwable) {
             return null;
         }
+    }
+
+    private function redirectToCanonicalDiscussion(array $post)
+    {
+        $url = FormatHelper::discussionDetailUrl(
+            $post['id'] ?? 0,
+            $post['slug'] ?? ''
+        );
+
+        header('Location: ' . $url, true, 301);
+        exit;
     }
 
     private function authorName(array $post)

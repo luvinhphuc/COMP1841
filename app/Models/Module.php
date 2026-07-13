@@ -25,6 +25,45 @@ class Module
         return $stmt->fetchAll();
     }
 
+    public function getPaginated(int $limit, int $offset)
+    {
+        $stmt = $this->db->prepare(
+            'SELECT m.id, m.module_code AS code, m.module_name AS name, m.description,
+                COUNT(p.id) AS post_count
+             FROM modules m
+             LEFT JOIN posts p ON p.module_id = m.id
+             GROUP BY m.id, m.module_code, m.module_name, m.description
+             ORDER BY m.module_code
+             LIMIT :limit OFFSET :offset'
+        );
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function countAll()
+    {
+        return (int) $this->db->query('SELECT COUNT(*) FROM modules')->fetchColumn();
+    }
+
+    public function codeExistsExceptModule(string $code, int $moduleId = 0)
+    {
+        $sql = 'SELECT COUNT(*) FROM modules WHERE module_code = :code';
+        $params = ['code' => $code];
+
+        if ($moduleId > 0) {
+            $sql .= ' AND id <> :id';
+            $params['id'] = $moduleId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchColumn() > 0;
+    }
+
     public function findById(int $id)
     {
         if ($id <= 0) {

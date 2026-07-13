@@ -69,11 +69,17 @@ $fieldRing = static function (array $errors, string $field) {
 
             <div class="mt-5 flex flex-wrap items-center gap-4 text-sm text-[#4B5563]">
                 <span class="inline-flex min-w-0 items-center gap-3">
-                    <span
-                        class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-semibold text-white"
-                        aria-hidden="true">
-                        <?= htmlspecialchars($discussion['avatar'], ENT_QUOTES, 'UTF-8') ?>
-                    </span>
+                    <?php if (!empty($discussion['avatar_url'])): ?>
+                        <img src="<?= htmlspecialchars($discussion['avatar_url'], ENT_QUOTES, 'UTF-8') ?>"
+                            alt="<?= htmlspecialchars($discussion['author'] . ' avatar', ENT_QUOTES, 'UTF-8') ?>"
+                            class="size-10 shrink-0 rounded-full object-cover">
+                    <?php else: ?>
+                        <span
+                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#1E3A8A] text-sm font-semibold text-white"
+                            aria-hidden="true">
+                            <?= htmlspecialchars($discussion['avatar'], ENT_QUOTES, 'UTF-8') ?>
+                        </span>
+                    <?php endif; ?>
                     <span class="min-w-0 ">
                         <span class="font-semibold text-[#111827]">
                             <?= htmlspecialchars($discussion['author'], ENT_QUOTES, 'UTF-8') ?>
@@ -443,11 +449,17 @@ $fieldRing = static function (array $errors, string $field) {
                     ?>
                     <article id="reply-<?= htmlspecialchars($reply['id'], ENT_QUOTES, 'UTF-8') ?>"
                         class="flex gap-3 rounded-2xl border border-[#e6e8ec] bg-white p-5 sm:p-6">
-                        <span
-                            class="flex size-11 items-center justify-center rounded-full bg-[#DBEAFE] text-sm font-semibold text-[#1E3A8A]"
-                            aria-hidden="true">
-                            <?= htmlspecialchars($reply['avatar'], ENT_QUOTES, 'UTF-8') ?>
-                        </span>
+                        <?php if (!empty($reply['avatar_url'])): ?>
+                            <img src="<?= htmlspecialchars($reply['avatar_url'], ENT_QUOTES, 'UTF-8') ?>"
+                                alt="<?= htmlspecialchars($reply['author'] . ' avatar', ENT_QUOTES, 'UTF-8') ?>"
+                                class="size-11 shrink-0 rounded-full object-cover">
+                        <?php else: ?>
+                            <span
+                                class="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#DBEAFE] text-sm font-semibold text-[#1E3A8A]"
+                                aria-hidden="true">
+                                <?= htmlspecialchars($reply['avatar'], ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                        <?php endif; ?>
                         <div class="w-full">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -735,7 +747,7 @@ $fieldRing = static function (array $errors, string $field) {
                             Delete discussion
                         </h2>
                         <p class="mt-2 text-sm leading-6 text-[#4B5563]">
-                            This discussion, its replies, views, and notifications will be removed from the app.
+                            This discussion, its replies, and views will be removed from the app.
                         </p>
                     </div>
                     <button type="button" data-close-modal
@@ -857,8 +869,7 @@ $fieldRing = static function (array $errors, string $field) {
                         <h2 id="reply-delete-modal-title-<?= $replyModalDomId ?>"
                             class="text-xl font-semibold leading-7 text-[#0F172A]">Delete reply</h2>
                         <p class="mt-2 text-sm leading-6 text-[#4B5563]">
-                            This reply will be removed from the discussion and related notifications will be
-                            cleared.
+                            This reply will be removed from the discussion.
                         </p>
                     </div>
                     <button type="button" data-close-modal

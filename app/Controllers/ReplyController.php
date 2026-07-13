@@ -274,9 +274,7 @@ class ReplyController extends Controller
             return BASE_URL . '/discussions';
         }
 
-        $target = $slug !== '' ? $slug : $postId;
-
-        return FormatHelper::discussionDetailUrl($target) . '#reply-editor';
+        return FormatHelper::discussionDetailUrl($postId, $slug) . '#reply-editor';
     }
 
     private function findReplyById(int $id)
@@ -305,8 +303,8 @@ class ReplyController extends Controller
     private function postUrlFromReply(array $reply)
     {
         return FormatHelper::discussionDetailUrl(
-            $reply['post_slug'] ?? '',
-            $reply['post_id'] ?? ''
+            $reply['post_id'] ?? 0,
+            $reply['post_slug'] ?? ''
         );
     }
 }

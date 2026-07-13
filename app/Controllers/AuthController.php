@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\UserModule;
 use App\Services\AuthService;
 use Throwable;
 
@@ -42,8 +43,27 @@ class AuthController extends Controller
             session_regenerate_id(true);
             $_SESSION['auth_user'] = $result['user'];
 
+            if ($this->isStudent($result['user'])) {
+                $moduleIds = (new UserModule())->getSelectedModuleIds((int) $result['user']['id']);
+
+                if (empty($moduleIds)) {
+                    unset($_SESSION['dashboard_module_ids']);
+                    $this->redirectTo(BASE_URL . '/onboarding/modules');
+                }
+
+                if (count($moduleIds) > 4) {
+                    shuffle($moduleIds);
+                    $moduleIds = array_slice($moduleIds, 0, 4);
+                }
+
+                $_SESSION['dashboard_module_ids'] = $moduleIds;
+            } else {
+                unset($_SESSION['dashboard_module_ids']);
+            }
+
             $this->redirectTo(BASE_URL . '/');
         } catch (Throwable) {
+            unset($_SESSION['auth_user'], $_SESSION['dashboard_module_ids']);
             $this->redirectLoginWithErrors([
                 'general' => 'Unable to sign in right now. Please try again.',
             ], $data);
@@ -99,7 +119,13 @@ class AuthController extends Controller
 
     public function logout()
     {
-        unset($_SESSION['auth_user'], $_SESSION['user']);
+        unset(
+            $_SESSION['auth_user'],
+            $_SESSION['user'],
+            $_SESSION['dashboard_module_ids'],
+            $_SESSION['onboarding_module_state'],
+            $_SESSION['preferences_module_state']
+        );
         session_regenerate_id(true);
 
         $this->redirectTo(BASE_URL . '/login');
@@ -145,5 +171,10 @@ class AuthController extends Controller
         $_SESSION['login_old'] = $old;
 
         $this->redirectTo(BASE_URL . '/login');
+    }
+
+    private function isStudent(array $user): bool
+    {
+        return strtolower(trim((string) ($user['role'] ?? ''))) === 'student';
     }
 }

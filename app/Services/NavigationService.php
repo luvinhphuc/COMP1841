@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\FormatHelper;
 use App\Models\Module;
 use Throwable;
 
@@ -9,8 +10,13 @@ class NavigationService
 {
     public function moduleLinks(int $limit = 3)
     {
+        $authUser = $this->authUser();
+        $isStudent = strtolower(trim((string) ($authUser['role'] ?? ''))) === 'student';
         $links = [
-            ['label' => 'View all modules', 'href' => BASE_URL . '/modules'],
+            [
+                'label' => $isStudent ? 'Manage my modules' : 'View all discussions',
+                'href' => BASE_URL . ($isStudent ? '/preferences/modules' : '/discussions'),
+            ],
         ];
 
         try {
@@ -55,15 +61,13 @@ class NavigationService
     {
         $authName = trim((string) ($authUser['full_name'] ?? $authUser['name'] ?? $authUser['username'] ?? 'Student'));
         $authUsername = trim((string) ($authUser['username'] ?? ''));
-        $authAvatar = trim((string) ($authUser['avatar'] ?? ''));
 
         return [
             'isLoggedIn' => is_array($authUser),
             'authName' => $authName !== '' ? $authName : 'Student',
             'authUsername' => $authUsername,
-            'authAvatarUrl' => $authAvatar !== ''
-                ? BASE_URL . '/' . ltrim($authAvatar, '/')
-                : BASE_URL . '/assets/images/header/user-avatar.jpg',
+            'authAvatarUrl' => FormatHelper::authorAvatarUrl($authUser ?? []),
+            'authAvatarInitial' => FormatHelper::authorInitial($authUser ?? []),
         ];
     }
 }

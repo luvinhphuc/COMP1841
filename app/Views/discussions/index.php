@@ -250,13 +250,13 @@ $visibleCount = count($feedPosts);
 
                 <?php if (($pagination['total'] ?? 1) > 1): ?>
                 <nav class="mt-6 flex flex-wrap items-center justify-between gap-3 border-y border-[#e6e8ec] py-3"
-                    aria-label="Discussion pagination">
+                    aria-label="Pagination">
                     <a href="<?= htmlspecialchars(($pagination['previous_url'] ?? '#'), ENT_QUOTES, 'UTF-8') ?>"
                         class="inline-flex h-10 items-center rounded-lg border px-4 text-sm font-semibold transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black <?= !empty($pagination['has_previous']) ? 'border-[#c4c7c7] bg-white text-[#191c1f] hover:border-black' : 'pointer-events-none border-[#e6e8ec] bg-[#f5f6fa] text-[#444748]' ?>"
                         <?= empty($pagination['has_previous']) ? 'aria-disabled="true"' : '' ?>>
                         Previous
                     </a>
-                    <span class="text-sm font-medium text-[#4B5563]">
+                    <span class="text-sm font-medium text-[#4B5563]" aria-current="page">
                         Page <?= htmlspecialchars(($pagination['current'] ?? 1), ENT_QUOTES, 'UTF-8') ?> of
                         <?= htmlspecialchars(($pagination['total'] ?? 1), ENT_QUOTES, 'UTF-8') ?>
                     </span>

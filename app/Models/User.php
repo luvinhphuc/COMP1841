@@ -27,6 +27,35 @@ class User
         return $stmt->fetchAll();
     }
 
+    public function getPaginated(int $limit, int $offset)
+    {
+        $nameSelect = $this->nameSelectSql();
+        $stmt = $this->db->prepare(
+            'SELECT id, first_name, last_name, ' . $nameSelect . ' AS name,
+                username, email, avatar, role, created_at
+             FROM ' . $this->table . '
+             ORDER BY id DESC
+             LIMIT :limit OFFSET :offset'
+        );
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function countAll()
+    {
+        return (int) $this->db->query('SELECT COUNT(*) FROM ' . $this->table)->fetchColumn();
+    }
+
+    public function countAdmins()
+    {
+        return (int) $this->db->query(
+            "SELECT COUNT(*) FROM {$this->table} WHERE role = 'admin'"
+        )->fetchColumn();
+    }
+
     public function usernameExists($username)
     {
         $stmt = $this->db->prepare(
@@ -47,12 +76,27 @@ class User
         return $stmt->fetch();
     }
 
+    public function emailExistsExceptUser(string $email, int $userId)
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id FROM ' . $this->table . '
+             WHERE email = :email AND id <> :user_id
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'email' => $email,
+            'user_id' => $userId,
+        ]);
+
+        return (bool) $stmt->fetch();
+    }
+
     public function findByUsername($username)
     {
         $nameSelect = $this->nameSelectSql();
         $firstNameSelect = $this->firstNameSelectSql();
         $stmt = $this->db->prepare(
-            'SELECT id, ' . $firstNameSelect . ' AS first_name, ' . $nameSelect . ' AS full_name,
+            'SELECT id, ' . $firstNameSelect . ' AS first_name, last_name, ' . $nameSelect . ' AS full_name,
                 username, email, password, avatar, role, created_at
              FROM ' . $this->table . '
              WHERE username = :username
@@ -73,7 +117,7 @@ class User
         $nameSelect = $this->nameSelectSql();
         $firstNameSelect = $this->firstNameSelectSql();
         $stmt = $this->db->prepare(
-            'SELECT id, ' . $firstNameSelect . ' AS first_name, ' . $nameSelect . ' AS full_name,
+            'SELECT id, ' . $firstNameSelect . ' AS first_name, last_name, ' . $nameSelect . ' AS full_name,
                 username, email, password, avatar, role, created_at, updated_at
              FROM ' . $this->table . '
              WHERE id = :id
@@ -83,6 +127,73 @@ class User
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $user ?: null;
+    }
+
+    public function find(int $id)
+    {
+        return $this->findById($id);
+    }
+
+    public function usernameExistsExceptUser(string $username, int $userId)
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id FROM ' . $this->table . '
+             WHERE username = :username AND id <> :user_id
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'username' => $username,
+            'user_id' => $userId,
+        ]);
+
+        return (bool) $stmt->fetch();
+    }
+
+    public function updateProfile(int $userId, array $data)
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE ' . $this->table . '
+             SET first_name = :first_name,
+                 last_name = :last_name,
+                 username = :username,
+                 updated_at = NOW()
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'username' => $data['username'],
+            'id' => $userId,
+        ]);
+    }
+
+    public function updateAvatar(int $userId, string $avatarPath)
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE ' . $this->table . '
+             SET avatar = :avatar, updated_at = NOW()
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'avatar' => $avatarPath,
+            'id' => $userId,
+        ]);
+    }
+
+    public function updatePassword(int $userId, string $passwordHash)
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE ' . $this->table . '
+             SET password = :password, updated_at = NOW()
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'password' => $passwordHash,
+            'id' => $userId,
+        ]);
     }
 
     public function create($data)
@@ -125,6 +236,29 @@ class User
             'avatar' => $data['avatar'],
             'role' => $data['role'] ?? 'student',
             'id' => $id,
+        ]);
+    }
+
+    public function updateFromAdmin(int $id, array $data)
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE ' . $this->table . '
+             SET first_name = :first_name,
+                 last_name = :last_name,
+                 username = :username,
+                 email = :email,
+                 role = :role,
+                 updated_at = NOW()
+             WHERE id = :id'
+        );
+
+        return $stmt->execute([
+            'id' => $id,
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'role' => $data['role'],
         ]);
     }
 

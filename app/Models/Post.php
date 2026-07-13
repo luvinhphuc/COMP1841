@@ -187,19 +187,37 @@ class Post
         return $stmt->fetchAll();
     }
 
-    public function getByUserId(int $userId, int $limit = 10)
+    public function getByUserId(int $userId, int $limit = 10, int $offset = 0)
     {
         $stmt = $this->db->prepare($this->baseSelectSql() . '
             AND p.user_id = :user_id
             ORDER BY p.created_at DESC
-            LIMIT :limit
+            LIMIT :limit OFFSET :offset
         ');
 
         $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
         $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll();
+    }
+
+    public function countByUserId(int $userId): int
+    {
+        if ($userId <= 0) {
+            return 0;
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*)
+             FROM posts
+             WHERE user_id = :user_id
+               AND deleted_at IS NULL'
+        );
+        $stmt->execute(['user_id' => $userId]);
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function getByModuleId(int $moduleId, int $limit = 20, int $offset = 0)
@@ -233,6 +251,25 @@ class Post
         $stmt->execute();
 
         return $stmt->fetchColumn();
+    }
+
+    public function getAdminCounts()
+    {
+        $stmt = $this->db->query(
+            "SELECT
+                COUNT(*) AS total,
+                SUM(status = 'open') AS open_count,
+                SUM(status = 'solved') AS solved_count
+             FROM posts
+             WHERE deleted_at IS NULL"
+        );
+        $counts = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        return [
+            'total' => (int) ($counts['total'] ?? 0),
+            'open' => (int) ($counts['open_count'] ?? 0),
+            'solved' => (int) ($counts['solved_count'] ?? 0),
+        ];
     }
 
     private function discussionFilterSql(array $filters, array &$params)
@@ -472,12 +509,6 @@ class Post
         try {
             $this->db->beginTransaction();
 
-            $this->db->prepare('DELETE FROM notifications
-                 WHERE post_id = :post_id
-                    OR reply_id IN (
-                        SELECT id FROM replies WHERE post_id = :reply_post_id
-                    )')->execute(['post_id' => $id, 'reply_post_id' => $id,]);
-
             if ($this->tableExists('post_views')) {
                 $this->db->prepare('DELETE FROM post_views WHERE post_id = :post_id')->execute(['post_id' => $id]);
             }
@@ -512,8 +543,9 @@ class Post
         $stmt = $this->db->prepare('UPDATE posts
              SET status = :status, updated_at = NOW()
              WHERE id = :id AND deleted_at IS NULL');
+        $stmt->execute(['id' => $id, 'status' => $this->normaliseStatus($status),]);
 
-        return $stmt->execute(['id' => $id, 'status' => $this->normaliseStatus($status),]);
+        return $stmt->rowCount() > 0;
     }
 
     public function recordView(int $postId, ?int $userId = null)

@@ -5,8 +5,10 @@
  * @var string $greetingName
  * @var array $homeModules
  * @var array $myQuestions
+ * @var array $questionPagination
  * @var array $recentActivities
  * @var array $trendingModules
+ * @var bool $showMyModules
  */
 ?>
 
@@ -33,6 +35,7 @@
             </a>
         </div>
 
+        <?php if ($showMyModules): ?>
         <section class="flex flex-col gap-4" aria-labelledby="my-modules-heading" data-dashboard-reveal>
             <div class="flex items-center justify-between gap-4">
                 <h2 id="my-modules-heading" class="flex items-center gap-2 text-xl font-semibold leading-7">
@@ -44,9 +47,9 @@
                     </svg>
                     My Modules
                 </h2>
-                <a href="<?= BASE_URL ?>/modules"
+                <a href="<?= BASE_URL ?>/preferences/modules"
                     class="group inline-flex items-center gap-2 text-xs font-bold leading-4 text-black transition hover:text-emerald-800">
-                    View All Modules
+                    Manage Modules
                     <svg viewBox="0 0 20 20" class="size-4 transition group-hover:translate-x-1" fill="none"
                         aria-hidden="true">
                         <path d="M4 10h11M11 6l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
@@ -91,6 +94,7 @@
                 <?php endif; ?>
             </div>
         </section>
+        <?php endif; ?>
 
         <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
             <section class="flex flex-col gap-4" aria-labelledby="my-questions-heading" data-dashboard-reveal>
@@ -129,6 +133,40 @@
                     </div>
                     <?php endif; ?>
                 </div>
+
+                <?php if (($questionPagination['total'] ?? 1) > 1): ?>
+                <nav class="flex items-center justify-between gap-4 border-t border-[#d1d3d5] pt-4"
+                    aria-label="My Questions pagination">
+                    <?php if (!empty($questionPagination['has_previous'])): ?>
+                    <a href="<?= htmlspecialchars($questionPagination['previous_url'], ENT_QUOTES, 'UTF-8') ?>"
+                        class="inline-flex h-10 items-center rounded-lg border border-[#c4c7c7] bg-white px-4 text-sm font-semibold text-[#191c1f] transition hover:border-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                        Previous
+                    </a>
+                    <?php else: ?>
+                    <span class="inline-flex h-10 items-center rounded-lg border border-[#e6e8ec] bg-[#f5f6fa] px-4 text-sm font-semibold text-[#777]"
+                        aria-disabled="true">
+                        Previous
+                    </span>
+                    <?php endif; ?>
+
+                    <span class="text-sm font-semibold text-[#444748]" aria-current="page">
+                        Page <?= (int) ($questionPagination['current'] ?? 1) ?> of
+                        <?= (int) ($questionPagination['total'] ?? 1) ?>
+                    </span>
+
+                    <?php if (!empty($questionPagination['has_next'])): ?>
+                    <a href="<?= htmlspecialchars($questionPagination['next_url'], ENT_QUOTES, 'UTF-8') ?>"
+                        class="inline-flex h-10 items-center rounded-lg border border-[#c4c7c7] bg-white px-4 text-sm font-semibold text-[#191c1f] transition hover:border-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                        Next
+                    </a>
+                    <?php else: ?>
+                    <span class="inline-flex h-10 items-center rounded-lg border border-[#e6e8ec] bg-[#f5f6fa] px-4 text-sm font-semibold text-[#777]"
+                        aria-disabled="true">
+                        Next
+                    </span>
+                    <?php endif; ?>
+                </nav>
+                <?php endif; ?>
             </section>
 
             <aside class="flex flex-col gap-7 border-t border-[#d1d3d5] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0"

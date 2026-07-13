@@ -39,6 +39,34 @@ class App
         'show',
     ];
 
+    private const PREFERENCES_ACTION_ROUTES = [
+        'profile' => 'updateProfile',
+        'avatar' => 'updateAvatar',
+        'password' => 'updatePassword',
+    ];
+
+    private const MODULE_SELECTION_ROUTES = [
+        'onboarding/modules' => ['onboarding', 'modules'],
+        'onboarding/modules/save' => ['onboarding', 'saveModules'],
+        'preferences/modules' => ['onboarding', 'manageModules'],
+        'preferences/modules/save' => ['onboarding', 'savePreferenceModules'],
+    ];
+
+    private const ADMIN_ACTION_ROUTES = [
+        'users' => 'users',
+        'users/edit' => 'editUser',
+        'users/update' => 'updateUser',
+        'users/delete' => 'deleteUser',
+        'modules' => 'modules',
+        'modules/store' => 'storeModule',
+        'modules/edit' => 'editModule',
+        'modules/update' => 'updateModule',
+        'modules/delete' => 'deleteModule',
+        'posts' => 'posts',
+        'posts/status' => 'updatePostStatus',
+        'posts/delete' => 'deletePost',
+    ];
+
     protected $controller = 'HomeController';
     protected $action = 'index';
     protected $params = [];
@@ -107,6 +135,17 @@ class App
             return ['auth', $action];
         }
 
+        $threePartRoute = implode('/', array_slice($url, 0, 3));
+        $twoPartRoute = implode('/', array_slice($url, 0, 2));
+
+        if (isset(self::MODULE_SELECTION_ROUTES[$threePartRoute])) {
+            return self::MODULE_SELECTION_ROUTES[$threePartRoute];
+        }
+
+        if (isset(self::MODULE_SELECTION_ROUTES[$twoPartRoute])) {
+            return self::MODULE_SELECTION_ROUTES[$twoPartRoute];
+        }
+
         if ($url[0] === 'discussions') {
             if (!isset($url[1]) && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 return ['post', 'store'];
@@ -127,8 +166,46 @@ class App
             }
 
             if (!in_array($url[1], self::RESERVED_DISCUSSION_ACTIONS, true)) {
-                return ['discussions', 'show', $url[1]];
+                if (isset($url[3])) {
+                    return $url;
+                }
+
+                $mappedRoute = ['discussions', 'show', $url[1]];
+
+                if (isset($url[2])) {
+                    $mappedRoute[] = $url[2];
+                }
+
+                return $mappedRoute;
             }
+        }
+
+        if ($url[0] === 'preferences' && isset($url[1], self::PREFERENCES_ACTION_ROUTES[$url[1]])) {
+            return ['preferences', self::PREFERENCES_ACTION_ROUTES[$url[1]]];
+        }
+
+        if ($url[0] === 'admin') {
+            if (!isset($url[1])) {
+                return ['admin', 'index'];
+            }
+
+            $routeKey = $url[1];
+
+            if (isset($url[2])) {
+                $routeKey .= '/' . $url[2];
+            }
+
+            if (!isset(self::ADMIN_ACTION_ROUTES[$routeKey])) {
+                return ['admin', 'routeNotFound'];
+            }
+
+            $mappedRoute = ['admin', self::ADMIN_ACTION_ROUTES[$routeKey]];
+
+            if (isset($url[3])) {
+                $mappedRoute[] = $url[3];
+            }
+
+            return $mappedRoute;
         }
 
         return $url;

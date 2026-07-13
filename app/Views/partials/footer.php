@@ -4,6 +4,7 @@
  *
  * @var array|null $flashToast
  * @var string $navbarScriptUrl
+ * @var string $showPasswordScriptUrl
  * @var array $pageScriptUrls
  */
 ?>
@@ -103,6 +104,9 @@
     </nav>
 </footer>
 <script src="<?= BASE_URL ?>/assets/js/gsap.min.js"></script>
+<?php if (!empty($showPasswordScriptUrl)): ?>
+    <script src="<?= htmlspecialchars($showPasswordScriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
+<?php endif; ?>
 <?php if (!empty($navbarScriptUrl)): ?>
     <script src="<?= htmlspecialchars($navbarScriptUrl, ENT_QUOTES, 'UTF-8') ?>"></script>
 <?php endif; ?>

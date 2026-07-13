@@ -1,16 +1,14 @@
 (() => {
     const actionMenus = Array.from(document.querySelectorAll('[data-action-menu]'));
     const shareButton = document.querySelector('[data-share-discussion]');
-    const modals = Array.from(document.querySelectorAll('[data-modal]'));
     const replyTargets = Array.from(document.querySelectorAll('[data-reply-target]'));
     const replyParentInput = document.querySelector('#reply-parent-id');
     const replyParentPreview = document.querySelector('[data-reply-parent-preview]');
     const replyingToUsername = document.querySelector('[data-replying-to-username]');
     const replyTextarea = document.querySelector('#reply-content');
     const replyEditor = document.querySelector('#reply-editor');
-    let lastModalTrigger = null;
 
-    if (!shareButton && actionMenus.length === 0 && modals.length === 0 && replyTargets.length === 0) {
+    if (!shareButton && actionMenus.length === 0 && replyTargets.length === 0) {
         return;
     }
 
@@ -32,43 +30,6 @@
                 closeActionMenu(menu);
             }
         });
-    };
-
-    const focusFirstModalControl = (modal) => {
-        const focusTarget = modal.querySelector('input:not([type="hidden"]), select, textarea, button:not([data-close-modal]), a[href]');
-
-        if (focusTarget instanceof HTMLElement) {
-            focusTarget.focus({ preventScroll: true });
-        }
-    };
-
-    const openModal = (modal, trigger = null) => {
-        if (!(modal instanceof HTMLDialogElement)) {
-            return;
-        }
-
-        closeAllActionMenus();
-        lastModalTrigger = trigger instanceof HTMLElement ? trigger : null;
-
-        if (!modal.open) {
-            if (typeof modal.showModal === 'function') {
-                modal.showModal();
-            } else {
-                modal.setAttribute('open', '');
-            }
-        }
-
-        window.requestAnimationFrame(() => {
-            focusFirstModalControl(modal);
-        });
-    };
-
-    const closeModal = (modal) => {
-        if (!(modal instanceof HTMLDialogElement) || !modal.open) {
-            return;
-        }
-
-        modal.close();
     };
 
     const clearReplyTarget = () => {
@@ -179,54 +140,6 @@
             return;
         }
 
-        const modalTrigger = target.closest('[data-open-modal]');
-
-        if (modalTrigger instanceof HTMLElement) {
-            const modalId = modalTrigger.dataset.openModal || '';
-            const modal = document.getElementById(modalId);
-
-            if (modal instanceof HTMLDialogElement) {
-                event.preventDefault();
-                openModal(modal, modalTrigger);
-            }
-
-            return;
-        }
-
-        const closeTrigger = target.closest('[data-close-modal]');
-
-        if (closeTrigger) {
-            const modal = closeTrigger.closest('dialog');
-
-            if (modal instanceof HTMLDialogElement) {
-                closeModal(modal);
-            }
-        }
-    });
-
-    modals.forEach((modal) => {
-        if (!(modal instanceof HTMLDialogElement)) {
-            return;
-        }
-
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                closeModal(modal);
-            }
-        });
-
-        modal.addEventListener('close', () => {
-            closeAllActionMenus();
-
-            if (lastModalTrigger) {
-                lastModalTrigger.focus({ preventScroll: true });
-                lastModalTrigger = null;
-            }
-        });
-
-        if (modal.dataset.initialOpen === 'true') {
-            openModal(modal);
-        }
     });
 
     if (!shareButton) {

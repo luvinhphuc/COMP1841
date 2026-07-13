@@ -192,9 +192,6 @@ class Reply
         try {
             $this->db->beginTransaction();
 
-            $this->db->prepare('DELETE FROM notifications WHERE reply_id = :reply_id')
-                ->execute(['reply_id' => $id]);
-
             $this->db->prepare('DELETE FROM media WHERE reply_id = :reply_id')
                 ->execute(['reply_id' => $id]);
 

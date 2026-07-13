@@ -24,7 +24,7 @@
                 </div>
 
                 <?php if (!empty($success)): ?>
-                    <div class="mb-5 border-y border-[#BBF7D0] bg-[#F0FDF4] py-3 text-sm leading-6 text-[#166534]" role="status">
+                    <div class="mb-5 ring-1 rounded-2xl ring-[#BBF7D0] bg-[#F0FDF4] p-4 text-sm leading-6 text-[#166534]" role="status">
                         <?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 <?php endif; ?>

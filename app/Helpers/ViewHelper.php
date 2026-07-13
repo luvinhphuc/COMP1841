@@ -28,12 +28,13 @@ class ViewHelper
             'author' => FormatHelper::textOr($post['full_name'] ?? $post['username'] ?? '', 'Student'),
             'author_handle' => FormatHelper::authorHandle($post),
             'avatar' => FormatHelper::authorInitial($post),
+            'avatar_url' => FormatHelper::authorAvatarUrl($post),
             'replies' => (int) ($post['reply_count'] ?? 0),
             'views' => FormatHelper::compactNumber((int) ($post['view_count'] ?? 0)),
             'image' => FormatHelper::mediaUrl($post['media_path'] ?? null),
             'media_type' => trim((string) ($post['media_type'] ?? '')),
             'preview_alt' => 'Preview for ' . $title,
-            'url' => FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? ''),
+            'url' => FormatHelper::discussionDetailUrl($post['id'] ?? 0, $post['slug'] ?? ''),
         ];
     }
 
@@ -46,7 +47,7 @@ class ViewHelper
                 FormatHelper::relativeTime((string) ($post['viewed_at'] ?? '')),
                 'Recently'
             ),
-            'url' => FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? ''),
+            'url' => FormatHelper::discussionDetailUrl($post['id'] ?? 0, $post['slug'] ?? ''),
         ];
     }
 
@@ -55,7 +56,7 @@ class ViewHelper
         return [
             'title' => FormatHelper::textOr($post['title'] ?? '', 'Untitled question'),
             'replies' => (int) ($post['reply_count'] ?? 0),
-            'url' => FormatHelper::discussionDetailUrl($post['slug'] ?? '', $post['id'] ?? ''),
+            'url' => FormatHelper::discussionDetailUrl($post['id'] ?? 0, $post['slug'] ?? ''),
         ];
     }
 
