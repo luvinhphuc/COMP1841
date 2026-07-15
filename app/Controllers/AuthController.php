@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\UserModule;
 use App\Services\AuthService;
 use Throwable;
 
@@ -33,6 +32,12 @@ class AuthController extends Controller
             'password' => (string) ($_POST['password'] ?? ''),
         ];
 
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->redirectLoginWithErrors([
+                'general' => 'Your session expired. Please try again.',
+            ], $data);
+        }
+
         try {
             $result = (new AuthService())->login($data);
 
@@ -43,27 +48,9 @@ class AuthController extends Controller
             session_regenerate_id(true);
             $_SESSION['auth_user'] = $result['user'];
 
-            if ($this->isStudent($result['user'])) {
-                $moduleIds = (new UserModule())->getSelectedModuleIds((int) $result['user']['id']);
-
-                if (empty($moduleIds)) {
-                    unset($_SESSION['dashboard_module_ids']);
-                    $this->redirectTo(BASE_URL . '/onboarding/modules');
-                }
-
-                if (count($moduleIds) > 4) {
-                    shuffle($moduleIds);
-                    $moduleIds = array_slice($moduleIds, 0, 4);
-                }
-
-                $_SESSION['dashboard_module_ids'] = $moduleIds;
-            } else {
-                unset($_SESSION['dashboard_module_ids']);
-            }
-
-            $this->redirectTo(BASE_URL . '/');
+            $this->redirectTo(BASE_URL . '/dashboard');
         } catch (Throwable) {
-            unset($_SESSION['auth_user'], $_SESSION['dashboard_module_ids']);
+            unset($_SESSION['auth_user']);
             $this->redirectLoginWithErrors([
                 'general' => 'Unable to sign in right now. Please try again.',
             ], $data);
@@ -100,8 +87,14 @@ class AuthController extends Controller
             'confirm_password' => (string) ($_POST['confirm_password'] ?? ''),
         ];
 
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->redirectBackWithErrors([
+                'general' => 'Your session expired. Please try again.',
+            ], $data);
+        }
+
         try {
-            $result = (new AuthService())->register($data, $_FILES['avatar'] ?? null);
+            $result = (new AuthService())->register($data);
 
             if (!$result['success']) {
                 $this->redirectBackWithErrors($result['errors'], $data);
@@ -119,13 +112,17 @@ class AuthController extends Controller
 
     public function logout()
     {
-        unset(
-            $_SESSION['auth_user'],
-            $_SESSION['user'],
-            $_SESSION['dashboard_module_ids'],
-            $_SESSION['onboarding_module_state'],
-            $_SESSION['preferences_module_state']
-        );
+        $this->requirePost(BASE_URL . '/dashboard');
+
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->redirectWithToast(BASE_URL . '/dashboard', [
+                'type' => 'error',
+                'title' => 'Unable to sign out',
+                'message' => 'Your session expired. Please try again.',
+            ]);
+        }
+
+        session_unset();
         session_regenerate_id(true);
 
         $this->redirectTo(BASE_URL . '/login');
@@ -173,8 +170,4 @@ class AuthController extends Controller
         $this->redirectTo(BASE_URL . '/login');
     }
 
-    private function isStudent(array $user): bool
-    {
-        return strtolower(trim((string) ($user['role'] ?? ''))) === 'student';
-    }
 }

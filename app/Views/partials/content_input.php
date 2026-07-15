@@ -27,7 +27,9 @@ $contentInputAllowVideo = !$contentInputIsComment;
 $contentInputAttachmentAccept = $contentInputIsComment
     ? 'image/jpeg,image/png,image/gif,image/webp'
     : 'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,.zip,.txt,.php,.js,.css,.html,.htm,.json,.xml,.sql,.py,.java,.c,.cpp,.cs,.md,.pdf,.doc,.docx';
-$contentInputAttachmentHelp = $contentInputIsComment ? 'Drag and drop or upload an image' : 'Drag and drop or upload media/files';
+$contentInputAttachmentHelp = $contentInputIsComment
+    ? 'Drag and drop or upload an image up to 10 MB'
+    : 'Images and documents up to 10 MB; videos up to 50 MB';
 $contentInputSubmitLabel = $contentInputIsComment ? 'Comment' : '';
 
 $contentInputAttachmentId = $contentInputId . '-attachment';

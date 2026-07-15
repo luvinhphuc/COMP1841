@@ -3,7 +3,9 @@
  * Variables passed from DashboardController::index()
  *
  * @var string $greetingName
- * @var array $homeModules
+ * @var array $selectedModulePreview
+ * @var int $selectedModuleCount
+ * @var array $selectedModuleDiscussions
  * @var array $myQuestions
  * @var array $questionPagination
  * @var array $recentActivities
@@ -37,7 +39,7 @@
 
         <?php if ($showMyModules): ?>
         <section class="flex flex-col gap-4" aria-labelledby="my-modules-heading" data-dashboard-reveal>
-            <div class="flex items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
                 <h2 id="my-modules-heading" class="flex items-center gap-2 text-xl font-semibold leading-7">
                     <svg viewBox="0 0 24 24" class="size-6 text-[#315f90]" fill="none" aria-hidden="true">
                         <path d="m12 4 8 4.2-8 4.2-8-4.2L12 4Z" stroke="currentColor" stroke-width="1.6"
@@ -47,20 +49,25 @@
                     </svg>
                     My Modules
                 </h2>
-                <a href="<?= BASE_URL ?>/preferences/modules"
-                    class="group inline-flex items-center gap-2 text-xs font-bold leading-4 text-black transition hover:text-emerald-800">
-                    Manage Modules
-                    <svg viewBox="0 0 20 20" class="size-4 transition group-hover:translate-x-1" fill="none"
-                        aria-hidden="true">
-                        <path d="M4 10h11M11 6l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
-                </a>
+                <div class="flex items-center gap-4 text-xs font-bold leading-4">
+                    <a href="<?= BASE_URL ?>/preferences#my-modules" class="text-black transition hover:text-emerald-800">
+                        View all <?= (int) $selectedModuleCount ?>
+                    </a>
+                    <a href="<?= BASE_URL ?>/preferences/modules"
+                        class="group inline-flex items-center gap-2 text-black transition hover:text-emerald-800">
+                        Manage
+                        <svg viewBox="0 0 20 20" class="size-4 transition group-hover:translate-x-1" fill="none"
+                            aria-hidden="true">
+                            <path d="M4 10h11M11 6l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </a>
+                </div>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <?php if (!empty($homeModules)): ?>
-                <?php foreach ($homeModules as $module): ?>
+                <?php if (!empty($selectedModulePreview)): ?>
+                <?php foreach ($selectedModulePreview as $module): ?>
                 <a href="<?= htmlspecialchars($module['url'], ENT_QUOTES, 'UTF-8') ?>"
                     class="group flex min-h-[126px] min-w-0 flex-col rounded-lg border border-[#c4c7c7] bg-white p-4 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
                     data-dashboard-card>
@@ -69,9 +76,6 @@
                             class="min-w-0 truncate rounded bg-[#d6e3ff] px-2 py-1 font-mono text-xs font-medium leading-4 tracking-[0.05em] text-[#001b3d]">
                             <?= htmlspecialchars($module['code'], ENT_QUOTES, 'UTF-8') ?>
                         </span>
-                        <?php if (!empty($module['active'])): ?>
-                        <span class="mt-1 size-2 rounded-full bg-black" aria-label="Active module"></span>
-                        <?php endif; ?>
                     </div>
                     <h3 class="mt-4 min-w-0 break-words text-base font-semibold leading-6 text-[#191c1f]"
                         dir="auto">
@@ -90,6 +94,36 @@
                 <div
                     class="rounded-lg border border-dashed border-[#c4c7c7] bg-white p-5 text-sm leading-6 text-[#444748] sm:col-span-2 lg:col-span-4">
                     Your enrolled modules will appear here when they are available.
+                </div>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <?php if ($showMyModules): ?>
+        <section class="flex flex-col gap-4" aria-labelledby="module-discussions-heading" data-dashboard-reveal>
+            <div class="flex items-center justify-between gap-4">
+                <h2 id="module-discussions-heading" class="text-xl font-semibold leading-7 text-black">
+                    Discussions From Your Modules
+                </h2>
+                <a href="<?= BASE_URL ?>/discussions"
+                    class="text-xs font-bold leading-4 text-black transition hover:text-emerald-800">
+                    View All Discussions
+                </a>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <?php if (!empty($selectedModuleDiscussions)): ?>
+                <?php foreach ($selectedModuleDiscussions as $discussion): ?>
+                <?php
+                $postCard = $discussion;
+                $postCardAnimated = true;
+                require ROOT_PATH . '/app/Views/partials/post_card.php';
+                ?>
+                <?php endforeach; ?>
+                <?php else: ?>
+                <div class="rounded-xl border border-dashed border-[#c4c7c7] bg-white p-6 text-sm leading-6 text-[#444748]">
+                    No discussions have been posted in your selected modules yet.
                 </div>
                 <?php endif; ?>
             </div>

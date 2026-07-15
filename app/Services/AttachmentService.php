@@ -38,7 +38,7 @@ class AttachmentService
         }
 
         if ($size > $maxSize) {
-            return ['has_file' => true, 'error' => 'Attachment is too large. Images can be 5 MB, videos 50 MB, and documents or code 10 MB.',];
+            return ['has_file' => true, 'error' => 'Attachment is too large. Images can be 10 MB, videos 50 MB, and documents or code 10 MB.',];
         }
 
         return ['has_file' => true, 'error' => '', 'tmp_name' => trim((string)($file['tmp_name'] ?? '')), 'original_name' => $originalName, 'extension' => $extension, 'mime_type' => $mimeType, 'file_size' => $size, 'type' => $type,];

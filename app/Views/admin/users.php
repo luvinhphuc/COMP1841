@@ -1,9 +1,15 @@
 <section class="min-h-screen bg-[#f6f7fb] px-5 py-8 text-[#172033] sm:px-8 lg:px-12">
     <div class="mx-auto flex max-w-7xl flex-col gap-6">
-        <div>
-            <p class="text-xs font-bold uppercase tracking-[0.14em] text-[#0b57d0]">Administration</p>
-            <h1 class="mt-2 text-3xl font-bold tracking-tight">Manage Users</h1>
-            <p class="mt-2 text-sm text-[#667085]">View, edit, and manage user accounts across the discussion platform.</p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-[#0b57d0]">Administration</p>
+                <h1 class="mt-2 text-3xl font-bold tracking-tight">Manage Users</h1>
+                <p class="mt-2 text-sm text-[#667085]">View, create, edit, and manage user accounts across the discussion platform.</p>
+            </div>
+            <a href="<?= BASE_URL ?>/admin/users/create"
+                class="inline-flex min-h-11 w-fit items-center justify-center rounded-lg bg-[#0b57d0] px-5 text-sm font-semibold text-white hover:bg-[#0847ad]">
+                Add user
+            </a>
         </div>
 
         <?php require ROOT_PATH . '/app/Views/admin/partials/navigation.php'; ?>

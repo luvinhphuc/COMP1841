@@ -58,7 +58,6 @@ class PreferencesController extends Controller
     public function updateProfile()
     {
         $this->requirePost(BASE_URL . '/preferences');
-        [$userId] = $this->authenticatedUser();
 
         if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
             $this->redirectWithState('preferences_profile_state', [
@@ -66,18 +65,17 @@ class PreferencesController extends Controller
             ]);
         }
 
-        $data = [
+        [$userId] = $this->authenticatedUser();
+
+        $data = $this->userModel->normaliseAccountData([
             'first_name' => trim((string) ($_POST['first_name'] ?? '')),
             'last_name' => trim((string) ($_POST['last_name'] ?? '')),
             'username' => trim((string) ($_POST['username'] ?? '')),
-        ];
-        $errors = $this->validateProfile($data);
+            'email' => trim((string) ($_POST['email'] ?? '')),
+        ]);
 
         try {
-            if (!isset($errors['username'])
-                && $this->userModel->usernameExistsExceptUser($data['username'], $userId)) {
-                $errors['username'] = 'Username is already taken.';
-            }
+            $errors = $this->userModel->validateAccount($data, $userId);
 
             if (!empty($errors)) {
                 $this->redirectWithState('preferences_profile_state', [
@@ -110,13 +108,14 @@ class PreferencesController extends Controller
     public function updateAvatar()
     {
         $this->requirePost(BASE_URL . '/preferences');
-        [$userId, $user] = $this->authenticatedUser();
 
         if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
             $this->redirectWithState('preferences_avatar_state', [
                 'errors' => ['general' => 'Your session expired. Please try again.'],
             ]);
         }
+
+        [$userId, $user] = $this->authenticatedUser();
 
         $attachmentService = new AttachmentService();
         $storedAvatar = null;
@@ -174,13 +173,14 @@ class PreferencesController extends Controller
     public function updatePassword()
     {
         $this->requirePost(BASE_URL . '/preferences');
-        [$userId, $user] = $this->authenticatedUser();
 
         if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
             $this->redirectWithState('preferences_password_state', [
                 'errors' => ['general' => 'Your session expired. Please try again.'],
             ]);
         }
+
+        [$userId, $user] = $this->authenticatedUser();
 
         $data = [
             'current_password' => (string) ($_POST['current_password'] ?? ''),
@@ -233,7 +233,7 @@ class PreferencesController extends Controller
         }
 
         if ($user === null) {
-            unset($_SESSION['auth_user'], $_SESSION['user']);
+            unset($_SESSION['auth_user']);
             $this->redirectTo(BASE_URL . '/login');
         }
 
@@ -245,43 +245,12 @@ class PreferencesController extends Controller
         $user = $this->userModel->find($userId);
 
         if ($user === null) {
-            unset($_SESSION['auth_user'], $_SESSION['user']);
+            unset($_SESSION['auth_user']);
             $this->redirectTo(BASE_URL . '/login');
         }
 
         unset($user['password']);
         $_SESSION['auth_user'] = $user;
-
-        if (isset($_SESSION['user'])) {
-            $_SESSION['user'] = $user;
-        }
-    }
-
-    private function validateProfile(array $data)
-    {
-        $errors = [];
-
-        if ($data['first_name'] === '') {
-            $errors['first_name'] = 'First name is required.';
-        } elseif (mb_strlen($data['first_name']) > 50) {
-            $errors['first_name'] = 'First name must be 50 characters or fewer.';
-        }
-
-        if ($data['last_name'] === '') {
-            $errors['last_name'] = 'Last name is required.';
-        } elseif (mb_strlen($data['last_name']) > 50) {
-            $errors['last_name'] = 'Last name must be 50 characters or fewer.';
-        }
-
-        if ($data['username'] === '') {
-            $errors['username'] = 'Username is required.';
-        } elseif (mb_strlen($data['username']) > 50) {
-            $errors['username'] = 'Username must be 50 characters or fewer.';
-        } elseif (!preg_match('/^[A-Za-z0-9_.-]+$/', $data['username'])) {
-            $errors['username'] = 'Use only letters, numbers, underscores, dots, or hyphens.';
-        }
-
-        return $errors;
     }
 
     private function validatePassword(array $data, array $user)
@@ -294,21 +263,13 @@ class PreferencesController extends Controller
             $errors['current_password'] = 'Current password is incorrect.';
         }
 
-        if ($data['new_password'] === '') {
-            $errors['new_password'] = 'New password is required.';
-        } elseif (mb_strlen($data['new_password']) < 8) {
-            $errors['new_password'] = 'New password must be at least 8 characters.';
-        } elseif (mb_strlen($data['new_password']) > 128) {
-            $errors['new_password'] = 'New password must be 128 characters or fewer.';
-        }
-
-        if ($data['confirm_password'] === '') {
-            $errors['confirm_password'] = 'Please confirm your new password.';
-        } elseif (mb_strlen($data['confirm_password']) > 128) {
-            $errors['confirm_password'] = 'Confirm password must be 128 characters or fewer.';
-        } elseif ($data['new_password'] !== $data['confirm_password']) {
-            $errors['confirm_password'] = 'Passwords do not match.';
-        }
+        $errors = array_merge($errors, $this->userModel->validatePassword(
+            $data['new_password'],
+            $data['confirm_password'],
+            'new_password',
+            'confirm_password',
+            'New password'
+        ));
 
         return $errors;
     }

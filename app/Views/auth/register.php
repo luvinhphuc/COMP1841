@@ -34,7 +34,8 @@
                     <?= $hasFieldErrors ? 'Please fix the highlighted fields and try again.' : '' ?>
                 </p>
 
-                <form id="register-form" action="<?= BASE_URL ?>/register/store" method="post" enctype="multipart/form-data" class="grid gap-4" novalidate>
+                <form id="register-form" action="<?= BASE_URL ?>/register/store" method="post" class="grid gap-4" novalidate>
+                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                     <div class="grid min-w-0 gap-4 sm:grid-cols-2">
                         <div class="min-w-0">
                             <label for="first_name" class="mb-2 block text-sm font-semibold leading-5 text-[#111827]">First name</label>
@@ -43,7 +44,7 @@
                                 type="text"
                                 value="<?= htmlspecialchars($old['first_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                 autocomplete="given-name"
-                                maxlength="35"
+                                maxlength="50"
                                 dir="auto"
                                 aria-describedby="first_name-error"
                                 aria-invalid="<?= !empty($errors['first_name']) ? 'true' : 'false' ?>"
@@ -66,7 +67,7 @@
                                 type="text"
                                 value="<?= htmlspecialchars($old['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                 autocomplete="family-name"
-                                maxlength="35"
+                                maxlength="50"
                                 dir="auto"
                                 aria-describedby="last_name-error"
                                 aria-invalid="<?= !empty($errors['last_name']) ? 'true' : 'false' ?>"

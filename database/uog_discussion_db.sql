@@ -102,8 +102,8 @@ CREATE TABLE `posts` (
   UNIQUE KEY `slug` (`slug`),
   KEY `fk_posts_user` (`user_id`),
   KEY `fk_posts_module` (`module_id`),
-  CONSTRAINT `fk_posts_module` FOREIGN KEY (`module_id`) REFERENCES `modules` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_posts_module` FOREIGN KEY (`module_id`) REFERENCES `modules` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -140,7 +140,7 @@ CREATE TABLE `replies` (
   KEY `fk_replies_parent` (`parent_reply_id`),
   CONSTRAINT `fk_replies_parent` FOREIGN KEY (`parent_reply_id`) REFERENCES `replies` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_replies_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_replies_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_replies_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -217,6 +217,21 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'Lù','Phúc','lvp9852','lvp9852@gre.ac.uk','$2y$10$AbxFLbzxJXegheULQWa1beWu9kMwIB8qjTqUhtNENPwuY.BQCCIIi',NULL,'student','2026-06-28 14:50:25',NULL),(2,'Linh','Nguyen','linhnguyen','linh.nguyen@gre.ac.uk',NULL,'uploads/avatars/linh-nguyen.png','student','2026-06-28 14:50:25',NULL),(3,'Minh','Tran','minhtran','minh.tran@gre.ac.uk',NULL,'uploads/avatars/minh-tran.png','student','2026-06-28 14:50:25',NULL),(4,'An','Pham','anpham','an.pham@gre.ac.uk',NULL,NULL,'student','2026-06-28 14:50:25',NULL),(5,'Matt','Tutor','matttutor','matt.tutor@gre.ac.uk',NULL,NULL,'tutor','2026-06-28 14:50:25',NULL),(6,'Admin','User','admin','admin@gre.ac.uk',NULL,NULL,'admin','2026-06-28 14:50:25',NULL),(7,'Phuc','Lu','luvinhfuc','anhtuan123@gmail.com','$2y$10$qjU5a.c5GwAugHAxqjB0yurkU24Z9xGuW/aXK0nMd.phZY18m3C/K',NULL,'student','2026-07-07 15:49:50',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+-- Apply these changes to an existing database created from an earlier dump.
+ALTER TABLE `posts`
+  DROP FOREIGN KEY `fk_posts_user`,
+  DROP FOREIGN KEY `fk_posts_module`;
+
+ALTER TABLE `posts`
+  ADD CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_posts_module` FOREIGN KEY (`module_id`) REFERENCES `modules` (`id`) ON DELETE RESTRICT;
+
+ALTER TABLE `replies`
+  DROP FOREIGN KEY `fk_replies_user`;
+
+ALTER TABLE `replies`
+  ADD CONSTRAINT `fk_replies_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

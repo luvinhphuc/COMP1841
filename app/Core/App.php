@@ -5,18 +5,11 @@ namespace App\Core;
 class App
 {
     private const AUTH_ROUTES = [
-        'register' => [
-            'default_action' => 'register',
-            'accepts_child_action' => true,
-        ],
-        'login' => [
-            'default_action' => 'login',
-            'accepts_child_action' => true,
-        ],
-        'logout' => [
-            'default_action' => 'logout',
-            'accepts_child_action' => false,
-        ],
+        'login' => ['method' => 'GET', 'action' => 'login'],
+        'login/authenticate' => ['method' => 'POST', 'action' => 'authenticate'],
+        'register' => ['method' => 'GET', 'action' => 'register'],
+        'register/store' => ['method' => 'POST', 'action' => 'store'],
+        'logout' => ['method' => 'POST', 'action' => 'logout'],
     ];
 
     private const DISCUSSION_ACTION_ROUTES = [
@@ -46,14 +39,16 @@ class App
     ];
 
     private const MODULE_SELECTION_ROUTES = [
-        'onboarding/modules' => ['onboarding', 'modules'],
-        'onboarding/modules/save' => ['onboarding', 'saveModules'],
-        'preferences/modules' => ['onboarding', 'manageModules'],
-        'preferences/modules/save' => ['onboarding', 'savePreferenceModules'],
+        'onboarding/modules' => ['modules', 'onboarding'],
+        'onboarding/modules/save' => ['modules', 'saveOnboarding'],
+        'preferences/modules' => ['modules', 'preferences'],
+        'preferences/modules/save' => ['modules', 'savePreferences'],
     ];
 
     private const ADMIN_ACTION_ROUTES = [
         'users' => 'users',
+        'users/create' => 'createUser',
+        'users/store' => 'storeUser',
         'users/edit' => 'editUser',
         'users/update' => 'updateUser',
         'users/delete' => 'deleteUser',
@@ -124,15 +119,16 @@ class App
             return $url;
         }
 
-        if (isset(self::AUTH_ROUTES[$url[0]])) {
-            $route = self::AUTH_ROUTES[$url[0]];
-            $action = $route['default_action'];
+        if (in_array($url[0], ['auth', 'login', 'register', 'logout'], true)) {
+            $routeKey = implode('/', $url);
+            $route = self::AUTH_ROUTES[$routeKey] ?? null;
+            $requestMethod = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 
-            if ($route['accepts_child_action'] && isset($url[1])) {
-                $action = $url[1];
+            if ($route === null || $route['method'] !== $requestMethod) {
+                return ['auth', 'routeNotFound'];
             }
 
-            return ['auth', $action];
+            return ['auth', $route['action']];
         }
 
         $threePartRoute = implode('/', array_slice($url, 0, 3));

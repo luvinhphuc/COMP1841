@@ -27,6 +27,7 @@ $fieldBorder = static function (array $errors, string $field) {
 $firstName = (string) ($profileOld['first_name'] ?? $user['first_name'] ?? '');
 $lastName = (string) ($profileOld['last_name'] ?? $user['last_name'] ?? '');
 $username = (string) ($profileOld['username'] ?? $user['username'] ?? '');
+$email = (string) ($profileOld['email'] ?? $user['email'] ?? '');
 ?>
 
 <section class="min-h-[calc(100vh-80px)] bg-[#f7f9fd] text-[#27313a]">
@@ -44,7 +45,7 @@ $username = (string) ($profileOld['username'] ?? $user['username'] ?? '');
                 <h2 id="profile-heading" class="text-xl font-semibold leading-7 text-[#191c1f]">
                     Profile information
                 </h2>
-                <p class="mt-1 text-sm leading-6 text-[#444748]">Manage the name and username shown on your account.</p>
+                <p class="mt-1 text-sm leading-6 text-[#444748]">Manage the name, username, and email on your account.</p>
 
                 <form action="<?= BASE_URL ?>/preferences/profile" method="post" class="mt-6" novalidate>
                     <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
@@ -107,7 +108,7 @@ $username = (string) ($profileOld['username'] ?? $user['username'] ?? '');
                             id="username"
                             name="username"
                             type="text"
-                            maxlength="50"
+                            maxlength="75"
                             autocomplete="username"
                             value="<?= htmlspecialchars($username, ENT_QUOTES, 'UTF-8') ?>"
                             aria-describedby="username-help username-error"
@@ -123,6 +124,28 @@ $username = (string) ($profileOld['username'] ?? $user['username'] ?? '');
                             aria-live="polite"
                         >
                             <?= htmlspecialchars($fieldError($profileErrors, 'username'), ENT_QUOTES, 'UTF-8') ?>
+                        </p>
+                    </div>
+
+                    <div class="mt-5">
+                        <label for="email" class="text-sm font-semibold text-[#191c1f]">Email</label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            maxlength="150"
+                            autocomplete="email"
+                            value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
+                            aria-describedby="email-error"
+                            aria-invalid="<?= $fieldError($profileErrors, 'email') !== '' ? 'true' : 'false' ?>"
+                            class="mt-2 h-11 w-full rounded-lg border <?= $fieldBorder($profileErrors, 'email') ?> bg-white px-3 text-sm text-[#27313a] outline-none transition focus:ring-2"
+                        >
+                        <p
+                            id="email-error"
+                            class="mt-2 <?= $fieldError($profileErrors, 'email') === '' ? 'hidden' : 'block' ?> text-sm leading-5 text-[#ba1a1a]"
+                            aria-live="polite"
+                        >
+                            <?= htmlspecialchars($fieldError($profileErrors, 'email'), ENT_QUOTES, 'UTF-8') ?>
                         </p>
                     </div>
 
@@ -192,7 +215,7 @@ $username = (string) ($profileOld['username'] ?? $user['username'] ?? '');
             </section>
 
             <?php if ($showModulePreferences): ?>
-            <section class="rounded-xl border border-[#c4c7c7] bg-white p-5 sm:p-6 lg:col-span-2"
+            <section id="my-modules" class="rounded-xl border border-[#c4c7c7] bg-white p-5 sm:p-6 lg:col-span-2"
                 aria-labelledby="modules-heading">
                 <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                     <div>

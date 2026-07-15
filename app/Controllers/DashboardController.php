@@ -14,6 +14,7 @@ class DashboardController extends Controller
 {
     private const MODULE_LIMIT = 4;
     private const QUESTION_LIMIT = 5;
+    private const MODULE_DISCUSSION_LIMIT = 5;
 
     public function index()
     {
@@ -25,11 +26,13 @@ class DashboardController extends Controller
         }
 
         $isStudent = $this->isStudent($authUser);
+        $selectedModules = [];
 
         if ($isStudent) {
             try {
-                if (!(new UserModule())->hasSelectedModules($userId)) {
-                    unset($_SESSION['dashboard_module_ids']);
+                $selectedModules = (new UserModule())->getModulesByUserId($userId);
+
+                if (empty($selectedModules)) {
                     $this->redirectTo(BASE_URL . '/onboarding/modules');
                 }
             } catch (Throwable) {
@@ -43,9 +46,12 @@ class DashboardController extends Controller
 
         [$myQuestions, $questionPagination] = $this->paginatedQuestions($userId);
         $recentQuestions = $this->recentQuestions($userId);
+        $formattedModules = $this->formatModules($selectedModules);
 
         $this->view('dashboard/index', [
-            'homeModules' => $isStudent ? $this->homeModules($userId) : [],
+            'selectedModulePreview' => array_slice($formattedModules, 0, self::MODULE_LIMIT),
+            'selectedModuleCount' => count($formattedModules),
+            'selectedModuleDiscussions' => $isStudent ? $this->moduleDiscussions($userId) : [],
             'showMyModules' => $isStudent,
             'myQuestions' => $myQuestions,
             'questionPagination' => $questionPagination,
@@ -81,52 +87,8 @@ class DashboardController extends Controller
         return $username !== '' ? $username : 'Student';
     }
 
-    private function homeModules(int $userId)
+    private function formatModules(array $modules)
     {
-        try {
-            $modules = (new UserModule())->getModulesByUserId($userId);
-        } catch (Throwable) {
-            return [];
-        }
-
-        $moduleLookup = [];
-        $availableIds = [];
-
-        foreach ($modules as $module) {
-            $moduleId = (int) ($module['id'] ?? 0);
-
-            if ($moduleId <= 0) {
-                continue;
-            }
-
-            $moduleLookup[$moduleId] = $module;
-            $availableIds[] = $moduleId;
-        }
-
-        $expectedCount = min(self::MODULE_LIMIT, count($availableIds));
-        $sessionIds = $_SESSION['dashboard_module_ids'] ?? [];
-        $sessionIds = is_array($sessionIds) ? array_values(array_unique(array_map('intval', $sessionIds))) : [];
-        $sessionIds = array_values(array_filter(
-            $sessionIds,
-            static fn (int $moduleId) => isset($moduleLookup[$moduleId])
-        ));
-
-        if (count($sessionIds) !== $expectedCount) {
-            $sessionIds = $availableIds;
-
-            if (count($sessionIds) > self::MODULE_LIMIT) {
-                shuffle($sessionIds);
-                $sessionIds = array_slice($sessionIds, 0, self::MODULE_LIMIT);
-            }
-
-            $_SESSION['dashboard_module_ids'] = $sessionIds;
-        }
-
-        $modules = array_map(
-            static fn (int $moduleId) => $moduleLookup[$moduleId],
-            $sessionIds
-        );
-
         $modules = array_map(function (array $module) {
             $code = trim((string) ($module['code'] ?? ''));
             $discussionCount = (int) ($module['discussion_count'] ?? 0);
@@ -139,14 +101,23 @@ class DashboardController extends Controller
                 'url' => $this->moduleUrl($code),
                 'code' => $code,
                 'name' => FormatHelper::textOr($module['name'] ?? '', 'Untitled module'),
-                'discussion_count' => $discussionCount,
                 'discussion_count_label' => $discussionCount . ' '
                     . ($discussionCount === 1 ? 'discussion' : 'discussions'),
-                'active' => false,
             ];
         }, $modules);
 
         return array_values(array_filter($modules));
+    }
+
+    private function moduleDiscussions(int $userId)
+    {
+        try {
+            $posts = (new Post())->getLatestForUserModules($userId, self::MODULE_DISCUSSION_LIMIT);
+        } catch (Throwable) {
+            return [];
+        }
+
+        return array_map(fn (array $post) => ViewHelper::formatPostCard($post), $posts);
     }
 
     private function paginatedQuestions(int $userId): array
@@ -234,7 +205,7 @@ class DashboardController extends Controller
         return BASE_URL . '/discussions?module=' . rawurlencode($code);
     }
 
-    private function dashboardPageUrl(int $page): string
+    private function dashboardPageUrl(int $page)
     {
         $url = BASE_URL . '/dashboard';
 
@@ -245,9 +216,8 @@ class DashboardController extends Controller
         return $url . '#my-questions-heading';
     }
 
-    private function isStudent(array $user): bool
+    private function isStudent(array $user)
     {
         return strtolower(trim((string) ($user['role'] ?? ''))) === 'student';
     }
-
 }

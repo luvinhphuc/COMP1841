@@ -15,7 +15,7 @@ class UserModule
         $this->db = Database::connect();
     }
 
-    public function hasSelectedModules(int $userId): bool
+    public function hasSelectedModules(int $userId)
     {
         if ($userId <= 0) {
             return false;
@@ -75,13 +75,57 @@ class UserModule
         return $stmt->fetchAll();
     }
 
-    public function replaceUserModules(int $userId, array $moduleIds): bool
+    public function validateModuleIds($submittedModuleIds): array
     {
-        $moduleIds = array_values(array_unique(array_filter(
-            array_map('intval', $moduleIds),
-            static fn (int $moduleId) => $moduleId > 0
-        )));
+        if (!is_array($submittedModuleIds)) {
+            return [[], ['module_ids' => 'Select at least one module.']];
+        }
 
+        $moduleIds = [];
+
+        foreach ($submittedModuleIds as $submittedModuleId) {
+            if (is_array($submittedModuleId)) {
+                return [$moduleIds, ['module_ids' => 'One or more selected modules are invalid.']];
+            }
+
+            $moduleId = filter_var($submittedModuleId, FILTER_VALIDATE_INT, [
+                'options' => ['min_range' => 1],
+            ]);
+
+            if ($moduleId === false) {
+                return [$moduleIds, ['module_ids' => 'One or more selected modules are invalid.']];
+            }
+
+            $moduleIds[] = (int) $moduleId;
+        }
+
+        $moduleIds = array_values(array_unique($moduleIds));
+
+        if (empty($moduleIds)) {
+            return [[], ['module_ids' => 'Select at least one module.']];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($moduleIds), '?'));
+        $stmt = $this->db->prepare(
+            'SELECT id FROM modules WHERE id IN (' . $placeholders . ')'
+        );
+
+        foreach ($moduleIds as $index => $moduleId) {
+            $stmt->bindValue($index + 1, $moduleId, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        $existingIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+
+        if (count($existingIds) !== count($moduleIds)) {
+            return [$moduleIds, ['module_ids' => 'One or more selected modules do not exist.']];
+        }
+
+        return [$moduleIds, []];
+    }
+
+    public function replaceUserModules(int $userId, array $moduleIds)
+    {
         if ($userId <= 0 || empty($moduleIds)) {
             return false;
         }
@@ -109,12 +153,12 @@ class UserModule
             $this->db->commit();
 
             return true;
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
 
-            return false;
+            throw $exception;
         }
     }
 }

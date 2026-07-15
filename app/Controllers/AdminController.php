@@ -13,6 +13,7 @@ class AdminController extends Controller
 {
     private const PAGE_LIMIT = 5;
     private const USER_ROLES = ['student', 'tutor', 'admin'];
+    private const USER_FORM_STATE = 'admin_user_form_state';
 
     public function index()
     {
@@ -62,6 +63,74 @@ class AdminController extends Controller
         ]);
     }
 
+    public function createUser()
+    {
+        $this->requireAdmin();
+        $state = $this->userFormState('create');
+        $user = array_merge([
+            'id' => 0,
+            'first_name' => '',
+            'last_name' => '',
+            'username' => '',
+            'email' => '',
+            'role' => 'student',
+        ], $state['old'] ?? []);
+
+        $this->view('admin/user-edit', [
+            'adminSection' => 'users',
+            'pageTitle' => 'Create User',
+            'mode' => 'create',
+            'formAction' => BASE_URL . '/admin/users/store',
+            'user' => $user,
+            'errors' => $state['errors'] ?? [],
+            'roles' => self::USER_ROLES,
+            'currentUserId' => $this->currentUserId(),
+        ]);
+    }
+
+    public function storeUser()
+    {
+        $this->requireAdmin();
+        $this->requirePost(BASE_URL . '/admin/users/create');
+
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->redirectUserForm('/admin/users/create', 'create', 0, [
+                'general' => 'The security token is invalid. Please try again.',
+            ], []);
+        }
+
+        $data = $this->userData(true);
+
+        try {
+            $model = new User();
+            $errors = $this->validateUser($data, 0, $model, true);
+
+            if (!empty($errors)) {
+                $this->redirectUserForm('/admin/users/create', 'create', 0, $errors, $data);
+            }
+
+            if (!$model->create([
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+                'avatar' => null,
+                'role' => $data['role'],
+            ])) {
+                $this->redirectUserForm('/admin/users/create', 'create', 0, [
+                    'general' => 'The user could not be created.',
+                ], $data);
+            }
+        } catch (Throwable) {
+            $this->redirectUserForm('/admin/users/create', 'create', 0, [
+                'general' => 'The user could not be created right now.',
+            ], $data);
+        }
+
+        $this->adminSuccess('/admin/users', 'User created successfully.');
+    }
+
     public function editUser($id = 0)
     {
         $this->requireAdmin();
@@ -72,11 +141,16 @@ class AdminController extends Controller
         }
 
         unset($user['password']);
+        $state = $this->userFormState('edit', (int) $user['id']);
+        $user = array_merge($user, $state['old'] ?? []);
 
         $this->view('admin/user-edit', [
             'adminSection' => 'users',
             'pageTitle' => 'Edit User',
+            'mode' => 'edit',
+            'formAction' => BASE_URL . '/admin/users/update/' . (int) $user['id'],
             'user' => $user,
+            'errors' => $state['errors'] ?? [],
             'roles' => self::USER_ROLES,
             'currentUserId' => $this->currentUserId(),
         ]);
@@ -92,40 +166,49 @@ class AdminController extends Controller
         }
 
         $userId = (int) $id;
-        $model = new User();
         $user = $this->findUser($userId);
 
         if ($user === null) {
             $this->notFound();
         }
 
-        $data = [
-            'first_name' => trim((string) ($_POST['first_name'] ?? '')),
-            'last_name' => trim((string) ($_POST['last_name'] ?? '')),
-            'username' => trim((string) ($_POST['username'] ?? '')),
-            'email' => trim((string) ($_POST['email'] ?? '')),
-            'role' => strtolower(trim((string) ($_POST['role'] ?? 'student'))),
-        ];
-
-        $error = $this->validateUser($data, $userId, $model);
-
-        if ($error !== '') {
-            $this->adminError('/admin/users/edit/' . $userId, $error);
-        }
-
-        if ($userId === (int) ($admin['id'] ?? 0) && $data['role'] !== 'admin') {
-            $this->adminError('/admin/users/edit/' . $userId, 'You cannot remove your own admin role.');
-        }
-
-        if (($user['role'] ?? '') === 'admin' && $data['role'] !== 'admin' && $model->countAdmins() <= 1) {
-            $this->adminError('/admin/users/edit/' . $userId, 'The final admin account must keep the admin role.');
-        }
+        $data = $this->userData();
 
         try {
-            $model->updateFromAdmin($userId, $data);
+            $model = new User();
+            $errors = $this->validateUser($data, $userId, $model);
+
+            if ($userId === (int) ($admin['id'] ?? 0) && $data['role'] !== 'admin') {
+                $errors['role'] = 'You cannot remove your own admin role.';
+            }
+
+            if (($user['role'] ?? '') === 'admin'
+                && $data['role'] !== 'admin'
+                && $model->countAdmins() <= 1) {
+                $errors['role'] = 'The final admin account must keep the admin role.';
+            }
+
+            if (!empty($errors)) {
+                $this->redirectUserForm(
+                    '/admin/users/edit/' . $userId,
+                    'edit',
+                    $userId,
+                    $errors,
+                    $data
+                );
+            }
+
+            if (!$model->updateFromAdmin($userId, $data)) {
+                $this->redirectUserForm('/admin/users/edit/' . $userId, 'edit', $userId, [
+                    'general' => 'The user could not be updated.',
+                ], $data);
+            }
+
             $this->refreshCurrentUserSession($userId, $model);
         } catch (Throwable) {
-            $this->adminError('/admin/users/edit/' . $userId, 'The user could not be updated.');
+            $this->redirectUserForm('/admin/users/edit/' . $userId, 'edit', $userId, [
+                'general' => 'The user could not be updated right now.',
+            ], $data);
         }
 
         $this->adminSuccess('/admin/users', 'User updated successfully.');
@@ -443,37 +526,39 @@ class AdminController extends Controller
         }
     }
 
-    private function validateUser(array $data, int $userId, User $model)
+    private function userData(bool $includePassword = false)
     {
-        if ($data['first_name'] === '' || mb_strlen($data['first_name']) > 50) {
-            return 'First name is required and must be 50 characters or fewer.';
-        }
+        return [
+            'first_name' => trim((string) ($_POST['first_name'] ?? '')),
+            'last_name' => trim((string) ($_POST['last_name'] ?? '')),
+            'username' => trim((string) ($_POST['username'] ?? '')),
+            'email' => trim((string) ($_POST['email'] ?? '')),
+            'password' => $includePassword ? (string) ($_POST['password'] ?? '') : '',
+            'confirm_password' => $includePassword ? (string) ($_POST['confirm_password'] ?? '') : '',
+            'role' => strtolower(trim((string) ($_POST['role'] ?? 'student'))),
+        ];
+    }
 
-        if ($data['last_name'] === '' || mb_strlen($data['last_name']) > 50) {
-            return 'Last name is required and must be 50 characters or fewer.';
-        }
-
-        if ($data['username'] === '' || mb_strlen($data['username']) > 75) {
-            return 'Username is required and must be 75 characters or fewer.';
-        }
-
-        if ($data['email'] === '' || mb_strlen($data['email']) > 150 || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            return 'Please enter a valid email address.';
-        }
+    private function validateUser(
+        array $data,
+        int $userId,
+        User $model,
+        bool $includePassword = false
+    ) {
+        $errors = $model->validateAccount($data, $userId);
 
         if (!in_array($data['role'], self::USER_ROLES, true)) {
-            return 'Please choose a valid user role.';
+            $errors['role'] = 'Please choose a valid user role.';
         }
 
-        if ($model->usernameExistsExceptUser($data['username'], $userId)) {
-            return 'Username is already in use.';
+        if ($includePassword) {
+            $errors = array_merge($errors, $model->validatePassword(
+                $data['password'],
+                $data['confirm_password']
+            ));
         }
 
-        if ($model->emailExistsExceptUser($data['email'], $userId)) {
-            return 'Email is already in use.';
-        }
-
-        return '';
+        return $errors;
     }
 
     private function refreshCurrentUserSession(int $userId, User $model)
@@ -490,10 +575,39 @@ class AdminController extends Controller
 
         unset($user['password']);
         $_SESSION['auth_user'] = $user;
+    }
 
-        if (isset($_SESSION['user'])) {
-            $_SESSION['user'] = $user;
+    private function userFormState(string $mode, int $userId = 0)
+    {
+        $state = $_SESSION[self::USER_FORM_STATE] ?? [];
+        unset($_SESSION[self::USER_FORM_STATE]);
+
+        if (!is_array($state)
+            || ($state['mode'] ?? '') !== $mode
+            || (int) ($state['user_id'] ?? 0) !== $userId) {
+            return [];
         }
+
+        return $state;
+    }
+
+    private function redirectUserForm(
+        string $path,
+        string $mode,
+        int $userId,
+        array $errors,
+        array $old
+    ) {
+        unset($old['password'], $old['confirm_password']);
+
+        $_SESSION[self::USER_FORM_STATE] = [
+            'mode' => $mode,
+            'user_id' => $userId,
+            'errors' => $errors,
+            'old' => $old,
+        ];
+
+        $this->redirectTo(BASE_URL . $path);
     }
 
     private function moduleData()

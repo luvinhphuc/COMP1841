@@ -15,18 +15,6 @@ class User
         $this->db = Database::connect();
     }
 
-    public function getAllUsers()
-    {
-        $nameSelect = $this->nameSelectSql();
-        $query = 'SELECT id, ' . $nameSelect . ' AS name, username, email, avatar, role, created_at
-            FROM ' . $this->table . '
-            ORDER BY id DESC';
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
-    }
-
     public function getPaginated(int $limit, int $offset)
     {
         $nameSelect = $this->nameSelectSql();
@@ -56,37 +44,114 @@ class User
         )->fetchColumn();
     }
 
-    public function usernameExists($username)
+    public function normaliseAccountData(array $data)
     {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM ' . $this->table . ' WHERE username = :username LIMIT 1'
-        );
-        $stmt->execute(['username' => $username]);
-
-        return $stmt->fetch();
+        return [
+            'first_name' => trim((string) ($data['first_name'] ?? '')),
+            'last_name' => trim((string) ($data['last_name'] ?? '')),
+            'username' => trim((string) ($data['username'] ?? '')),
+            'email' => trim((string) ($data['email'] ?? '')),
+            'password' => (string) ($data['password'] ?? ''),
+            'confirm_password' => (string) ($data['confirm_password'] ?? ''),
+        ];
     }
 
-    public function emailExists($email)
+    public function validateAccount(array $data, int $exceptUserId = 0)
     {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM ' . $this->table . ' WHERE email = :email LIMIT 1'
-        );
-        $stmt->execute(['email' => $email]);
+        $data = $this->normaliseAccountData($data);
+        $errors = [];
 
-        return $stmt->fetch();
+        if ($data['first_name'] === '') {
+            $errors['first_name'] = 'First name is required.';
+        } elseif (mb_strlen($data['first_name']) > 50) {
+            $errors['first_name'] = 'First name must be 50 characters or fewer.';
+        }
+
+        if ($data['last_name'] === '') {
+            $errors['last_name'] = 'Last name is required.';
+        } elseif (mb_strlen($data['last_name']) > 50) {
+            $errors['last_name'] = 'Last name must be 50 characters or fewer.';
+        }
+
+        if ($data['username'] === '') {
+            $errors['username'] = 'Username is required.';
+        } elseif (mb_strlen($data['username']) > 75) {
+            $errors['username'] = 'Username must be 75 characters or fewer.';
+        } elseif (!preg_match('/^[A-Za-z0-9_.-]+$/', $data['username'])) {
+            $errors['username'] = 'Use only letters, numbers, underscores, dots, or hyphens.';
+        } elseif ($this->usernameExistsExceptUser($data['username'], $exceptUserId)) {
+            $errors['username'] = 'Username is already in use.';
+        }
+
+        if ($data['email'] === '') {
+            $errors['email'] = 'Email is required.';
+        } elseif (mb_strlen($data['email']) > 150) {
+            $errors['email'] = 'Email must be 150 characters or fewer.';
+        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Please enter a valid email address.';
+        } elseif ($this->emailExistsExceptUser($data['email'], $exceptUserId)) {
+            $errors['email'] = 'Email is already in use.';
+        }
+
+        return $errors;
+    }
+
+    public function validatePassword(
+        string $password,
+        string $confirmation,
+        string $passwordField = 'password',
+        string $confirmationField = 'confirm_password',
+        string $passwordLabel = 'Password'
+    ) {
+        $errors = [];
+
+        if ($password === '') {
+            $errors[$passwordField] = $passwordLabel . ' is required.';
+        } elseif (mb_strlen($password) < 8) {
+            $errors[$passwordField] = $passwordLabel . ' must be at least 8 characters.';
+        } elseif (mb_strlen($password) > 128) {
+            $errors[$passwordField] = $passwordLabel . ' must be 128 characters or fewer.';
+        }
+
+        if ($confirmation === '') {
+            $errors[$confirmationField] = 'Please confirm your password.';
+        } elseif (mb_strlen($confirmation) > 128) {
+            $errors[$confirmationField] = 'Confirm password must be 128 characters or fewer.';
+        } elseif ($password !== $confirmation) {
+            $errors[$confirmationField] = 'Passwords do not match.';
+        }
+
+        return $errors;
     }
 
     public function emailExistsExceptUser(string $email, int $userId)
     {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM ' . $this->table . '
-             WHERE email = :email AND id <> :user_id
-             LIMIT 1'
-        );
-        $stmt->execute([
-            'email' => $email,
-            'user_id' => $userId,
-        ]);
+        $sql = 'SELECT id FROM ' . $this->table . ' WHERE email = :email';
+        $params = ['email' => $email];
+
+        if ($userId > 0) {
+            $sql .= ' AND id <> :user_id';
+            $params['user_id'] = $userId;
+        }
+
+        $stmt = $this->db->prepare($sql . ' LIMIT 1');
+        $stmt->execute($params);
+
+        return (bool) $stmt->fetch();
+    }
+
+    public function usernameExistsExceptUser(string $username, int $userId)
+    {
+        $sql = 'SELECT id FROM ' . $this->table . ' WHERE username = :username';
+        $params = ['username' => $username];
+
+        if ($userId > 0) {
+            $sql .= ' AND id <> :user_id';
+            $params['user_id'] = $userId;
+        }
+
+        $stmt = $this->db->prepare($sql . ' LIMIT 1');
+        $stmt->execute($params);
 
         return (bool) $stmt->fetch();
     }
@@ -94,9 +159,8 @@ class User
     public function findByUsername($username)
     {
         $nameSelect = $this->nameSelectSql();
-        $firstNameSelect = $this->firstNameSelectSql();
         $stmt = $this->db->prepare(
-            'SELECT id, ' . $firstNameSelect . ' AS first_name, last_name, ' . $nameSelect . ' AS full_name,
+            'SELECT id, first_name, last_name, ' . $nameSelect . ' AS full_name,
                 username, email, password, avatar, role, created_at
              FROM ' . $this->table . '
              WHERE username = :username
@@ -115,9 +179,8 @@ class User
         }
 
         $nameSelect = $this->nameSelectSql();
-        $firstNameSelect = $this->firstNameSelectSql();
         $stmt = $this->db->prepare(
-            'SELECT id, ' . $firstNameSelect . ' AS first_name, last_name, ' . $nameSelect . ' AS full_name,
+            'SELECT id, first_name, last_name, ' . $nameSelect . ' AS full_name,
                 username, email, password, avatar, role, created_at, updated_at
              FROM ' . $this->table . '
              WHERE id = :id
@@ -134,21 +197,6 @@ class User
         return $this->findById($id);
     }
 
-    public function usernameExistsExceptUser(string $username, int $userId)
-    {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM ' . $this->table . '
-             WHERE username = :username AND id <> :user_id
-             LIMIT 1'
-        );
-        $stmt->execute([
-            'username' => $username,
-            'user_id' => $userId,
-        ]);
-
-        return (bool) $stmt->fetch();
-    }
-
     public function updateProfile(int $userId, array $data)
     {
         $stmt = $this->db->prepare(
@@ -156,6 +204,7 @@ class User
              SET first_name = :first_name,
                  last_name = :last_name,
                  username = :username,
+                 email = :email,
                  updated_at = NOW()
              WHERE id = :id'
         );
@@ -164,6 +213,7 @@ class User
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'username' => $data['username'],
+            'email' => $data['email'],
             'id' => $userId,
         ]);
     }
@@ -196,11 +246,13 @@ class User
         ]);
     }
 
-    public function create($data)
+    public function create(array $data)
     {
-        $sql = 'INSERT INTO ' . $this->table . ' (first_name, last_name, username, email, password, avatar, role)
-                VALUES (:first_name, :last_name, :username, :email, :password, :avatar, :role)';
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->prepare(
+            'INSERT INTO ' . $this->table . '
+                (first_name, last_name, username, email, password, avatar, role)
+             VALUES (:first_name, :last_name, :username, :email, :password, :avatar, :role)'
+        );
 
         return $stmt->execute([
             'first_name' => $data['first_name'],
@@ -208,34 +260,8 @@ class User
             'username' => $data['username'],
             'email' => $data['email'],
             'password' => $data['password'],
-            'avatar' => $data['avatar'],
+            'avatar' => $data['avatar'] ?? null,
             'role' => $data['role'] ?? 'student',
-        ]);
-    }
-
-    public function update($data, $id)
-    {
-        $sql = 'UPDATE ' . $this->table . '
-            SET first_name = :first_name,
-                last_name = :last_name,
-                username = :username,
-                email = :email,
-                password = :password,
-                avatar = :avatar,
-                role = :role,
-                updated_at = NOW()
-            WHERE id = :id';
-        $stmt = $this->db->prepare($sql);
-
-        return $stmt->execute([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'avatar' => $data['avatar'],
-            'role' => $data['role'] ?? 'student',
-            'id' => $id,
         ]);
     }
 
@@ -290,10 +316,5 @@ class User
     private function nameSelectSql()
     {
         return "TRIM(CONCAT_WS(' ', first_name, last_name))";
-    }
-
-    private function firstNameSelectSql()
-    {
-        return 'first_name';
     }
 }

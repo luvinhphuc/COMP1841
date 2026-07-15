@@ -185,16 +185,17 @@
                                 </svg>
                             </a>
                         </li>
-                        <a href="https://bannermenu.gre.ac.uk/" target="_blank"
-                            class="group flex items-center justify-between gap-6 py-4 text-lg font-semibold transition hover:pl-2 hover:text-emerald-800 focus-visible:pl-2 focus-visible:text-emerald-800 sm:text-xl">
-                            <span>Student Records</span>
-                            <svg viewBox="0 0 24 24"
-                                class="size-5 shrink-0 transition-transform group-hover:translate-x-1" fill="none"
-                                aria-hidden="true">
-                                <path d="M5 12h14M14 7l5 5-5 5" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </a>
+                        <li class="border-b border-black/15">
+                            <a href="https://bannermenu.gre.ac.uk/" target="_blank"
+                                class="group flex items-center justify-between gap-6 py-4 text-lg font-semibold transition hover:pl-2 hover:text-emerald-800 focus-visible:pl-2 focus-visible:text-emerald-800 sm:text-xl">
+                                <span>Student Records</span>
+                                <svg viewBox="0 0 24 24"
+                                    class="size-5 shrink-0 transition-transform group-hover:translate-x-1" fill="none"
+                                    aria-hidden="true">
+                                    <path d="M5 12h14M14 7l5 5-5 5" stroke="currentColor" stroke-width="1.8"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </a>
                         </li>
                     </ul>
                 </section>

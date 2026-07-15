@@ -158,6 +158,10 @@ class PostController extends Controller
     {
         $this->requirePost(BASE_URL . '/discussions');
 
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->forbidden(BASE_URL . '/discussions');
+        }
+
         $post = $this->findPostById($id);
 
         if ($post === null) {
@@ -165,10 +169,6 @@ class PostController extends Controller
         }
 
         if (!$this->canEditPost($post)) {
-            $this->forbidden($this->postUrl($post));
-        }
-
-        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
             $this->forbidden($this->postUrl($post));
         }
 
@@ -224,13 +224,17 @@ class PostController extends Controller
     {
         $this->requirePost(BASE_URL . '/discussions');
 
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->forbidden(BASE_URL . '/discussions');
+        }
+
         $post = $this->findPostById($id);
 
         if ($post === null) {
             $this->notFound();
         }
 
-        if (!$this->canDeletePost($post) || !$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+        if (!$this->canDeletePost($post)) {
             $this->forbidden($this->postUrl($post));
         }
 

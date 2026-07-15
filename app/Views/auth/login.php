@@ -42,6 +42,7 @@
                 </p>
 
                 <form id="login-form" action="<?= BASE_URL ?>/login/authenticate" method="post" class="grid gap-5" novalidate>
+                    <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
                     <div class="min-w-0">
                         <label for="username" class="mb-2 block text-sm font-semibold text-[#111827]">Username</label>
                         <input id="username"

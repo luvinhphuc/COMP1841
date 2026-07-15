@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Helpers\FormatHelper;
 use App\Models\Module;
+use App\Models\UserModule;
 use Throwable;
 
 class NavigationService
@@ -12,17 +13,19 @@ class NavigationService
     {
         $authUser = $this->authUser();
         $isStudent = strtolower(trim((string) ($authUser['role'] ?? ''))) === 'student';
-        $links = [
-            [
-                'label' => $isStudent ? 'Manage my modules' : 'View all discussions',
-                'href' => BASE_URL . ($isStudent ? '/preferences/modules' : '/discussions'),
-            ],
-        ];
+        $links = [];
 
         try {
-            $modules = (new Module())->getAll();
+            if ($isStudent) {
+                $userId = filter_var($authUser['id'] ?? 0, FILTER_VALIDATE_INT);
+                $modules = $userId !== false && $userId > 0
+                    ? (new UserModule())->getModulesByUserId((int) $userId)
+                    : [];
+            } else {
+                $modules = (new Module())->getAll();
+            }
         } catch (Throwable) {
-            return $links;
+            $modules = [];
         }
 
         $shownModules = 0;
@@ -47,12 +50,17 @@ class NavigationService
             }
         }
 
+        $links[] = [
+            'label' => $isStudent ? 'Manage my modules' : 'View all discussions',
+            'href' => BASE_URL . ($isStudent ? '/preferences/modules' : '/discussions'),
+        ];
+
         return $links;
     }
 
     public function authUser()
     {
-        $authUser = $_SESSION['user'] ?? $_SESSION['auth_user'] ?? null;
+        $authUser = $_SESSION['auth_user'] ?? null;
 
         return is_array($authUser) ? $authUser : null;
     }

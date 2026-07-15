@@ -203,7 +203,30 @@ class Post
         return $stmt->fetchAll();
     }
 
-    public function countByUserId(int $userId): int
+    public function getLatestForUserModules(int $userId, int $limit = 5)
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+
+        $stmt = $this->db->prepare($this->baseSelectSql() . '
+            AND EXISTS (
+                SELECT 1
+                FROM user_modules um
+                WHERE um.user_id = :user_id
+                  AND um.module_id = p.module_id
+            )
+            ORDER BY p.created_at DESC
+            LIMIT :limit
+        ');
+        $stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function countByUserId(int $userId)
     {
         if ($userId <= 0) {
             return 0;

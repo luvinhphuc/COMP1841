@@ -19,16 +19,16 @@
         loadingLabel: 'Creating account...',
     });
     const maxLengths = {
-        first_name: 35,
-        last_name: 35,
+        first_name: 50,
+        last_name: 50,
         username: 75,
         email: 150,
         password: 128,
         confirm_password: 128,
     };
     const maxLengthMessages = {
-        first_name: 'First name must be 35 characters or fewer.',
-        last_name: 'Last name must be 35 characters or fewer.',
+        first_name: 'First name must be 50 characters or fewer.',
+        last_name: 'Last name must be 50 characters or fewer.',
         username: 'Username must be 75 characters or fewer.',
         email: 'Email must be 150 characters or fewer.',
         password: 'Password must be 128 characters or fewer.',
@@ -122,6 +122,7 @@
         const password = form.password.value;
         const confirmPassword = form.confirm_password.value;
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const usernamePattern = /^[A-Za-z0-9_.-]+$/;
 
         const markInvalid = (name, message) => {
             formUi.setError(name, message);
@@ -135,19 +136,24 @@
         if (!firstName) {
             markInvalid('first_name', 'First name is required.');
         } else if (firstName.length > maxLengths.first_name) {
-            markInvalid('first_name', 'First name must be 35 characters or fewer.');
+            markInvalid('first_name', 'First name must be 50 characters or fewer.');
         }
 
         if (!lastName) {
             markInvalid('last_name', 'Last name is required.');
         } else if (lastName.length > maxLengths.last_name) {
-            markInvalid('last_name', 'Last name must be 35 characters or fewer.');
+            markInvalid('last_name', 'Last name must be 50 characters or fewer.');
         }
 
         if (!username) {
             markInvalid('username', 'Username is required.');
         } else if (username.length > maxLengths.username) {
             markInvalid('username', 'Username must be 75 characters or fewer.');
+        } else if (!usernamePattern.test(username)) {
+            markInvalid(
+                'username',
+                'Use only letters, numbers, underscores, dots, or hyphens.',
+            );
         }
 
         if (!email) {

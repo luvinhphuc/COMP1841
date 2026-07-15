@@ -99,10 +99,14 @@
                                         Admin Area
                                     </a>
                                 <?php endif; ?>
-                                <a href="<?= BASE_URL ?>/logout"
-                                   class="block rounded-md px-3 py-2 text-sm font-medium text-[#ba1a1a] transition hover:bg-[#ba1a1a]/5">
-                                    Logout
-                                </a>
+                                <form action="<?= BASE_URL ?>/logout" method="post">
+                                    <input type="hidden" name="_csrf_token"
+                                        value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                    <button type="submit"
+                                        class="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-[#ba1a1a] transition hover:bg-[#ba1a1a]/5">
+                                        Logout
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <?php else: ?>

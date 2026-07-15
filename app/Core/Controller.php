@@ -84,7 +84,7 @@ class Controller
 
     protected function currentUser()
     {
-        $authUser = $_SESSION['user'] ?? $_SESSION['auth_user'] ?? null;
+        $authUser = $_SESSION['auth_user'] ?? null;
 
         return is_array($authUser) ? $authUser : null;
     }

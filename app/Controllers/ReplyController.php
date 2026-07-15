@@ -139,13 +139,17 @@ class ReplyController extends Controller
     {
         $this->requirePost(BASE_URL . '/discussions');
 
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->forbidden(BASE_URL . '/discussions');
+        }
+
         $reply = $this->findReplyById($id);
 
         if ($reply === null) {
             $this->notFound();
         }
 
-        if (!$this->canEditReply($reply) || !$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+        if (!$this->canEditReply($reply)) {
             $this->forbidden($this->postUrlFromReply($reply));
         }
 
@@ -194,13 +198,17 @@ class ReplyController extends Controller
     {
         $this->requirePost(BASE_URL . '/discussions');
 
+        if (!$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+            $this->forbidden(BASE_URL . '/discussions');
+        }
+
         $reply = $this->findReplyById($id);
 
         if ($reply === null) {
             $this->notFound();
         }
 
-        if (!$this->canDeleteReply($reply) || !$this->verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+        if (!$this->canDeleteReply($reply)) {
             $this->forbidden($this->postUrlFromReply($reply));
         }
 
