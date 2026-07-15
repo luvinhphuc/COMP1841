@@ -7,14 +7,12 @@ use App\Helpers\FormatHelper;
 use App\Helpers\ViewHelper;
 use App\Models\Module;
 use App\Models\Post;
-use App\Models\UserModule;
 use Throwable;
 
 class DashboardController extends Controller
 {
     private const MODULE_LIMIT = 4;
     private const QUESTION_LIMIT = 5;
-    private const MODULE_DISCUSSION_LIMIT = 5;
 
     public function index()
     {
@@ -25,34 +23,11 @@ class DashboardController extends Controller
             $this->redirectTo(BASE_URL . '/login');
         }
 
-        $isStudent = $this->isStudent($authUser);
-        $selectedModules = [];
-
-        if ($isStudent) {
-            try {
-                $selectedModules = (new UserModule())->getModulesByUserId($userId);
-
-                if (empty($selectedModules)) {
-                    $this->redirectTo(BASE_URL . '/onboarding/modules');
-                }
-            } catch (Throwable) {
-                $this->redirectWithToast(BASE_URL . '/onboarding/modules', [
-                    'type' => 'error',
-                    'title' => 'Modules unavailable',
-                    'message' => 'Your modules could not be checked right now. Please try again.',
-                ]);
-            }
-        }
-
         [$myQuestions, $questionPagination] = $this->paginatedQuestions($userId);
         $recentQuestions = $this->recentQuestions($userId);
-        $formattedModules = $this->formatModules($selectedModules);
 
         $this->view('dashboard/index', [
-            'selectedModulePreview' => array_slice($formattedModules, 0, self::MODULE_LIMIT),
-            'selectedModuleCount' => count($formattedModules),
-            'selectedModuleDiscussions' => $isStudent ? $this->moduleDiscussions($userId) : [],
-            'showMyModules' => $isStudent,
+            'homeModules' => $this->homeModules(),
             'myQuestions' => $myQuestions,
             'questionPagination' => $questionPagination,
             'recentActivities' => $this->recentActivities($recentQuestions),
@@ -87,11 +62,16 @@ class DashboardController extends Controller
         return $username !== '' ? $username : 'Student';
     }
 
-    private function formatModules(array $modules)
+    private function homeModules(): array
     {
+        try {
+            $modules = array_slice((new Module())->getAll(), 0, self::MODULE_LIMIT);
+        } catch (Throwable) {
+            return [];
+        }
+
         $modules = array_map(function (array $module) {
             $code = trim((string) ($module['code'] ?? ''));
-            $discussionCount = (int) ($module['discussion_count'] ?? 0);
 
             if ($code === '') {
                 return [];
@@ -101,23 +81,11 @@ class DashboardController extends Controller
                 'url' => $this->moduleUrl($code),
                 'code' => $code,
                 'name' => FormatHelper::textOr($module['name'] ?? '', 'Untitled module'),
-                'discussion_count_label' => $discussionCount . ' '
-                    . ($discussionCount === 1 ? 'discussion' : 'discussions'),
+                'discussion_count_label' => 'View discussions',
             ];
         }, $modules);
 
         return array_values(array_filter($modules));
-    }
-
-    private function moduleDiscussions(int $userId)
-    {
-        try {
-            $posts = (new Post())->getLatestForUserModules($userId, self::MODULE_DISCUSSION_LIMIT);
-        } catch (Throwable) {
-            return [];
-        }
-
-        return array_map(fn (array $post) => ViewHelper::formatPostCard($post), $posts);
     }
 
     private function paginatedQuestions(int $userId): array
@@ -214,10 +182,5 @@ class DashboardController extends Controller
         }
 
         return $url . '#my-questions-heading';
-    }
-
-    private function isStudent(array $user)
-    {
-        return strtolower(trim((string) ($user['role'] ?? ''))) === 'student';
     }
 }

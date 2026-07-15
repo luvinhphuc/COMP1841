@@ -22,7 +22,6 @@ class Controller
 
         $data = array_merge($data, $navigation->authDisplay($data['authUser']));
         $data['isAdmin'] = PermissionHelper::isAdmin($data['authUser']);
-        $data['isStudent'] = strtolower(trim((string) ($data['authUser']['role'] ?? ''))) === 'student';
 
         if (!array_key_exists('pageScriptUrls', $data)) {
             $data['pageScriptUrls'] = $this->pageScriptUrls($data['pageScripts'] ?? []);

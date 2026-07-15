@@ -38,13 +38,6 @@ class App
         'password' => 'updatePassword',
     ];
 
-    private const MODULE_SELECTION_ROUTES = [
-        'onboarding/modules' => ['modules', 'onboarding'],
-        'onboarding/modules/save' => ['modules', 'saveOnboarding'],
-        'preferences/modules' => ['modules', 'preferences'],
-        'preferences/modules/save' => ['modules', 'savePreferences'],
-    ];
-
     private const ADMIN_ACTION_ROUTES = [
         'users' => 'users',
         'users/create' => 'createUser',
@@ -129,17 +122,6 @@ class App
             }
 
             return ['auth', $route['action']];
-        }
-
-        $threePartRoute = implode('/', array_slice($url, 0, 3));
-        $twoPartRoute = implode('/', array_slice($url, 0, 2));
-
-        if (isset(self::MODULE_SELECTION_ROUTES[$threePartRoute])) {
-            return self::MODULE_SELECTION_ROUTES[$threePartRoute];
-        }
-
-        if (isset(self::MODULE_SELECTION_ROUTES[$twoPartRoute])) {
-            return self::MODULE_SELECTION_ROUTES[$twoPartRoute];
         }
 
         if ($url[0] === 'discussions') {

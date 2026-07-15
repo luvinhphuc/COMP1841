@@ -7,8 +7,6 @@
  * @var array $profileOld
  * @var array $avatarErrors
  * @var array $passwordErrors
- * @var bool $showModulePreferences
- * @var array $selectedModules
  * @var string|null $authAvatarUrl
  * @var string $authAvatarInitial
  * @var string $csrfToken
@@ -36,7 +34,7 @@ $email = (string) ($profileOld['email'] ?? $user['email'] ?? '');
             <p class="text-sm font-semibold uppercase tracking-[0.12em] text-[#315f90]">Account</p>
             <h1 class="mt-2 text-2xl font-bold leading-8 text-[#191c1f] sm:text-[26px]">Preferences</h1>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-[#444748]">
-                Update your profile information, modules, avatar, and password.
+                Update your profile information, avatar, and password.
             </p>
         </div>
 
@@ -213,43 +211,6 @@ $email = (string) ($profileOld['email'] ?? $user['email'] ?? '');
                     </div>
                 </form>
             </section>
-
-            <?php if ($showModulePreferences): ?>
-            <section id="my-modules" class="rounded-xl border border-[#c4c7c7] bg-white p-5 sm:p-6 lg:col-span-2"
-                aria-labelledby="modules-heading">
-                <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-                    <div>
-                        <h2 id="modules-heading" class="text-xl font-semibold leading-7 text-[#191c1f]">My Modules</h2>
-                        <p class="mt-1 text-sm leading-6 text-[#444748]">
-                            These modules are displayed on your dashboard.
-                        </p>
-                    </div>
-                    <a href="<?= BASE_URL ?>/preferences/modules"
-                        class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-[#315f90] px-5 text-sm font-bold text-white transition hover:bg-[#244f7a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315f90]">
-                        Manage modules
-                    </a>
-                </div>
-
-                <?php if (!empty($selectedModules)): ?>
-                <ul class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Selected modules">
-                    <?php foreach ($selectedModules as $module): ?>
-                    <li class="min-w-0 rounded-lg border border-[#d6deea] bg-[#f8faff] px-4 py-3">
-                        <span class="block font-mono text-xs font-semibold tracking-[0.05em] text-[#315f90]">
-                            <?= htmlspecialchars((string) ($module['code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
-                        </span>
-                        <span class="mt-1 block truncate text-sm font-semibold text-[#191c1f]">
-                            <?= htmlspecialchars((string) ($module['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
-                        </span>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-                <?php else: ?>
-                <p class="mt-5 rounded-lg border border-dashed border-[#c4c7c7] p-4 text-sm leading-6 text-[#444748]">
-                    No modules are currently available.
-                </p>
-                <?php endif; ?>
-            </section>
-            <?php endif; ?>
 
             <section class="rounded-xl border border-[#c4c7c7] bg-white p-5 sm:p-6 lg:col-span-2" aria-labelledby="password-heading">
                 <div class="max-w-2xl">

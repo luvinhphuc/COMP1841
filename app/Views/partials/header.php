@@ -8,7 +8,6 @@
  * @var string|null $authAvatarUrl
  * @var string $authAvatarInitial
  * @var bool $isAdmin
- * @var bool $isStudent
  */
 ?>
 <!doctype html>
@@ -81,9 +80,9 @@
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
                                     Dashboard
                                 </a>
-                                <a href="<?= $isStudent ? BASE_URL . '/preferences/modules' : BASE_URL . '/discussions' ?>"
+                                <a href="<?= BASE_URL ?>/modules"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">
-                                    <?= $isStudent ? 'Manage Modules' : 'Discussions' ?>
+                                    Modules
                                 </a>
                                 <a href="<?= BASE_URL ?>/discussions/create"
                                    class="block rounded-md px-3 py-2 text-sm font-medium text-[#191c1f] transition hover:bg-[#f7f9fd]">

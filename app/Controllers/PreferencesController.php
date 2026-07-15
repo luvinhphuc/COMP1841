@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\User;
-use App\Models\UserModule;
 use App\Services\AttachmentService;
 use Throwable;
 
@@ -19,22 +18,11 @@ class PreferencesController extends Controller
 
     public function index()
     {
-        [$userId, $user] = $this->authenticatedUser();
+        [, $user] = $this->authenticatedUser();
         $profileState = $this->sessionState('preferences_profile_state');
         $avatarState = $this->sessionState('preferences_avatar_state');
         $passwordState = $this->sessionState('preferences_password_state');
         $authUser = $user;
-        $showModulePreferences = strtolower(trim((string) ($user['role'] ?? ''))) === 'student';
-        $selectedModules = [];
-
-        if ($showModulePreferences) {
-            try {
-                $selectedModules = (new UserModule())->getModulesByUserId($userId);
-            } catch (Throwable) {
-                $selectedModules = [];
-            }
-        }
-
         unset($authUser['password']);
 
         $this->view('preferences/index', [
@@ -44,8 +32,6 @@ class PreferencesController extends Controller
             'profileOld' => $profileState['old'] ?? [],
             'avatarErrors' => $avatarState['errors'] ?? [],
             'passwordErrors' => $passwordState['errors'] ?? [],
-            'showModulePreferences' => $showModulePreferences,
-            'selectedModules' => $selectedModules,
         ]);
 
         unset(
