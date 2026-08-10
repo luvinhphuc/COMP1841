@@ -118,7 +118,7 @@ MAIL_PORT=587
 MAIL_ENCRYPTION=tls
 MAIL_TIMEOUT=10
 MAIL_USERNAME=your-email@gmail.com <---- Sender
-MAIL_PASSWORD=""
+MAIL_PASSWORD="" 
 
 MAIL_FROM_ADDRESS=your-email@gmail.com <---- Sender
 MAIL_FROM_NAME="Coursework Forum"
