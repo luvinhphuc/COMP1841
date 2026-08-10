@@ -20,7 +20,7 @@ class ContactRepository
         $this->db = $database->connect();
     }
 
-    // Create
+    // Message intake -------------------------------------------------------
     public function create(array $data)
     {
         $userId = filter_var($data['user_id'] ?? null, FILTER_VALIDATE_INT);
@@ -47,7 +47,7 @@ class ContactRepository
         return (int) $this->db->lastInsertId();
     }
 
-    // Read
+    // Inbox queries --------------------------------------------------------
     public function countAll(array $filters = [])
     {
         $params = [];
@@ -100,7 +100,7 @@ class ContactRepository
         return $contact ? new Contact($contact) : null;
     }
 
-    // Update
+    // Read and resolution state transitions ------------------------------
     public function updateReadStatus(int $id)
     {
         if ($id <= 0) {
@@ -136,7 +136,7 @@ class ContactRepository
         ]);
     }
 
-    // Delete
+    // Administrative removal ---------------------------------------------
     public function delete(int $id)
     {
         if ($id <= 0) {

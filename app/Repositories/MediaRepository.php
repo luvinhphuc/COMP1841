@@ -20,7 +20,7 @@ class MediaRepository
         $this->db = $database->connect();
     }
 
-    // Create
+    // Attachment registration --------------------------------------------
     public function create(array $mediaData)
     {
         $postId = (int)($mediaData['post_id'] ?? 0);
@@ -48,7 +48,7 @@ class MediaRepository
         ]);
     }
 
-    // Read
+    // Attachment lookup by owner -----------------------------------------
     public function findAll()
     {
         $stmt = $this->db->query(
@@ -153,7 +153,7 @@ class MediaRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Update
+    // Attachment metadata updates ----------------------------------------
     public function update(int $id, array $mediaData)
     {
         $mediaEntity = $this->findById($id);
@@ -199,7 +199,7 @@ class MediaRepository
         ]);
     }
 
-    // Delete
+    // Attachment metadata removal ----------------------------------------
     public function delete(int $id)
     {
         if ($id <= 0) {

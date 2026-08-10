@@ -13,6 +13,7 @@ use Throwable;
  */
 class PostController extends AdminController
 {
+    // Administrative route actions ---------------------------------------
     public function index()
     {
         $this->requireAdmin();

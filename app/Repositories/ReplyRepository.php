@@ -21,7 +21,7 @@ class ReplyRepository
         $this->db = $database->connect();
     }
 
-    // Create
+    // Reply creation -------------------------------------------------------
     public function create(array $data)
     {
         $postId = (int) ($data['post_id'] ?? 0);
@@ -56,7 +56,7 @@ class ReplyRepository
         return $replyId;
     }
 
-    // Read
+    // Reply tree and detail queries ---------------------------------------
     public function findByPostId(int $postId)
     {
         if ($postId <= 0) {
@@ -155,7 +155,7 @@ class ReplyRepository
         return $reply ?: null;
     }
 
-    // Update
+    // Content and accepted-solution mutations -----------------------------
     public function markAsSolved(int $replyId)
     {
         if ($replyId <= 0) {
@@ -325,7 +325,7 @@ class ReplyRepository
         return $updated;
     }
 
-    // Delete
+    // Soft deletion and discussion-state repair --------------------------
     public function delete(int $id)
     {
         if ($id <= 0) {

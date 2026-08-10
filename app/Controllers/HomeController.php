@@ -9,6 +9,7 @@ use App\Core\Controller;
  */
 class HomeController extends Controller
 {
+    // Route actions --------------------------------------------------------
     public function index()
     {
         if ($this->currentUser() !== null) {

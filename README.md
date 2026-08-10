@@ -1,124 +1,183 @@
 <p align="center">
-  <img src="public/assets/images/shared/greenwich-logo.png" alt="University of Greenwich" width="360">
+  <img src="public/assets/images/shared/greenwich-logo.png" alt="University of Greenwich" width="320">
 </p>
 
-<h1 align="center">UoG Coursework Forum</h1>
+<h1 align="center">Greenwich Student Hub</h1>
 
 <p align="center">
-  A module-based discussion platform developed for the COMP1841 coursework.
-</p>
-
-<p align="center">
-  <img alt="PHP 8+" src="https://img.shields.io/badge/PHP-8.0%2B-777BB4?logo=php&logoColor=white">
-  <img alt="MySQL" src="https://img.shields.io/badge/MySQL-MariaDB%20%7C%20MySQL-4479A1?logo=mysql&logoColor=white">
-  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4?logo=tailwindcss&logoColor=white">
-  <img alt="Composer" src="https://img.shields.io/badge/Composer-2.x-885630?logo=composer&logoColor=white">
-  <img alt="Academic Project" src="https://img.shields.io/badge/Project-COMP1841-2F6B4F">
+  COMP1841 Web Programming 1 Coursework
 </p>
 
 ---
 
 ## Overview
 
-Greenwich Student Hub is a PHP discussion platform where students can ask module-related questions, exchange replies,
-attach supporting files, and mark a helpful reply as the solved answer.
+Greenwich Student Hub is a PHP/MySQL discussion platform for coursework-related questions. Students can browse discussions, create posts, upload attachments, reply to other users, manage their own content and mark suitable replies as accepted solutions.
 
-The application also includes profile management, role-based permissions, contact-message storage and email delivery,
-and an administration area for managing users, modules, posts, and contact messages.
+The system also includes profile management, role-based permissions, contact-message storage and an administration area for managing users, modules, discussions, replies and contact messages.
 
-## Features
+## Main Features
 
-### Discussions
+- Public discussion browsing, search and filtering
+- User registration and login
+- Discussion CRUD
+- Module assignment
+- Multiple attachments
+- Replies and nested replies
+- Accepted answers / solved discussions
+- Profile and avatar management
+- Student, tutor and administrator roles
+- Administrator management area
+- Contact form with database storage and optional email notification
 
-- Browse recent, popular, open, and solved discussions
-- Search discussions by keyword
-- Filter discussions by module
-- Create, edit, and delete owned discussions
-- Track discussion views
-- Display recent views, popular discussions, and trending modules
-- Add formatted text and code blocks
-- Upload supporting images, videos, documents, archives, and code files
+## Technology
 
-### Replies and solutions
+- PHP 8+
+- PHP PDO
+- MySQL / MariaDB
+- HTML5
+- Tailwind CSS
+- JavaScript
+- GSAP
+- PrismJS
+- PHPMailer
+- vlucas/phpdotenv
 
-- Reply to a discussion
-- Create nested replies
-- Edit or delete owned replies
-- Allow a discussion owner, tutor, or administrator to mark a reply as solved
-- Reopen a solved discussion by removing the accepted answer
-- Display the accepted reply clearly within the discussion
+---
 
-### Accounts and profiles
+# Tutor / Marker Setup Guide
 
-- Register and log in securely
-- Student, tutor, and administrator roles
-- View profile statistics
-- View questions created by the signed-in user
-- Update name, username, and email
-- Upload or replace an avatar
-- Change the account password
+## 1. Requirements
 
-### Administration
+The following are required:
 
-- View dashboard statistics
-- Manage users and roles
-- Prevent deletion or demotion of the final administrator
-- Create, edit, and delete modules
-- Review posts and manage solved status by accepting or unaccepting replies
-- View, mark, resolve, and delete contact messages
+- PHP 8.0 or newer
+- Composer 2
+- MySQL or MariaDB
+- PHP extensions:
+  - `pdo_mysql`
+  - `fileinfo`
+  - `mbstring`
+  - `openssl`
 
-### Contact messages
+Node.js and npm are **not required to run the submitted project** because the compiled Tailwind CSS file is already included.
 
-- Store every contact message in the database
-- Notify the configured administrator by email
-- Preserve the database record when email delivery fails
-- Log mail-delivery errors for troubleshooting
+## 2. Install PHP dependencies
 
-## Tech Stack
+From the project root, run:
 
-| Layer                     | Technology                               |
-|---------------------------|------------------------------------------|
-| Backend                   | PHP 8+, custom MVC-style architecture    |
-| Routing                   | Custom front controller and route mapper |
-| Database                  | MySQL or MariaDB                         |
-| Database access           | PDO with prepared statements             |
-| Dependency management     | Composer                                 |
-| Environment configuration | `vlucas/phpdotenv`                       |
-| Email                     | PHPMailer over SMTP                      |
-| Frontend                  | PHP views, HTML5, Tailwind CSS 4.3       |
-| Client-side scripting     | Vanilla JavaScript                       |
-| Animation                 | GSAP 3.15                                |
-| Web server                | Apache, PHP-FPM, or PHP built-in server  |
-
-## Architecture
-
-The project follows a lightweight layered structure:
-
-```text
-HTTP Request
-    │
-    ▼
-public/index.php
-    │
-    ▼
-App Router
-    │
-    ▼
-Controller
-    ├── Service
-    ├── Repository
-    │      └── PDO / MySQL
-    └── View
+```bash
+composer install
+composer dump-autoload
 ```
 
-The main responsibilities are separated as follows:
+`composer install` installs the dependencies defined in `composer.json`, including PHPMailer and dotenv.
 
-- **Controllers** handle requests, permissions, validation flow, and redirects.
-- **Services** contain reusable application logic such as authentication, attachments, email, and navigation.
-- **Repositories** contain database queries.
-- **Models** represent core domain records.
-- **Views** render the PHP and Tailwind user interface.
-- **Helpers** format data and centralise permission checks.
+`composer dump-autoload` rebuilds the Composer autoloader for the project classes.
+
+## 3. Create the environment file
+
+Copy `.env.example` to `.env`.
+
+macOS / Linux:
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then update the database settings:
+
+```env
+APP_ENV=development
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=uog_discussion_db
+DB_USERNAME=root
+DB_PASSWORD=""
+DB_CHARSET=utf8mb4
+```
+
+Email configuration is optional for local marking. The contact message is stored in the database before email delivery is attempted.
+
+> Do not commit real passwords or SMTP credentials to the repository.
+
+## 4. Import the database
+
+Create a database named:
+
+```text
+uog_discussion_db
+```
+
+Then import:
+
+```text
+database/uog_discussion_db.sql
+```
+
+Using the MySQL command line:
+
+```bash
+mysql -u root -p uog_discussion_db < database/uog_discussion_db.sql
+```
+
+The SQL file can also be imported through phpMyAdmin.
+
+## 5. Start the application
+
+From the project root:
+
+```bash
+php -S localhost:8000 -t public
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+## 6. Accessing the system
+
+Public pages can be viewed without logging in.
+
+A normal student account can be created through:
+
+```text
+/register
+```
+
+Administrator credentials, if required for marking, should be taken from the coursework report / submission details rather than stored publicly in this repository.
+
+The administration area is available at:
+
+```text
+/admin
+```
+
+---
+
+## Useful Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Home page |
+| `/discussions` | Discussion list |
+| `/discussions/create` | Create discussion |
+| `/login` | Login |
+| `/register` | Registration |
+| `/profile` | User profile |
+| `/profile/questions` | User discussions |
+| `/profile/preferences` | Account preferences |
+| `/contact` | Contact form |
+| `/admin` | Administration area |
 
 ## Project Structure
 
@@ -132,515 +191,44 @@ COMP1841/
 │   ├── Repositories/
 │   ├── Services/
 │   └── Views/
-│       ├── layouts/
-│       ├── components/
-│       ├── discussions/
-│       │   └── partials/
-│       ├── admin/
-│       │   └── partials/
-│       └── profile/
-│           └── partials/
 ├── config/
-│   ├── config.php
-│   ├── database.php
-│   └── mail.php
 ├── database/
 │   └── uog_discussion_db.sql
 ├── public/
 │   ├── assets/
-│   │   ├── css/
-│   │   ├── images/
-│   │   ├── js/
-│   │   ├── svg/
-│   │   └── videos/
 │   ├── uploads/
-│   ├── .htaccess
 │   └── index.php
 ├── resources/
-│   └── css/
-│       └── input.css
 ├── .env.example
 ├── composer.json
 ├── package.json
 └── export-db.php
 ```
 
-## Requirements
+## Optional Frontend Rebuild
 
-Install the following before running the project:
+The compiled stylesheet is already included. Rebuilding is only necessary when modifying Tailwind styles.
 
-- PHP 8.0 or newer
-- Composer 2
-- MySQL 8, MariaDB, or a compatible database server
-- PDO MySQL extension
-- Fileinfo extension
-- Apache, PHP-FPM, or the PHP built-in server
-- Node.js and npm only when rebuilding Tailwind CSS
-
-Useful PHP extensions include:
-
-```text
-pdo_mysql
-fileinfo
-mbstring
-openssl
-zip
-```
-
-## Getting Started
-
-### 1. Clone the repository
-
-```sh
-git clone <repository-url>
-cd COMP1841
-```
-
-### 2. Install PHP dependencies
-
-```sh
-composer install
-```
-
-### 3. Install frontend dependencies
-
-The compiled stylesheet is stored in `public/assets/css/app.css`. Install Node dependencies when changing Tailwind
-styles:
-
-```sh
+```bash
 npm install
-```
-
-### 4. Create the environment file
-
-macOS and Linux:
-
-```sh
-cp .env.example .env
-```
-
-Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-### 5. Configure the environment
-
-Update `.env` for the current machine:
-
-```env
-APP_ENV=development
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_DATABASE=uog_discussion_db
-DB_USERNAME=root
-DB_PASSWORD=""
-DB_CHARSET=utf8mb4
-
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_ENCRYPTION=tls
-MAIL_TIMEOUT=10
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD="your-google-app-password"
-MAIL_FROM_ADDRESS=your-email@gmail.com
-MAIL_FROM_NAME="Coursework Discussion"
-
-ADMIN_EMAIL=admin@example.com
-ADMIN_NAME="Administrator"
-```
-
-The `.env` file is ignored by Git. Never commit real credentials.
-
-Use this setting in production:
-
-```env
-APP_ENV=production
-```
-
-Production mode logs PHP errors without displaying them to visitors.
-
-### 6. Create and import the database
-
-Create the database:
-
-```sql
-CREATE
-DATABASE uog_discussion_db
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-```
-
-Import the provided SQL file:
-
-```sh
-mysql -u root -p uog_discussion_db < database/uog_discussion_db.sql
-```
-
-The same file can be imported through phpMyAdmin:
-
-1. Create a database named `uog_discussion_db`.
-2. Open the **Import** tab.
-3. Select `database/uog_discussion_db.sql`.
-4. Run the import.
-
-The SQL dump contains the schema and sample coursework data.
-
-### 7. Build the stylesheet
-
-For development with file watching:
-
-```sh
-npm run dev
-```
-
-For a minified production build:
-
-```sh
 npm run build
 ```
 
-### 8. Start the application
-
-```sh
-php -S localhost:8000 -t public
-```
-
-Open:
-
-```text
-http://localhost:8000
-```
-
-## Usage
-
-### Guest usage
-
-A guest can:
-
-1. Open the home page.
-2. Browse the discussion feed.
-3. Search for discussions.
-4. Read discussion details and replies.
-5. Filter discussions by available criteria.
-6. Submit a contact message.
-7. Register or log in.
-
-### Student usage
-
-After logging in, a student can:
-
-1. Open **Discussions**.
-2. Select **Create Post** to ask a module-related question.
-3. Choose the relevant module.
-4. Enter a title and detailed description.
-5. Add code blocks or supporting attachments when required.
-6. Submit the discussion.
-7. Reply to other discussions or nested replies.
-8. Edit or delete their own content from the action menu.
-9. Mark a reply as solved when it answers their own discussion.
-10. Use the profile area to review activity and update account preferences.
-
-### Tutor usage
-
-Tutors have normal discussion access and may also mark a suitable reply as the solved answer for a discussion.
-
-### Administrator usage
-
-Administrators can open:
-
-```text
-/admin
-```
-
-The administration area provides access to:
-
-- Dashboard statistics
-- User and role management
-- Module management
-- Post moderation
-- Contact-message management
-
-A newly registered account receives the `student` role. For local development, an existing administrator can update the
-role through the admin area.
-
-When no administrator account is available, update a registered local account directly in the development database:
-
-Admin default account: admin/admin123
-
-```sql
-UPDATE users
-SET role = 'admin'
-WHERE email = 'your-email@example.com';
-```
-
-Do not use direct database role changes as a normal production workflow.
-
-## Main Routes
-
-| Route                      | Purpose                  |
-|----------------------------|--------------------------|
-| `/`                        | Home page                |
-| `/discussions`             | Discussion feed          |
-| `/search?q=keyword`        | Discussion search        |
-| `/discussions/create`      | Create a discussion      |
-| `/discussions/{id}/{slug}` | View a discussion        |
-| `/login`                   | Log in                   |
-| `/register`                | Register                 |
-| `/profile`                 | Profile status           |
-| `/profile/questions`       | User questions           |
-| `/profile/preferences`     | Account preferences      |
-| `/contact`                 | Contact form             |
-| `/admin`                   | Administration dashboard |
-
-Editing and deletion are handled through actions and modals rather than separate sitemap pages.
-
-## Development Commands
-
-| Command                           | Description                                      |
-|-----------------------------------|--------------------------------------------------|
-| `composer install`                | Install PHP dependencies                         |
-| `composer dump-autoload`          | Rebuild the PSR-4 autoloader                     |
-| `npm install`                     | Install frontend dependencies                    |
-| `npm run dev`                     | Watch and rebuild Tailwind CSS                   |
-| `npm run build`                   | Build minified Tailwind CSS                      |
-| `php -S localhost:8000 -t public` | Start the local PHP server                       |
-| `php export-db.php`               | Export the configured database using `mysqldump` |
-
-## Attachment Upload Limits
-
-Discussion and reply forms accept:
-
-- Up to 5 attachments per submission
-- A combined maximum of 100 MB
-- Images up to 10 MB each
-- Documents and code files up to 10 MB each
-- Videos up to 50 MB each
-- Avatars up to 2 MB
-
-PHP must accept the complete request before application validation can run.
-
-Set at least the following values in the active `php.ini`:
-
-```ini
-upload_max_filesize = 50M
-post_max_size = 110M
-max_file_uploads = 20
-```
-
-Restart Apache or PHP-FPM after changing `php.ini`.
-
-In XAMPP:
-
-1. Open the Apache configuration menu.
-2. Open the active `php.ini`.
-3. Change the upload settings.
-4. Restart Apache.
-5. Verify the active values with `phpinfo()`.
-
-The PHP built-in server can also receive the values directly:
-
-```sh
-php \
-  -d upload_max_filesize=50M \
-  -d post_max_size=110M \
-  -d max_file_uploads=20 \
-  -S localhost:8000 \
-  -t public
-```
-
-The application stores uploaded files under:
-
-```text
-public/uploads/avatars
-public/uploads/images
-public/uploads/videos
-public/uploads/documents
-```
-
-Ensure the PHP process has permission to write to `public/uploads`.
-
-## Contact Email
-
-Contact messages are written to the database before email delivery is attempted.
-
-Configure:
-
-```env
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD="your-google-app-password"
-MAIL_FROM_ADDRESS=your-email@gmail.com
-ADMIN_EMAIL=admin@example.com
-```
-
-When using Gmail, use a Google App Password instead of the account password.
-
-If delivery fails:
-
-- The contact message remains in the database.
-- The failure is written to the PHP error log.
-- The message remains available in the admin area.
-
-## XAMPP MySQL Socket on macOS
-
-When the PHP built-in server is used with XAMPP on macOS, PDO may report:
-
-```text
-No such file or directory
-```
-
-Start PHP with the XAMPP MySQL socket:
-
-```sh
-php \
-  -d pdo_mysql.default_socket=/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock \
-  -S localhost:8000 \
-  -t public
-```
-
-The socket and upload settings can be combined:
-
-```sh
-php \
-  -d upload_max_filesize=50M \
-  -d post_max_size=110M \
-  -d max_file_uploads=20 \
-  -d pdo_mysql.default_socket=/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock \
-  -S localhost:8000 \
-  -t public
-```
-
-## Security
+## Security Notes
 
 The project includes:
 
-- Password hashing through PHP password functions
+- Password hashing
 - PDO prepared statements
-- CSRF validation for state-changing requests
-- Role and ownership permission checks
+- CSRF protection
 - Server-side validation
-- MIME-type and extension validation for uploads
-- Randomised stored filenames
-- Environment-based secret configuration
-- Production error hiding with server-side logging
+- Role-based permissions
+- Ownership checks
+- Upload MIME-type and extension validation
+- Environment-based configuration
 
-For production deployment:
-
-- Serve only the `public` directory as the document root.
-- Keep `.env` outside version control.
-- Disable directory listing.
-- Use HTTPS.
-- Use a dedicated database account with limited permissions.
-- Keep PHP and Composer packages updated.
-- Review and restrict upload-directory execution permissions.
-
-## Troubleshooting
-
-### Composer cannot extract packages
-
-Check which configuration file the CLI uses:
-
-```sh
-php --ini
-```
-
-Enable the PHP ZIP extension or install an extraction utility such as 7-Zip.
-
-### Database connection fails
-
-Verify:
-
-```env
-DB_HOST
-DB_PORT
-DB_DATABASE
-DB_USERNAME
-DB_PASSWORD
-```
-
-Also confirm that PDO MySQL is enabled:
-
-```sh
-php -m
-```
-
-### Tailwind changes are not visible
-
-Run:
-
-```sh
-npm run dev
-```
-
-Then confirm that `public/assets/css/app.css` has been rebuilt.
-
-### Uploads fail before validation
-
-Check active limits:
-
-```sh
-php -i | grep -E "upload_max_filesize|post_max_size|max_file_uploads"
-```
-
-Windows PowerShell:
-
-```powershell
-php -i | Select-String "upload_max_filesize|post_max_size|max_file_uploads"
-```
-
-Restart the web server after changing `php.ini`.
-
-### Email is not delivered
-
-Check:
-
-- Gmail App Password
-- SMTP host and port
-- Mail encryption
-- Sender address
-- Administrator email
-- PHP error log
-
-The contact message should still exist in the database.
-
-## Testing
-
-The current project is primarily validated through manual functional testing.
-
-Important flows to verify include:
-
-- Registration, login, and logout
-- Discussion creation and validation
-- Search and filters
-- Reply creation and nested replies
-- Edit and delete permissions
-- Marking and unmarking solved replies
-- Verifying that discussion status follows the accepted reply
-- Deleting discussions with post and reply attachments as both an owner and an administrator
-- Demoting an administrator while their second browser session remains signed in
-- Opening contact details without changing unread status
-- Profile updates
-- Avatar and attachment uploads
-- Administrator CRUD operations
-- Contact storage and mail failure handling
-
-Automated unit and integration tests are a future improvement.
-
-## Roadmap
-
-Possible future improvements include:
-
-- In-app notifications for new replies
-- Notifications when a discussion is marked as solved
-- Email verification and password recovery
-- Automated test coverage
-- Background mail queues
-- Improved moderation and reporting
-- API endpoints for external clients
+The `.env` file should remain outside version control.
 
 ## Academic Notice
 
-This repository was created for COMP1841 academic coursework. Review the University of Greenwich academic-integrity
-requirements before reusing or submitting any part of the project.
+This repository was created for the University of Greenwich COMP1841 Web Programming 1 coursework.

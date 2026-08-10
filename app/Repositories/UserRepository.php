@@ -20,7 +20,7 @@ class UserRepository
         $this->db = $database->connect();
     }
 
-    // Create
+    // Account creation -----------------------------------------------------
     public function create(array $data)
     {
         $stmt = $this->db->prepare(
@@ -40,7 +40,7 @@ class UserRepository
         ]);
     }
 
-    // Read
+    // Account and profile queries -----------------------------------------
     public function findPaginated(int $limit, int $offset)
     {
         $fullNameSelect = $this->fullNameSelectSql();
@@ -163,7 +163,7 @@ class UserRepository
         return $userRecord ? new User($userRecord) : null;
     }
 
-    // Update
+    // Profile and administration mutations -------------------------------
     public function updateProfile(int $userId, array $data)
     {
         $stmt = $this->db->prepare(
@@ -236,7 +236,7 @@ class UserRepository
         ]);
     }
 
-    // Delete
+    // Privacy-preserving account removal ---------------------------------
     public function softDeleteAndAnonymize(int $id)
     {
         if ($id <= 0) {

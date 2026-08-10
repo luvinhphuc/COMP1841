@@ -14,6 +14,7 @@ class Module
     public ?string $created_at = null;
     public ?string $updated_at = null;
 
+    /** Hydrates an academic module from a repository result. */
     public function __construct(array $data = [])
     {
         $this->id = isset($data['id']) ? (int) $data['id'] : null;

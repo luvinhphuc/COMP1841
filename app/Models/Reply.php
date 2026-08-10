@@ -17,6 +17,7 @@ class Reply
     public ?string $updated_at = null;
     public ?string $deleted_at = null;
 
+    /** Hydrates a nested reply from a repository result. */
     public function __construct(array $data = [])
     {
         $this->id = isset($data['id']) ? (int) $data['id'] : null;

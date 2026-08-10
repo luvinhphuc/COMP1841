@@ -11,6 +11,7 @@ use Throwable;
  */
 class ModuleController extends AdminController
 {
+    // Administrative route actions ---------------------------------------
     public function index()
     {
         $this->requireAdmin();
@@ -140,6 +141,7 @@ class ModuleController extends AdminController
         $this->adminSuccess('/admin/modules', 'Module deleted successfully.');
     }
 
+    // Input normalisation and validation ---------------------------------
     private function moduleData(): array
     {
         return [

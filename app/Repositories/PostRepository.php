@@ -23,7 +23,7 @@ class PostRepository
         $this->db = $database->connect();
     }
 
-    // Create
+    // Discussion creation -------------------------------------------------
     public function create(array $data)
     {
         $title = trim((string) ($data['title'] ?? ''));
@@ -44,7 +44,7 @@ class PostRepository
         return (int) $this->db->lastInsertId();
     }
 
-    // Read
+    // Listing, filtering, and detail queries ------------------------------
     public function findAll(int $limit = 20, int $offset = 0)
     {
         $stmt = $this->db->prepare($this->baseSelectSql() . '
@@ -237,7 +237,7 @@ class PostRepository
         return $postRecord ?: null;
     }
 
-    // Update
+    // Content and activity mutations -------------------------------------
     public function update(int $id, array $data)
     {
         $fields = [];
@@ -340,7 +340,7 @@ class PostRepository
         return $update->execute(['last_activity' => $lastActivity, 'post_id' => $postId,]);
     }
 
-    // Delete
+    // Cascading soft deletion --------------------------------------------
     public function delete(int $id)
     {
         if ($id <= 0) {

@@ -18,6 +18,7 @@ use Throwable;
  */
 class PostController extends Controller
 {
+    // Route actions --------------------------------------------------------
     public function create()
     {
         if ($this->currentUserId() === null) {
@@ -273,6 +274,7 @@ class PostController extends Controller
         $this->redirectTo(BASE_URL . '/discussions');
     }
 
+    // Validation, recovery state, and authorization helpers --------------
     private function validatePostData(
         array $postData,
         ModuleRepository $moduleRepository,

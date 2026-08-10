@@ -17,6 +17,7 @@ class UserController extends AdminController
     private const USER_ROLES = ['student', 'tutor', 'admin'];
     private const USER_FORM_STATE = 'admin_user_form_state';
 
+    // Administrative route actions ---------------------------------------
     public function index()
     {
         $this->requireAdmin();
@@ -157,6 +158,7 @@ class UserController extends AdminController
         $this->adminSuccess('/admin/users', 'User deleted successfully.');
     }
 
+    // Account safety, validation, and form-state helpers -----------------
     private function removeDeletedUserAvatar(string $avatarPath): void
     {
         $avatarPath = ltrim(str_replace('\\', '/', trim($avatarPath)), '/');

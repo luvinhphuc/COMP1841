@@ -19,6 +19,7 @@ class User
     public ?string $updated_at = null;
     public ?string $deleted_at = null;
 
+    /** Hydrates an account from a database row or form-compatible data. */
     public function __construct(array $data = [])
     {
         $this->id = isset($data['id']) ? (int)$data['id'] : null;
@@ -34,7 +35,7 @@ class User
         $this->deleted_at = isset($data['deleted_at']) ? (string)$data['deleted_at'] : null;
     }
 
-//    Convert data object to array
+    /** Returns the session-safe account snapshot; the password hash is intentionally omitted. */
     public function toArray()
     {
         return [

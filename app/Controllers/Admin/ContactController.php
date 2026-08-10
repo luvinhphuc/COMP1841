@@ -11,6 +11,7 @@ use Throwable;
  */
 class ContactController extends AdminController
 {
+    // Administrative route actions ---------------------------------------
     public function index()
     {
         $this->requireAdmin();

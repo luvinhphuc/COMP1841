@@ -21,6 +21,7 @@ class Contact
     public ?string $account_full_name = null;
     public ?string $account_role = null;
 
+    /** Hydrates a message and any optional linked-account projection. */
     public function __construct(array $data = [])
     {
         $this->id = isset($data['id']) ? (int) $data['id'] : null;
@@ -42,6 +43,7 @@ class Contact
         $this->account_role = isset($data['account_role']) ? (string) $data['account_role'] : null;
     }
 
+    /** Exposes message data in the shape expected by the admin views. */
     public function toArray(): array
     {
         return [

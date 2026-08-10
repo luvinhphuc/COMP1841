@@ -17,6 +17,7 @@ class Media
     public ?int $file_size = null;
     public ?string $created_at = null;
 
+    /** Hydrates attachment metadata from a repository result. */
     public function __construct(array $data = [])
     {
         $this->id = isset($data['id']) ? (int) $data['id'] : null;

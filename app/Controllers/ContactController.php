@@ -24,6 +24,7 @@ class ContactController extends Controller
         $this->mailService = $mailService;
     }
 
+    // Route actions --------------------------------------------------------
     public function index()
     {
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
@@ -118,6 +119,7 @@ class ContactController extends Controller
         ]);
     }
 
+    // Identity, validation, and notification formatting ------------------
     private function authenticatedContactUser()
     {
         $authUser = $this->currentUser();

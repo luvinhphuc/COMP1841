@@ -17,6 +17,7 @@ class AdminController extends Controller
     protected const DEFAULT_PAGE_LIMIT = 5;
     protected const PAGE_LIMIT_OPTIONS = [5, 10, 20, 50];
 
+    // Route actions --------------------------------------------------------
     public function index()
     {
         $this->requireAdmin();
@@ -40,6 +41,7 @@ class AdminController extends Controller
         ]);
     }
 
+    // Shared authorization, pagination, and feedback ---------------------
     protected function requireAdmin()
     {
         $authUser = $this->currentUser();

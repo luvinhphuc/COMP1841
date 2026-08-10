@@ -20,7 +20,7 @@ class ModuleRepository
         $this->db = $database->connect();
     }
 
-    // Create
+    // Catalogue creation --------------------------------------------------
     public function create(array $data)
     {
         $code = trim((string)($data['code'] ?? $data['module_code'] ?? ''));
@@ -44,7 +44,7 @@ class ModuleRepository
         return (int)$this->db->lastInsertId();
     }
 
-    // Read
+    // Catalogue and popularity queries -----------------------------------
     public function findAll()
     {
         $stmt = $this->db->query(
@@ -150,7 +150,7 @@ class ModuleRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Update
+    // Catalogue updates ---------------------------------------------------
     public function update(int $id, array $data)
     {
         $code = trim((string)($data['code'] ?? $data['module_code'] ?? ''));
@@ -178,7 +178,7 @@ class ModuleRepository
         ]);
     }
 
-    // Delete
+    // Safe catalogue removal ---------------------------------------------
     public function delete(int $id)
     {
         if ($id <= 0) {

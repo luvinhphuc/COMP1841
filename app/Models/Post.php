@@ -19,6 +19,7 @@ class Post
     public ?string $updated_at = null;
     public ?string $deleted_at = null;
 
+    /** Hydrates a discussion from a repository result. */
     public function __construct(array $data = [])
     {
         $this->id = isset($data['id']) ? (int) $data['id'] : null;
@@ -34,6 +35,7 @@ class Post
         $this->deleted_at = isset($data['deleted_at']) ? (string) $data['deleted_at'] : null;
     }
 
+    /** Exposes the persistence fields used by controllers and views. */
     public function toArray(): array
     {
         return [
