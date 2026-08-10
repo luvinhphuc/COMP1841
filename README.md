@@ -48,7 +48,7 @@ for managing users, modules, discussions, replies and contact messages.
 
 ---
 
-# Tutor / Marker Setup Guide
+# Setup Guide
 
 ## 1. Requirements
 
@@ -65,6 +65,8 @@ The following are required:
 
 Node.js and npm are **not required to run the submitted project** because the compiled Tailwind CSS file is already
 included.
+
+// Remember to put it in xampp/htdocs folder
 
 ## 2. Install PHP dependencies
 
