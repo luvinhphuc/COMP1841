@@ -111,16 +111,7 @@ DB_CHARSET=utf8mb4
 Email configuration is optional for local marking. The contact message is stored in the database before email delivery
 is attempted.
 
-```env
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_ENCRYPTION=tls
-MAIL_TIMEOUT=10
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=""
-MAIL_FROM_ADDRESS=your-email@gmail.com
-MAIL_FROM_NAME="Coursework Forum"
-```
+> Do not commit real passwords or SMTP credentials to the repository.
 
 ## 4. Import the database
 
