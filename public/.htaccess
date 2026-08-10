@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Nếu là file có thật thì truy cập trực tiếp (css, js, hình ảnh)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Nếu là thư mục có thật thì truy cập trực tiếp (images, videos)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Nếu không, chuyển hướng toàn bộ về public/index.php
+    # RewriteRule ^(.*)$ public/index.php?url=$1 [QSA,L]
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>

@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Route application requests through the public web root.
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

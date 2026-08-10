@@ -1,0 +1,51 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Runtime / logs
+*.log
+logs/
+tmp/
+temp/
+cache/
+
+# Testing artefacts
+.test-artifacts/
+coverage/
+
+# IDE / editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local PHP / tooling files
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# Local database/runtime files
+*.sqlite
+*.sqlite3
+
+# Documentation not required in submission
+*.md
+!README.md
+
+# Archives / backups
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bak
+*.backup
