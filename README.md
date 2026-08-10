@@ -12,9 +12,12 @@
 
 ## Overview
 
-Greenwich Student Hub is a PHP/MySQL discussion platform for coursework-related questions. Students can browse discussions, create posts, upload attachments, reply to other users, manage their own content and mark suitable replies as accepted solutions.
+Greenwich Student Hub is a PHP/MySQL discussion platform for coursework-related questions. Students can browse
+discussions, create posts, upload attachments, reply to other users, manage their own content and mark suitable replies
+as accepted solutions.
 
-The system also includes profile management, role-based permissions, contact-message storage and an administration area for managing users, modules, discussions, replies and contact messages.
+The system also includes profile management, role-based permissions, contact-message storage and an administration area
+for managing users, modules, discussions, replies and contact messages.
 
 ## Main Features
 
@@ -55,12 +58,13 @@ The following are required:
 - Composer 2
 - MySQL or MariaDB
 - PHP extensions:
-  - `pdo_mysql`
-  - `fileinfo`
-  - `mbstring`
-  - `openssl`
+    - `pdo_mysql`
+    - `fileinfo`
+    - `mbstring`
+    - `openssl`
 
-Node.js and npm are **not required to run the submitted project** because the compiled Tailwind CSS file is already included.
+Node.js and npm are **not required to run the submitted project** because the compiled Tailwind CSS file is already
+included.
 
 ## 2. Install PHP dependencies
 
@@ -104,9 +108,19 @@ DB_PASSWORD=""
 DB_CHARSET=utf8mb4
 ```
 
-Email configuration is optional for local marking. The contact message is stored in the database before email delivery is attempted.
+Email configuration is optional for local marking. The contact message is stored in the database before email delivery
+is attempted.
 
-> Do not commit real passwords or SMTP credentials to the repository.
+```env
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_ENCRYPTION=tls
+MAIL_TIMEOUT=10
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=""
+MAIL_FROM_ADDRESS=your-email@gmail.com
+MAIL_FROM_NAME="Coursework Forum"
+```
 
 ## 4. Import the database
 
@@ -154,7 +168,8 @@ A normal student account can be created through:
 /register
 ```
 
-Administrator credentials, if required for marking, should be taken from the coursework report / submission details rather than stored publicly in this repository.
+Administrator credentials, if required for marking, should be taken from the coursework report / submission details
+rather than stored publicly in this repository.
 
 The administration area is available at:
 
@@ -166,18 +181,18 @@ The administration area is available at:
 
 ## Useful Routes
 
-| Route | Purpose |
-|---|---|
-| `/` | Home page |
-| `/discussions` | Discussion list |
-| `/discussions/create` | Create discussion |
-| `/login` | Login |
-| `/register` | Registration |
-| `/profile` | User profile |
-| `/profile/questions` | User discussions |
+| Route                  | Purpose             |
+|------------------------|---------------------|
+| `/`                    | Home page           |
+| `/discussions`         | Discussion list     |
+| `/discussions/create`  | Create discussion   |
+| `/login`               | Login               |
+| `/register`            | Registration        |
+| `/profile`             | User profile        |
+| `/profile/questions`   | User discussions    |
 | `/profile/preferences` | Account preferences |
-| `/contact` | Contact form |
-| `/admin` | Administration area |
+| `/contact`             | Contact form        |
+| `/admin`               | Administration area |
 
 ## Project Structure
 
